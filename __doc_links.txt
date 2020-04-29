@@ -1,0 +1,16 @@
+
+https://github.com/git/git
+https://github.com/git/git/archive/master.zip
+
+https://www.digitalocean.com/community/tutorials/how-to-install-git-on-debian-9
+https://www.tecmint.com/install-c-compiler-and-development-build-essential-tools-in-debian-ubuntu/
+
+
+mkdir -pv ~/Downloads
+cd ~/Downloads
+wget https://github.com/git/git/archive/master.zip -O ./git_master_$(date +%Y%m%d).zip
+
+unzip git_master_20200428.zip
+
+make prefix=/usr all
+make prefix=/usr install
