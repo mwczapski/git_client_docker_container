@@ -86,7 +86,7 @@ function fn__CreateDockerfile() {
   cat <<-EOF > ${__DOCKERFILE_PATH}
 FROM ${__DEBMIN_SOURCE_IMAGE_NAME}
 
-## Dockerfile Version: ${TS}
+## Dockerfile Version: \${TS}
 ##
 # the environment variables below will be used in creating the image
 # and will be available to the containers created from the image
@@ -129,7 +129,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
 # set timezone - I live in Sydney - change as you see fit in the env variables above
     cp -v /usr/share/zoneinfo/\${TZ_PATH} /etc/localtime && \\
     echo "\${TZ_NAME}" > /etc/timezone && \\
-    echo $(date) && \\
+    echo \$(date) && \\
 \\
 # create git user
     addgroup developers && \\
@@ -137,6 +137,17 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
 \\
 ## configure git and ssh access to git repositories on this git server
     sed -i 's|#PasswordAuthentication yes|PasswordAuthentication no|' /etc/ssh/sshd_config && \\
+\\
+# download and install latest git
+    mkdir -pv /root/Downloads/git-master && \\
+    cd /root/Downloads && \\
+    TS=$(date +%Y%m%d) && \\
+    wget https://github.com/git/git/archive/master.zip -O /root/Downloads/git-master-\${TS}.zip  && \\
+    unzip /root/Downloads/git-master-\${TS}.zip && \\
+    cd /root/Downloads/git-master && \\
+    make prefix=/usr all  && \\
+    make prefix=/usr install  && \\
+    git --version && \\
 \\
 # create user's working directory
     mkdir -pv /home/\${DEBMIN_USERNAME}/.ssh/ && \\
@@ -146,38 +157,19 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
     chown -Rv \${DEBMIN_USERNAME}:developers \${GITSERVER_REPOS_ROOT} && \\
     chmod -v g+rxs \${GITSERVER_REPOS_ROOT} && \\
     echo /usr/bin/git-shell >> /etc/shells && \\
-    chsh git -s /usr/bin/git-shell  && \\ 
-\\
-# download and install latest git
-    mkdir -pv /root/Downloads/git-master && \\
-    cd /root/Downloads && \\
-    pwd && \\
-    TS=$(date +%Y%m%d) && \\
-    wget https://github.com/git/git/archive/master.zip -O /root/Downloads/git-master-${TS}.zip  && \\
-    ls -al /root/Downloads && \\
-    ls -al /root/Downloads/git-master && \\
-    unzip /root/Downloads/git-master-${TS}.zip -d /root/Downloads/git-master/ && \\
-    ls -al /root/Downloads/git-master && \\
-    echo "2" && \\
-    cd /root/Downloads/git-master && \\
-    echo "3" && \\
-    ls -al   && \\
-    echo "4" && \\
-    make prefix=/usr all  && \\
-    echo "5" && \\
-    make prefix=/usr install  && \\
-    echo "6" && \\
-    git --version
+    chsh git -s /usr/bin/git-shell
+
 EOF
 
   if [[ -e ${__DOCKERFILE_PATH}_${TS} ]]; then
 
-    diff -s ${__DOCKERFILE_PATH} ${__DOCKERFILE_PATH}_${TS} >/dev/null && STS=${__THE_SAME} || STS=${__DIFFERENT}
-  
+    diff -s ${__DOCKERFILE_PATH} ${__DOCKERFILE_PATH}_${TS} && STS=${__THE_SAME} || STS=${__DIFFERENT}
+echo "STS: ${STS}"
     if [[ ${STS} -eq ${__DIFFERENT} ]]; then
       __NEEDS_REBUILDING=${__YES}
     fi
   fi
+  echo "__NEEDS_REBUILDING: ${__NEEDS_REBUILDING}"
   return ${__NEEDS_REBUILDING}
 
 }
@@ -214,7 +206,13 @@ fn__ImageExists \
   "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" &&
     __IMAGE_EXISTS=${__YES} || 
     __IMAGE_EXISTS=${__NO}
+# echo "__IMAGE_EXISTS: ${__IMAGE_EXISTS}"
+# echo "__REBUILD_IMAGE: ${__REBUILD_IMAGE}"
+[[ ${STS} -eq ${__YES} ]]  \
+  && echo "______ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} exists" \
+  || echo "______ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} does not exist"
 
+__REBUILD_IMAGE=${__NO}
 if [[ ${__IMAGE_EXISTS} -eq ${__NO} || ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
   fn__BuildImage  \
     "${__REBUILD_IMAGE}" \
@@ -225,37 +223,36 @@ if [[ ${__IMAGE_EXISTS} -eq ${__NO} || ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
   echo "______ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} (re-)built"
 fi
 
-exit
-
-
-
-
-
-fn__ContainerExists ${__CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
+fn__ContainerExists \
+  "${__GITSERVER_CONTAINER_NAME}" \
+    && STS=${__YES} \
+    || STS=${__NO}
 if [[ $STS -eq ${__YES} ]]; then
-  fn__StopAndRemoveContainer  ${__CONTAINER_NAME} ## && STS=${__YES} || STS=${__NO} # let it abort if failed
-  echo "______ Container ${__CONTAINER_NAME} stopped and removed"
+  echo "______ Container ${__GITSERVER_CONTAINER_NAME} exists - will stopp and remove"
+  fn__StopAndRemoveContainer  ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
+  echo "______ Container ${__GITSERVER_CONTAINER_NAME} stopped and removed"
+else
+  echo "______ Container ${__GITSERVER_CONTAINER_NAME} does not exist"
 fi
-
 
 fn__RunContainerDetached \
   "${__GITSERVER_IMAGE_NAME}" \
   "${__GITSERVER_IMAGE_VERSION}" \
-  "${__CONTAINER_NAME}" \
+  "${__GITSERVER_CONTAINER_NAME}" \
   "${__HOST_NAME}" \
   "${__REMOVE_CONTAINER_ON_STOP}" \
   "" \
   "${__DEVCICD_NET}" && STS=${__DONE} || STS=${__FAILED}
-echo "______ Container ${__CONTAINER_NAME} started"
+echo "______ Container ${__GITSERVER_CONTAINER_NAME} started"
 
 if [[ $STS -eq ${__DONE} ]]; then
 
   fn__CommitStopTagAndPushImageToRemoteRepository   \
-    "${__CONTAINER_NAME}" \
+    "${__GITSERVER_CONTAINER_NAME}" \
     "${__DOCKER_REPOSITORY_HOST}"  \
     "${__GITSERVER_IMAGE_NAME}" \
     "${__GITSERVER_IMAGE_VERSION}"
-  echo "______ Image committed, stopped, tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" 
+  echo "______ Container committed, stopped and removed. Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" 
 
 else
   ${__INDUCE_ERROR}

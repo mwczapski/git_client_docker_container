@@ -65,13 +65,15 @@ EXAMPLE----------------------------------------------------------
 function fn__ContainerExists() {
   local pContainerName=${1?"Usage: ${0}:${FUNCNAME} requires Container Name as 1st argument"}
   # ${__DOCKER_EXE} container ls | grep $pContainerName >/dev/null && return 0 || return 1
-  ${__DOCKER_EXE} container ls -a | grep $pContainerName 1>/dev/null && return ${__YES} || return ${__NO}
+  echo \
+  ${__DOCKER_EXE} container ls -a | grep ${pContainerName} && return ${__YES} || return ${__NO}
+  return ${__NO}
 }
 
 function fn__ContainerIsRunning() {
   local pContainerName=${1?"Usage: ${0}:${FUNCNAME} requires Container Name as 1st argument"}
-  # ${__DOCKER_EXE} container ls | grep $pContainerName >/dev/null && return 0 || return 1
-  ${__DOCKER_EXE} container ls | grep $pContainerName && return ${__YES} || return ${__NO}
+  # ${__DOCKER_EXE} container ls | grep ${pContainerName} >/dev/null && return 0 || return 1
+  ${__DOCKER_EXE} container ls | grep ${pContainerName} && return ${__YES} || return ${__NO}
 }
 
 function fn__StartContainer() {
@@ -151,7 +153,12 @@ EXAMPLE----------------------------------------------------------
 function fn__ImageExists() {
   local pImageName=${1?"Usage: ${0}:${FUNCNAME} requires full Image Name with Repository, if any, and Tag, if any as 1st argument"}
   local lPattern=${pImageName/:/[ ]*}
-  ${__DOCKER_EXE} image ls | grep "^${lPattern}"  && return ${__YES} || return ${__NO}
+  # echo "pImageName: ${pImageName}"
+  # echo "lPattern: ${lPattern}"
+  local STS=${__YES}
+  ${__DOCKER_EXE} image ls | grep "^${lPattern}"  && STS=${__YES} || STS=${__NO}
+  # echo "STS: ${STS}"
+  return ${STS}
 }
 
 
