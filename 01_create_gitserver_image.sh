@@ -34,21 +34,10 @@ function fn__SetEnvironmentVariables() {
   __DEBMIN_HOME=${__DEBMIN_HOME%%/_commonUtils} # strip _commonUtils
   __DEBMIN_HOME_DOS=$(fn__WSLPathToRealDosPath ${__DEBMIN_HOME})
   __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${__DEBMIN_HOME})
-
-
-#  __DEBMIN_GNAME=${__GIT_USERNAME}
- 
   __DEBMIN_SOURCE_IMAGE_NAME="bitnami/minideb:jessie"
-
   __TZ_PATH=Australia/Sydney
   __TZ_NAME=Australia/Sydney
   __ENV="/etc/profile"
-
-  # __DEVCICD_NET_DC_INTERNAL=devcicd_net
-  # __DEVCICD_NET=docker_${__DEVCICD_NET_DC_INTERNAL}
-
-  # __CONTAINER_NAME="nodejs_baseline"
-  # __HOST_NAME="nodejsbase"
 
   __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${__GITSERVER_IMAGE_NAME}
 
@@ -77,8 +66,8 @@ set -e
 
 # prevent container from exiting after successfull startup
 # exec /bin/bash -c 'while true; do sleep 100000; done'
-# exec ${pGuestShell} $@
-exec $@
+# exec ${pGuestShell} \$@
+exec \$@
 EOF
   chmod +x ${__DEBMIN_HOME}/docker-entrypoint.sh
 }
@@ -95,7 +84,7 @@ function fn__CreateDockerfile() {
   [[ -e ${__DOCKERFILE_PATH} ]] && cp ${__DOCKERFILE_PATH} ${__DOCKERFILE_PATH}_${TS}
     
   cat <<-EOF > ${__DOCKERFILE_PATH}
-FROM bitnami/minideb:jessie
+FROM ${__DEBMIN_SOURCE_IMAGE_NAME}
 
 ## Dockerfile Version: ${TS}
 ##
@@ -103,9 +92,9 @@ FROM bitnami/minideb:jessie
 # and will be available to the containers created from the image
 #
 ENV DEBMIN_USERNAME=${__GIT_USERNAME} \\
-#    DEBMIN_GNAME=${__DEBMIN_GNAME} \\
     DEBMIN_SHELL=${__GITSERVER_SHELL} \\
     DEBMIN_SHELL_PROFILE=${__GITSERVER_SHELL_PROFILE} \\
+    GITSERVER_REPOS_ROOT=${__GITSERVER_REPOS_ROOT} \\
     TZ_PATH=${__TZ_PATH} \\
     TZ_NAME=${__TZ_NAME}  \\
     ENV=${__ENV}  \\
@@ -114,6 +103,9 @@ ENV DEBMIN_USERNAME=${__GIT_USERNAME} \\
 COPY ./docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # install necessary / usefull extra packages
+# the following are needed to download, builld and install git from sources
+# wget, unzip, build-essential, libssl-dev, libcurl4-openssl-dev, libexpat1-dev, gettex
+#
 RUN export DEBIAN_FRONTEND=noninteractive && \\
     apt-get update && \\
     apt-get upgrade -y && \\
@@ -124,15 +116,15 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
       iputils-ping \\
       openssh-client \\
       openssh-server \\
-      nano && \\
-# needed to download, unzip and install latest git from sources
+      nano \\
+# the following are needed to download, builld and install git from sources
       wget \\
       unzip \\
       build-essential \\
       libssl-dev \\
       libcurl4-openssl-dev \\
       libexpat1-dev \\
-      gettext \\
+      gettext && \\
 \\
 # set timezone - I live in Sydney - change as you see fit in the env variables above
     cp -v /usr/share/zoneinfo/\${TZ_PATH} /etc/localtime && \\
@@ -147,21 +139,34 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
     sed -i 's|#PasswordAuthentication yes|PasswordAuthentication no|' /etc/ssh/sshd_config && \\
 \\
 # create user's working directory
+    mkdir -pv /home/\${DEBMIN_USERNAME}/.ssh/ && \\
     touch /home/\${DEBMIN_USERNAME}/.ssh/authorized_keys && \\
     chmod 600 /home/\${DEBMIN_USERNAME}/.ssh/authorized_keys && \\
-    mkdir -pv /opt/gitrepos && \\
-    chown -Rv \${DEBMIN_USERNAME}:developers /opt/gitrepos && \\
-    chmod -v g+rxs /opt/gitrepos && \\
+    mkdir -pv \${GITSERVER_REPOS_ROOT} && \\
+    chown -Rv \${DEBMIN_USERNAME}:developers \${GITSERVER_REPOS_ROOT} && \\
+    chmod -v g+rxs \${GITSERVER_REPOS_ROOT} && \\
     echo /usr/bin/git-shell >> /etc/shells && \\
     chsh git -s /usr/bin/git-shell  && \\ 
 \\
 # download and install latest git
-    mkdir -pv ~/Downloads   && \\
-    cd ~/Downloads  && \\
-    wget https://github.com/git/git/archive/master.zip -O ./git_master_$(date +%Y%m%d).zip  && \\
-    unzip git_master_20200428.zip   && \\
+    mkdir -pv /root/Downloads/git-master && \\
+    cd /root/Downloads && \\
+    pwd && \\
+    TS=$(date +%Y%m%d) && \\
+    wget https://github.com/git/git/archive/master.zip -O /root/Downloads/git-master-${TS}.zip  && \\
+    ls -al /root/Downloads && \\
+    ls -al /root/Downloads/git-master && \\
+    unzip /root/Downloads/git-master-${TS}.zip -d /root/Downloads/git-master/ && \\
+    ls -al /root/Downloads/git-master && \\
+    echo "2" && \\
+    cd /root/Downloads/git-master && \\
+    echo "3" && \\
+    ls -al   && \\
+    echo "4" && \\
     make prefix=/usr all  && \\
+    echo "5" && \\
     make prefix=/usr install  && \\
+    echo "6" && \\
     git --version
 EOF
 
@@ -176,6 +181,8 @@ EOF
   return ${__NEEDS_REBUILDING}
 
 }
+
+
 
 ## ##################################################################################
 ## ##################################################################################
@@ -203,11 +210,11 @@ echo "______ Created docker-entrypoint.sh"
 fn__CreateDockerfile && __REBUILD_IMAGE=${__YES} || __REBUILD_IMAGE=${__NO} # if dockerfile has not changed
 echo "______ Created Dockerfile: ${__DOCKERFILE_PATH}" 
 
-echo "__REBUILD_IMAGE: ${__REBUILD_IMAGE}"
-exit
+fn__ImageExists \
+  "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" &&
+    __IMAGE_EXISTS=${__YES} || 
+    __IMAGE_EXISTS=${__NO}
 
-
-fn__ImageExists "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" __IMAGE_EXISTS=${__YES} || __IMAGE_EXISTS=${__NO}
 if [[ ${__IMAGE_EXISTS} -eq ${__NO} || ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
   fn__BuildImage  \
     "${__REBUILD_IMAGE}" \
@@ -217,6 +224,11 @@ if [[ ${__IMAGE_EXISTS} -eq ${__NO} || ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
     "${__DEVCICD_NET}" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it abort if failed
   echo "______ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} (re-)built"
 fi
+
+exit
+
+
+
 
 
 fn__ContainerExists ${__CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
@@ -244,7 +256,6 @@ if [[ $STS -eq ${__DONE} ]]; then
     "${__GITSERVER_IMAGE_NAME}" \
     "${__GITSERVER_IMAGE_VERSION}"
   echo "______ Image committed, stopped, tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" 
-
 
 else
   ${__INDUCE_ERROR}

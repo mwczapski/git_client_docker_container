@@ -1,3 +1,5 @@
+
+
 readonly __DOCKER_NO_EXT="docker"
 readonly __DOCKER_EXE="docker.exe"
 readonly __DOCKER_COMPOSE_NO_EXT="docker-compose"
@@ -128,13 +130,15 @@ function fn__BuildImage() {
 
   local pRebuildImage=$(tr '[a-z]' '[A-Z]' <<<${pRebuildImage:0:1})
 
+
   if [[ $pRebuildImage == ${__YES} ]]; then
       # ${DEBMIN_ADDHOSTS} \
     ${__DOCKER_EXE} build \
       --tag ${pNewImageName}:${pNewImageVersion} \
       --file ${pDockerfileDosPath} \
       --network=${pNetworkName} \
-      --force-rm . \
+      --force-rm \
+      . \
         | tee ./${pNewImageName}_${pNewImageVersion}_image_build_$(date "+%Y%m%d_%H%M%S.%s").log
   fi
 }
