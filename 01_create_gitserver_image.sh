@@ -160,7 +160,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
 \\
 # remove git source and build tools
   apt-get update && \\
-  apt-get remove \\
+  apt-get remove -y \\
     wget \\
     unzip \\
     build-essential \\
@@ -168,10 +168,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
     libcurl4-openssl-dev \\
     libexpat1-dev \\
     gettext && \\
-  apt-get update && \\
-    apt-get autoremove && \\
-    cd / && \\
-    rm -Rvf /root/Downloads
+    apt-get update && \\
+  apt-get autoremove -y && \\
+  rm -Rvf /root/Downloads
 EOF
 
   if [[ -e ${__DOCKERFILE_PATH}_${TS} ]]; then

@@ -114,6 +114,43 @@ function fn__CommitStopTagAndPushImageToRemoteRepository() {
   return ${__SUCCESS}
 }
 
+
+:<<-'EXAMPLE----------------------------------------------------------'
+      fn__PushImageToRemoteRepository   \
+        "${__DOCKER_REPOSITORY_HOST}"  \
+        "${__DEBMIN_NEW_IMAGE_NAME}" \
+        "${__DEBMIN_NEW_IMAGE_VERSION}"
+EXAMPLE----------------------------------------------------------
+
+function fn__PushImageToRemoteRepository() {
+  local pDockerRepoHost=${1?"Usage: ${0}:${FUNCNAME} requires Docker Repository Host name as 2nd argument"}
+  local pNewImageName=${2?"Usage: ${0}:${FUNCNAME} requires New Image Name as 3rd argument"}
+  local pNewImageVersion=${3?"Usage: ${0}:${FUNCNAME} requires New Image Version as 4th argument"}
+
+  ${__DOCKER_EXE} tag ${pNewImageName}:${pNewImageVersion} ${pDockerRepoHost}/${pNewImageName}:${pNewImageVersion}
+  ${__DOCKER_EXE} push ${pDockerRepoHost}/${pNewImageName}:${pNewImageVersion}
+  return ${__SUCCESS}
+}
+
+
+:<<-'EXAMPLE----------------------------------------------------------'
+      fn__CommitChangesStopContainerAndSaveImage   \
+        "${__CONTAINER_NAME}" \
+        "${__DEBMIN_NEW_IMAGE_NAME}" \
+        "${__DEBMIN_NEW_IMAGE_VERSION}"
+EXAMPLE----------------------------------------------------------
+
+function fn__CommitChangesStopContainerAndSaveImage() {
+  local pContainerName=${1?"Usage: ${0}:${FUNCNAME} requires Container Name as 1st argument"}
+  local pNewImageName=${2?"Usage: ${0}:${FUNCNAME} requires New Image Name as 3rd argument"}
+  local pNewImageVersion=${3?"Usage: ${0}:${FUNCNAME} requires New Image Version as 4th argument"}
+
+  ${__DOCKER_EXE} commit ${pContainerName} ${pNewImageName}:${pNewImageVersion} 2>/dev/null || ${__IGNORE_ERROR}
+  ${__DOCKER_EXE} stop ${pContainerName} 2>/dev/null || ${__IGNORE_ERROR}
+  return ${__SUCCESS}
+}
+
+
 :<<-'EXAMPLE----------------------------------------------------------'
   fn__BuildImage  \
     "${__REBUILD_IMAGE}" \
