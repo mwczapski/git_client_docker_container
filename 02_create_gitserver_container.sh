@@ -20,6 +20,7 @@ source ./utils/__env_YesNoSuccessFailureContants.sh
 source ./utils/fn__WSLPathToDOSandWSDPaths.sh
 source ./utils/fn__ConfirmYN.sh
 source ./utils/fn__DockerGeneric.sh
+source ./utils/fn__FileSameButForDate.sh
 
 source ./utils/fn__CreateWindowsShortcut.sh
 
@@ -70,6 +71,7 @@ function fn__SetEnvironmentVariables() {
   readonly __CONTAINER_NAME="${lContainerName}"
   readonly __HOST_NAME="${lContainerName}"
 
+  __DEBMIN_HOME=${pDebminHome}
   readonly __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${pDebminHome})
   readonly __DEBMIN_HOME_DOS=$(fn__WSLPathToRealDosPath ${pDebminHome})
 
@@ -121,7 +123,7 @@ services:
 
         restart: always
 
-        entrypoint: /usr/local/bin/docker-entrypoint.sh
+        # entrypoint: /usr/local/bin/docker-entrypoint.sh
 
         tty: true         # these two keep the container running even if there is no listener in the foreground
         stdin_open: true
@@ -161,8 +163,14 @@ networks:
 EOF
 
   if [[ -e ${pHostWSLPathToComposeFile}_${TS} ]]; then
-    diff -s ${pHostWSLPathToComposeFile} ${pHostWSLPathToComposeFile}_${TS} >/dev/null && STS=${__THE_SAME} || STS=${__DIFFERENT}
-      if [[ $? -eq ${__DIFFERENT} ]]; then
+
+    fn__FileSameButForDate \
+      ${pHostWSLPathToComposeFile}  \
+      ${pHostWSLPathToComposeFile}_${TS} \
+        && STS=${__THE_SAME} \
+        || STS=${__DIFFERENT}
+
+      if [[ ${STS} -eq ${__DIFFERENT} ]]; then
         echo "______ docker-compose.yml_${pContainerName} changed - container may need updating"
       fi
   fi
@@ -279,25 +287,31 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
   return ${__DONE}
 }
 
-function fnGiveOwnershipToNonRootUser() {
-  #
-  # fnGiveOwnershipToNonRootUser  \
-  #   ${__CONTAINER_NAME} \
-  #   ${__GIT_USERNAME} \
-  #   ${__GITSERVER_GUEST_HOME}  \
-  #   ${__GITSERVER_SHELL}
-  #
-  pContainerName=${1?"Usage: $0 requires __CONTAINER_NAME, __GIT_USERNAME, __GITSERVER_GUEST_HOME and __GITSERVER_SHELL as its arguments"}
-  pGuestHome=${2?"Usage: $0 requires __CONTAINER_NAME, __GIT_USERNAME, __GITSERVER_GUEST_HOME and __GITSERVER_SHELL as its arguments"}
-  pGitUsername=${3?"Usage: $0 requires __CONTAINER_NAME, __GIT_USERNAME, __GITSERVER_GUEST_HOME and __GITSERVER_SHELL as its arguments"}
-  pContainerShell=${4?"Usage: $0 requires __CONTAINER_NAME, __GITSERVER_GUEST_HOME and __GITSERVER_SHELL as its arguments"}
+function fnUpdateOwnershipOfNonRootUserResources() {
+  local lUsage='
+      Usage: 
+        fnUpdateOwnershipOfNonRootUserResources  \
+          ${__CONTAINER_NAME} \
+          ${__GIT_USERNAME} \
+          ${__GITSERVER_GUEST_HOME}  \
+          ${__GITSERVER_SHELL}  \
+          ${__GITSERVER_REPOS_ROOT}
+      '
+  [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
+    echo ${lUsage}
+    return ${__FAILED}
+  }
+  pContainerName=${1?"${lUsage}"}
+  pGitUsername=${2?"${lUsage}"}
+  pGuestHome=${3?"${lUsage}"}
+  pContainerShell=${4?"${lUsage}"}
+  pGitReposRoot=${5?"${lUsage}"}
 
-  echo "______ As root on ${pContainerName}, giving ownership of node_modules directory to node";
+  echo "______ As root on ${pContainerName}, updating ownership of user's home resources";
 
-  ${__DOCKER_EXE} container exec -itu root -w ${pGuestHome} ${pContainerName} ${pContainerShell} -lc "
-  chown -R pGitUsername:pGitUsername ${pGuestHome}
-  # chmod -R g+s ${pGuestHome}/dev
-  # chmod -R g+s ${pGuestHome}/dev/node_modules
+  ${__DOCKER_EXE} container exec -itu root -w ${pGitReposRoot} ${pContainerName} ${pContainerShell} -lc "
+  chown -R ${pGitUsername}:${pGitUsername} ${pGuestHome}
+  chown -R ${pGitUsername}:${pGitUsername} ${pGitReposRoot}
   "
 }
 
@@ -318,7 +332,6 @@ readonly __CWD_NAME=$(basename ${__DEBMIN_HOME})
   echo "${0} must run from directory with name _commonUtils and will use the name of its parent directory as project directory"
   exit
 }
-
 
 fn__SetEnvironmentVariables \
   "${__DEBMIN_HOME}" \
@@ -352,14 +365,14 @@ fn__CreateWindowsShortcutsForShellInContainer \
 echo "______ Created Windows Shortcuts"; 
 
 
-exit
-
-
-fn__ImageExists 
+fn__ImageExists \
   "${__DEBMIN_SOURCE_IMAGE_NAME}" # let it fail if image does not exist
 
 
-fn__ContainerExists ${__CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
+fn__ContainerExists \
+  ${__CONTAINER_NAME} \
+    && STS=${__YES} \
+    || STS=${__NO}
 if [[ $STS -eq ${__YES} ]]; then
 
   fn__ContainerIsRunning ${__CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
@@ -390,10 +403,11 @@ else
 
 fi
 
-# fnGiveOwnershipToNonRootUser  \
-#   ${__CONTAINER_NAME} \
-#   ${__GIT_USERNAME} \
-#   ${__GITSERVER_GUEST_HOME}  \
-#   ${__GITSERVER_SHELL}
+fnUpdateOwnershipOfNonRootUserResources  \
+  ${__CONTAINER_NAME} \
+  ${__GIT_USERNAME} \
+  ${__GITSERVER_GUEST_HOME}  \
+  ${__GITSERVER_SHELL}  \
+  ${__GITSERVER_REPOS_ROOT}
 
 echo "______ ${0} Done"

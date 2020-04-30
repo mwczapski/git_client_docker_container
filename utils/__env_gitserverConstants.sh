@@ -1,7 +1,7 @@
 
 
-_HAVE_GITSERVER_STATIC_SERVER_IP=${GITSERVER_STATIC_SERVER_IP:-"NO"}
-[[ ${_HAVE_GITSERVER_STATIC_SERVER_IP} == 'NO' ]] \
+_HAVE_GITSERVER_STATIC_SERVER_IP=${GITSERVER_STATIC_SERVER_IP:-NO}
+[[ ${_HAVE_GITSERVER_STATIC_SERVER_IP} == "NO" ]] \
   && {
     echo "__env_devcicd_net.sh is a pre-requisite for ${0} - sourcing it"
     source ./__env_devcicd_net.sh
@@ -15,7 +15,8 @@ readonly __GIT_USERNAME="git"
 readonly __GITSERVER_USERNAME="gitserver"
 readonly __GITSERVER_NAME="gitserver"
 readonly __GITSERVER_SHELL="/bin/bash"
-readonly __GITSERVER_SHELL_PROFILE=.bash_profile
+readonly __GITSERVER_SHELL_GLOBAL_PROFILE="/etc/profile"
+readonly __GITSERVER_SHELL_PROFILE=".bash_profile"
 readonly __GITSERVER_IMAGE_NAME="gitserver"
 readonly __GITSERVER_IMAGE_VERSION="1.0.0"
 readonly __GITSERVER_HOST_NAME="gitserver"
