@@ -1,4 +1,4 @@
-
+declare -u fn__DockerGeneric="SOURCED"
 
 readonly __DOCKER_NO_EXT="docker"
 readonly __DOCKER_EXE="docker.exe"
@@ -7,7 +7,7 @@ readonly __DOCKER_COMPOSE_EXE="docker-compose.exe"
 
 readonly __DOCKER_REPOSITORY_HOST="mcz11.czapski.id.au"
 
-source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
 
 :<<-'EXAMPLE----------------------------------------------------------'
       __CONTAINER_NAME="node13130"
@@ -30,6 +30,8 @@ function fn__RunContainerDetached() {
   local pRemoveOnStop=${5?"Usage: ${0}:${FUNCNAME} requires 0 (Yes) or 1 (No) as Remove-on-Stop as 5th argument"}
   local pContainerMappedPorts=${6?"Usage: ${0}:${FUNCNAME} requires a valid 'container mapped local ports' expression as 6th argument"}
   local pNetworkName=${7?"Usage: ${0}:${FUNCNAME} requires a valid network name as 7th argument"}
+
+  [[ ${pContainerMappedPorts} == ${__EMPTY} ]] && pContainerMappedPorts=""
 
   pRemoveOnStop=$(tr '[a-z]' '[A-Z]' <<<${pRemoveOnStop:0:1})
   [[ $pRemoveOnStop == ${__YES} ]] && REMOVE_ON_STOP='--rm' || REMOVE_ON_STOP=''
@@ -65,20 +67,19 @@ EXAMPLE----------------------------------------------------------
 function fn__ContainerExists() {
   local pContainerName=${1?"Usage: ${0}:${FUNCNAME} requires Container Name as 1st argument"}
   # ${__DOCKER_EXE} container ls | grep $pContainerName >/dev/null && return 0 || return 1
-  echo \
-  ${__DOCKER_EXE} container ls -a | grep ${pContainerName} && return ${__YES} || return ${__NO}
+  ${__DOCKER_EXE} container ls -a | grep ${pContainerName} > /dev/null && return ${__YES} || return ${__NO}
   return ${__NO}
 }
 
 function fn__ContainerIsRunning() {
   local pContainerName=${1?"Usage: ${0}:${FUNCNAME} requires Container Name as 1st argument"}
   # ${__DOCKER_EXE} container ls | grep ${pContainerName} >/dev/null && return 0 || return 1
-  ${__DOCKER_EXE} container ls | grep ${pContainerName} && return ${__YES} || return ${__NO}
+  ${__DOCKER_EXE} container ls | grep ${pContainerName} >/dev/null && return ${__YES} || return ${__NO}
 }
 
 function fn__StartContainer() {
   local pContainerName=${1?"Usage: ${0}:${FUNCNAME} requires Container Name as 1st argument"}
-  ${__DOCKER_EXE} container start ${pContainerName} && return ${__SUCCESS} || return ${__FAILED}
+  ${__DOCKER_EXE} container start ${pContainerName} >/dev/null && return ${__SUCCESS} || return ${__FAILED}
 }
 
 :<<-'EXAMPLE----------------------------------------------------------'
@@ -121,7 +122,6 @@ function fn__CommitStopTagAndPushImageToRemoteRepository() {
         "${__DEBMIN_NEW_IMAGE_NAME}" \
         "${__DEBMIN_NEW_IMAGE_VERSION}"
 EXAMPLE----------------------------------------------------------
-
 function fn__PushImageToRemoteRepository() {
   local pDockerRepoHost=${1?"Usage: ${0}:${FUNCNAME} requires Docker Repository Host name as 2nd argument"}
   local pNewImageName=${2?"Usage: ${0}:${FUNCNAME} requires New Image Name as 3rd argument"}
@@ -133,13 +133,32 @@ function fn__PushImageToRemoteRepository() {
 }
 
 
+function fn__PullImageFromRemoteRepository() {
+  local lUsage='*'
+  # local lUsage='
+  #   fn__PullImageFromRemoteRepository   \
+  #     "${__DOCKER_REPOSITORY_HOST}"  \
+  #     "${__DEBMIN_NEW_IMAGE_NAME}" \
+  #     "${__DEBMIN_NEW_IMAGE_VERSION}" \
+  #       && STS=${__SUCCESS} \
+  #       || STS=${__FAILED}
+  #   '
+  local pDockerRepoHost=${1?"${lUsage}"}
+  local pImageName=${2?"${lUsage}"}
+  local pImageVersion=${3?"${lUsage}"}
+
+  ${__DOCKER_EXE} pull ${pDockerRepoHost}/${pImageName}:${pImageVersion} && STS=${__SUCCESS} || return ${__FAILED}
+  ${__DOCKER_EXE} tag ${pDockerRepoHost}/${pImageName}:${pImageVersion} ${pImageName}:${pImageVersion} || return ${__FAILED}
+  return ${__SUCCESS}
+}
+
+
 :<<-'EXAMPLE----------------------------------------------------------'
       fn__CommitChangesStopContainerAndSaveImage   \
         "${__CONTAINER_NAME}" \
         "${__DEBMIN_NEW_IMAGE_NAME}" \
         "${__DEBMIN_NEW_IMAGE_VERSION}"
 EXAMPLE----------------------------------------------------------
-
 function fn__CommitChangesStopContainerAndSaveImage() {
   local pContainerName=${1?"Usage: ${0}:${FUNCNAME} requires Container Name as 1st argument"}
   local pNewImageName=${2?"Usage: ${0}:${FUNCNAME} requires New Image Name as 3rd argument"}
@@ -193,7 +212,7 @@ function fn__ImageExists() {
   # echo "pImageName: ${pImageName}"
   # echo "lPattern: ${lPattern}"
   local STS=${__YES}
-  ${__DOCKER_EXE} image ls | grep "^${lPattern}"  && STS=${__YES} || STS=${__NO}
+  ${__DOCKER_EXE} image ls | grep "^${lPattern}" >/dev/null  && STS=${__YES} || STS=${__NO}
   # echo "STS: ${STS}"
   return ${STS}
 }
@@ -219,3 +238,66 @@ function fn_GetDockerComposeDOSCommandLine() {
   echo ${__DOCKER_COMPOSE_EXE} -f ${pDockerComposeFilePath} ${pDockerComposeCommand} ${pContainerName}
   return ${__DONE}
 } 
+
+
+:<<-'EXAMPLE----------------------------------------------------------'
+  # Y or P is __YES, anything else, inclyuding nothing if default of __NO
+  [[ fn__PushToRemoteDockerRepo ${1} ]] && __PUSH2REMOTEREPO=${__YES} || __PUSH2REMOTEREPO=${__NO} 
+EXAMPLE----------------------------------------------------------
+function fn__PushToRemoteDockerRepo() {
+
+  local pPushToRepoBool=${__NO}
+  local pPushToRepoSt=${1:-NO}
+  if [[ $# -gt 0 ]]; then
+    pPushToRepoSt=${pPushToRepoSt^^}
+    pPushToRepoSt=${pPushToRepoSt:0:1}
+    case "${pPushToRepoSt}" in
+    Y|P) 
+      pPushToRepoBool=${__YES}
+      ;;
+    *) {
+      pPushToRepoBool=${__NO}
+    }
+    esac
+  fi
+  return ${pPushToRepoBool}
+}
+
+
+function fn__DockerNetworkExists() {
+  local lUsage='
+    fn__DockerNetworkExists \
+      ${__DEVCICD_NET} \
+        && STS=${__YES} \
+        || STS=${__NO}
+    '
+  local pDockerNet=${1?"${lUsage}"}
+
+  ${__DOCKER_EXE} network ls | grep ${pDockerNet} >/dev/null && STS=${__YES} || STS=${__NO}
+  return ${STS}
+}
+
+
+function fn__CreateDockerNetwork() {
+  local lUsage='
+    fn__CreateDockerNetwork \
+      ${__DEVCICD_NET} \
+      ${__DEVCICD_SUBNET_ADDRESS} \
+      ${__DEVCICD_SUBNET_GATEWAY} \
+        && STS=${__YES} \
+        || STS=${__NO}
+    '
+  local pDockerNet=${1?"${lUsage}"}
+  local pDockerSubnetAddress=${2?"${lUsage}"}
+  local pDockerSubnetGateway=${3?"${lUsage}"}
+
+  ${DOCKER_EXE} network \
+    create \
+    --attachable \
+    ${__DEVCICD_NET} \
+    --subnet ${__DEVCICD_SUBNET_ADDRESS} \
+    --gateway ${__DEVCICD_SUBNET_GATEWAY} \
+        && STS=${__YES} \
+        || STS=${__NO}
+  return ${STS}
+}

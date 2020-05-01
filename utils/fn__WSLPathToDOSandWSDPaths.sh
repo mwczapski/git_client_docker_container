@@ -1,3 +1,4 @@
+declare -u fn__WSLPathToDOSandWSDPaths="SOURCED"
 
 function fn__WSLPathToRealDosPath() { 
   echo $1 | sed 's|/mnt/\(.\)|\1:|;s|/|\\|g'; 

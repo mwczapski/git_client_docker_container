@@ -13,19 +13,18 @@ trap traperr ERR
 
 # common environment variable values and utility functions
 #
-source ./utils/__env_devcicd_net.sh
-source ./utils/__env_gitserverConstants.sh
-source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${fn__DockerGeneric} ]] || source ./utils/fn__DockerGeneric.sh
+[[ ${__env_devcicd_net} ]] || source ./utils/__env_devcicd_net.sh
+[[ ${__env_gitserverConstants} ]] || source ./utils/__env_gitserverConstants.sh
 
-source ./utils/fn__WSLPathToDOSandWSDPaths.sh
-source ./utils/fn__ConfirmYN.sh
-source ./utils/fn__DockerGeneric.sh
-source ./utils/fn__FileSameButForDate.sh
+[[ ${fn__WSLPathToDOSandWSDPaths} ]] || source ./utils/fn__WSLPathToDOSandWSDPaths.sh
+[[ ${fn__ConfirmYN} ]] || source ./utils/fn__ConfirmYN.sh
+[[ ${fn__FileSameButForDate} ]] || source ./utils/fn__FileSameButForDate.sh
 
-source ./utils/fn__CreateWindowsShortcut.sh
+[[ ${fn__CreateWindowsShortcut} ]] || source ./utils/fn__CreateWindowsShortcut.sh
 
 echo "______ Sourced common variables and functions"; 
-
 
 
 function fn__SetEnvironmentVariables() {
@@ -40,7 +39,7 @@ function fn__SetEnvironmentVariables() {
           fn__SetEnvironmentVariables \
             "${__DEBMIN_HOME}" \
             "${__GITSERVER_USERNAME}" \
-            "${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}"
+            "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}"
       '
     return ${__FAILED}
   }
@@ -287,33 +286,6 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
   return ${__DONE}
 }
 
-function fnUpdateOwnershipOfNonRootUserResources() {
-  local lUsage='
-      Usage: 
-        fnUpdateOwnershipOfNonRootUserResources  \
-          ${__CONTAINER_NAME} \
-          ${__GIT_USERNAME} \
-          ${__GITSERVER_GUEST_HOME}  \
-          ${__GITSERVER_SHELL}  \
-          ${__GITSERVER_REPOS_ROOT}
-      '
-  [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
-    echo ${lUsage}
-    return ${__FAILED}
-  }
-  pContainerName=${1?"${lUsage}"}
-  pGitUsername=${2?"${lUsage}"}
-  pGuestHome=${3?"${lUsage}"}
-  pContainerShell=${4?"${lUsage}"}
-  pGitReposRoot=${5?"${lUsage}"}
-
-  echo "______ As root on ${pContainerName}, updating ownership of user's home resources";
-
-  ${__DOCKER_EXE} container exec -itu root -w ${pGitReposRoot} ${pContainerName} ${pContainerShell} -lc "
-  chown -R ${pGitUsername}:${pGitUsername} ${pGuestHome}
-  chown -R ${pGitUsername}:${pGitUsername} ${pGitReposRoot}
-  "
-}
 
 ## ##################################################################################
 ## ##################################################################################
@@ -336,8 +308,7 @@ readonly __CWD_NAME=$(basename ${__DEBMIN_HOME})
 fn__SetEnvironmentVariables \
   "${__DEBMIN_HOME}" \
   "${__GITSERVER_USERNAME}" \
-  "${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" \
-    ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
+  "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
 echo "______ Set local environment variables"; 
 
 fn__ConfirmYN "Artefact location will be ${__DEBMIN_HOME} - Is this correct?" && true || {
@@ -357,16 +328,23 @@ fn__CreateDockerComposeFile \
   "${__DOCKER_COMPOSE_FILE_WLS}"
 echo "______ Created ${__DOCKER_COMPOSE_FILE_WLS}"; 
 
-fn__CreateWindowsShortcutsForShellInContainer \
-  "${__CONTAINER_NAME}" \
-  "${__DEBMIN_HOME_DOS}" \
-  "${__GITSERVER_SHELL}" \
-  "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
-echo "______ Created Windows Shortcuts"; 
-
 
 fn__ImageExists \
-  "${__DEBMIN_SOURCE_IMAGE_NAME}" # let it fail if image does not exist
+  "${__DEBMIN_SOURCE_IMAGE_NAME}" \
+  && echo "______ Image ${__DEBMIN_SOURCE_IMAGE_NAME} exist" \
+  || {
+echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}"
+    fn__PullImageFromRemoteRepository   \
+      ${__DOCKER_REPOSITORY_HOST}  \
+      ${__GITSERVER_IMAGE_NAME} \
+      ${__GITSERVER_IMAGE_VERSION} \
+        && echo "______ Image ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} pulled from remote docker repository" \
+        || {
+          echo "______ Cannot find image ${__DEBMIN_SOURCE_IMAGE_NAME} [${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}]" 
+          echo "______ Aborting script execution ..." 
+          exit
+        }
+  }
 
 
 fn__ContainerExists \
@@ -403,11 +381,11 @@ else
 
 fi
 
-fnUpdateOwnershipOfNonRootUserResources  \
-  ${__CONTAINER_NAME} \
-  ${__GIT_USERNAME} \
-  ${__GITSERVER_GUEST_HOME}  \
-  ${__GITSERVER_SHELL}  \
-  ${__GITSERVER_REPOS_ROOT}
+fn__CreateWindowsShortcutsForShellInContainer \
+  "${__CONTAINER_NAME}" \
+  "${__DEBMIN_HOME_DOS}" \
+  "${__GITSERVER_SHELL}" \
+  "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
+echo "______ Created Windows Shortcuts"; 
 
 echo "______ ${0} Done"

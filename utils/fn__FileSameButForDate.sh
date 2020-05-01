@@ -1,6 +1,7 @@
 
+declare -u fn__FileSameButForDate="SOURCED"
 
-[[ "${__YES:-UNDEFINED}" == "UNDEFINED" ]] && soure __env_YesNoSuccessFailureContants.sh
+[[ ${__env_YesNoSuccessFailureContants} ]] || source __env_YesNoSuccessFailureContants.sh
 
 function fn__FileSameButForDate() {
   local lUsage='

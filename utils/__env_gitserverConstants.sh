@@ -1,12 +1,13 @@
 
+declare -u __env_gitserverConstants="SOURCED"
 
-_HAVE_GITSERVER_STATIC_SERVER_IP=${GITSERVER_STATIC_SERVER_IP:-NO}
-[[ ${_HAVE_GITSERVER_STATIC_SERVER_IP} == "NO" ]] \
-  && {
-    echo "__env_devcicd_net.sh is a pre-requisite for ${0} - sourcing it"
-    source ./__env_devcicd_net.sh
-  } \
-  || true
+[[ ${__env_devcicd_net} ]] || source __env_devcicd_net.sh
+
+# [[ ${GITSERVER_STATIC_SERVER_IP:-NO} == "NO" ]] \
+#   && {
+#     echo "__env_devcicd_net.sh is a pre-requisite for ${0} - sourcing it"
+#     source ./utils/__env_devcicd_net.sh
+#   } || true
 
 readonly _GIT_HOST_PPORT_=50022
 readonly _GIT_GUEST_PPORT_=22

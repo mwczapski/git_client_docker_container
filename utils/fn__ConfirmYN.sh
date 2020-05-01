@@ -1,5 +1,7 @@
 
-source ./utils/__env_YesNoSuccessFailureContants.sh
+declare -u fn__ConfirmYN="SOURCED"
+
+[[ ${__env_YesNoSuccessFailureContants} ]] || source __env_YesNoSuccessFailureContants.sh
 
 function fn__ConfirmYN() {
   pPrompt=${1?"Usage: $0 requires the prompt string and will return 0 if response is Yes, and 1 if it is No"}

@@ -13,13 +13,13 @@ trap traperr ERR
 
 # common environment variable values and utility functions
 #
+source ./utils/__env_YesNoSuccessFailureContants.sh
+source ./utils/fn__DockerGeneric.sh
 source ./utils/__env_devcicd_net.sh
 source ./utils/__env_gitserverConstants.sh
-source ./utils/__env_YesNoSuccessFailureContants.sh
 
 source ./utils/fn__WSLPathToDOSandWSDPaths.sh
 source ./utils/fn__ConfirmYN.sh
-source ./utils/fn__DockerGeneric.sh
 source ./utils/fn__FileSameButForDate.sh
 
 source ./utils/fn__CreateWindowsShortcut.sh
@@ -140,7 +140,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
 # download and install latest git
     mkdir -pv /root/Downloads/git-master && \\
     cd /root/Downloads && \\
-    TS=$(date +%Y%m%d) && \\
     wget https://github.com/git/git/archive/master.zip -O /root/Downloads/git-master-${TS}.zip  && \\
     unzip /root/Downloads/git-master-${TS}.zip && \\
     cd /root/Downloads/git-master && \\
@@ -214,7 +213,7 @@ function fnUpdateOwnershipOfNonRootUserResources() {
   chown -R ${pGitUsername}:${pGitUsername} ${pGuestHome}
   chown -R ${pGitUsername}:${pGitUsername} ${pGitReposRoot}
   "
-  echo "______ Updated ownership of ${pGitUsername} resources on ${pContainerName}"
+  echo "_____ Updated ownership of ${pGitUsername} resources on ${pContainerName}"
 }
 
 ## ##################################################################################
@@ -223,33 +222,40 @@ function fnUpdateOwnershipOfNonRootUserResources() {
 ## ##################################################################################
 ## ##################################################################################
 
+# is there a command line argument that asks for the image to be uploaded ot the remote docker repository?
+
+fn__PushToRemoteDockerRepo ${1} && STS=${__YES} || STS=${__NO} 
+readonly __PUSH_TO_REMOTE_DOCKER_REPO=$STS
+
+echo "______ Push of the image to the remote Docker repository has $([[ ${__PUSH_TO_REMOTE_DOCKER_REPO} -eq ${__NO} ]] && echo "NOT ")been request."
+
 # confirm working directory
 #
 __DEBMIN_HOME=$(pwd | sed 's|/_commonUtils||')
 
 fn__ConfirmYN "Artefacts location will be ${__DEBMIN_HOME} - Is this correct?" && true || {
-  echo -e "_______ Aborting ...\n"
+  echo -e "______ Aborting ...\n"
   exit
 }
 
 fn__SetEnvironmentVariables ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
-echo "______ Set environment variables" 
+echo "_____ Set environment variables" 
 
 
 fn__Create_docker_entry_point_file ${__GITSERVER_SHELL} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
-echo "______ Created docker-entrypoint.sh" 
+echo "_____ Created docker-entrypoint.sh" 
 
 
 fn__CreateDockerfile && __REBUILD_IMAGE=${__YES} || __REBUILD_IMAGE=${__NO} # if dockerfile has not changed
-echo "______ Created Dockerfile: ${__DOCKERFILE_PATH}" 
+echo "_____ Created Dockerfile: ${__DOCKERFILE_PATH}" 
 
 fn__ImageExists \
   "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" &&
     __IMAGE_EXISTS=${__YES} || 
     __IMAGE_EXISTS=${__NO}
 [[ ${STS} -eq ${__YES} ]]  \
-  && echo "______ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} exists" \
-  || echo "______ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} does not exist"
+  && echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} exists" \
+  || echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} does not exist"
 
 [[ ${__IMAGE_EXISTS} -eq ${__NO} ]] && __REBUILD_IMAGE=${__YES}
 
@@ -260,32 +266,35 @@ if [[ ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
     ${__GITSERVER_IMAGE_VERSION} \
     ${__DEBMIN_HOME_DOS}/Dockerfile.${__GITSERVER_IMAGE_NAME} \
     ${__DEVCICD_NET} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it abort if failed
-  echo "______ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} (re-)built"
+  echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} (re-)built"
 fi
 
-set -xv
+
 fn__ContainerExists \
-  "${__GITSERVER_CONTAINER_NAME}" \
+  ${__GITSERVER_CONTAINER_NAME} \
     && STS=${__YES} \
     || STS=${__NO}
+
 if [[ $STS -eq ${__YES} ]]; then
-  echo "______ Container ${__GITSERVER_CONTAINER_NAME} exists - will stopp and remove"
+  echo "_____ Container ${__GITSERVER_CONTAINER_NAME} exists - will stopp and remove"
   fn__StopAndRemoveContainer  ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
-  echo "______ Container ${__GITSERVER_CONTAINER_NAME} stopped and removed"
+  echo "_____ Container ${__GITSERVER_CONTAINER_NAME} stopped and removed"
 else
-  echo "______ Container ${__GITSERVER_CONTAINER_NAME} does not exist"
+  echo "_____ Container ${__GITSERVER_CONTAINER_NAME} does not exist"
 fi
-set +xv
+
 
 fn__RunContainerDetached \
-  "${__GITSERVER_IMAGE_NAME}" \
-  "${__GITSERVER_IMAGE_VERSION}" \
-  "${__GITSERVER_CONTAINER_NAME}" \
-  "${__HOST_NAME}" \
-  "${__REMOVE_CONTAINER_ON_STOP}" \
-  "" \
-  "${__DEVCICD_NET}" && STS=${__DONE} || STS=${__FAILED}
-echo "______ Container ${__GITSERVER_CONTAINER_NAME} started"
+  ${__GITSERVER_IMAGE_NAME} \
+  ${__GITSERVER_IMAGE_VERSION} \
+  ${__GITSERVER_CONTAINER_NAME} \
+  ${__GITSERVER_HOST_NAME} \
+  ${__REMOVE_CONTAINER_ON_STOP} \
+  ${__EMPTY} \
+  ${__DEVCICD_NET} \
+    && STS=${__DONE} || \
+    STS=${__FAILED}
+echo "_____ Container ${__GITSERVER_CONTAINER_NAME} started"
 
 if [[ $STS -eq ${__DONE} ]]; then
 
@@ -295,13 +304,23 @@ if [[ $STS -eq ${__DONE} ]]; then
     ${__GITSERVER_GUEST_HOME}  \
     ${__GITSERVER_SHELL}  \
     ${__GITSERVER_REPOS_ROOT}
+  echo "_____ Updated ownership of resources for user ${__GIT_USERNAME}"
 
-  fn__CommitStopTagAndPushImageToRemoteRepository   \
+  fn__CommitChangesStopContainerAndSaveImage   \
     "${__GITSERVER_CONTAINER_NAME}" \
-    "${__DOCKER_REPOSITORY_HOST}"  \
     "${__GITSERVER_IMAGE_NAME}" \
     "${__GITSERVER_IMAGE_VERSION}"
-  echo "______ Container committed, stopped and removed. Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" 
+  echo "_____ Commited changes to ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
+
+  if [[ ${__PUSH_TO_REMOTE_DOCKER_REPO} == ${__YES} ]]; then
+    fn__PushImageToRemoteRepository   \
+      "${__DOCKER_REPOSITORY_HOST}"  \
+      "${__GITSERVER_IMAGE_NAME}" \
+      "${__GITSERVER_IMAGE_VERSION}"
+    echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" 
+  else
+    echo "_____ On user request on user request image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
+  fi
 
 else
   ${__INDUCE_ERROR}

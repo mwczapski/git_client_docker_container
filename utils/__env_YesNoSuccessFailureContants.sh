@@ -1,3 +1,4 @@
+declare -u __env_YesNoSuccessFailureContants="SOURCED"
 
 __ZERO__=0
 __TRUE=${__ZERO__}
@@ -14,3 +15,5 @@ __DIFFERENT=${__ONE__}
 
 __IGNORE_ERROR=true
 __INDUCE_ERROR=false
+
+__EMPTY="EMPTY"
