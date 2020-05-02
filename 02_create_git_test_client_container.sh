@@ -155,7 +155,7 @@ EOF
 
 
 function fn__CreateWindowsShortcutsForShellInContainer() {
-  [[ $# -lt  3 || "${0^^}" == "HELP" ]] && {
+  [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
     echo '
       Usage: 
         fn__CreateWindowsShortcutsForShellInContainer \
@@ -263,97 +263,121 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
   return ${__DONE}
 }
 
+
+function fn__GenerateSSHKeyPair() {
+  [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
+    echo '
+  Usage: 
+    fn__GenerateSSHKeyPair \
+      ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+      ${__GIT_TEST_CLIENT_USERNAME} \
+      ${__GIT_TEST_CLIENT_SHELL} \
+      "__GIT_TEST_CLIENT_ID_RSA_PUB_" \
+        && return ${__DONE} \
+        || return ${__FAILED}
+        '
+    return ${__FAILED}
+  }
+ 
+  local -r pClientContainerName=${1?"Container Name to be assigned to the container"}
+  local -r pClientUsername=${2?"Host Path, in DOS format, to write shortcuts to"}
+  local -r pShellInContainer=${3?"Shell to use on connection to the container"}
+  local -n pNameOfOutputVarFromCaller=${4?"Shell to use on connection to the container"}
+
+  # generate id_rsa keypair
+  #
+  local -r _CMD_='
+    rm -rvf ${HOME}/.ssh/id_rsa* >/dev/null || true
+    ssh-keygen -f ${HOME}/.ssh/id_rsa -t rsa -b 2048 -q -N "" >/dev/null
+    cat ${HOME}/.ssh/id_rsa.pub
+  '
+  local _CMD_OUTPUT=""
+  fn__ExecCommandInContainerGetOutput \
+    ${pClientContainerName} \
+    ${pClientUsername} \
+    ${pShellInContainer} \
+    "${_CMD_}" \
+    "pNameOfOutputVarFromCaller" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
+
+    return ${STS}
+}
+
+
+function fn__IntroduceClientsToServerUsingClientsPublicKey() {
+  # introduce client's id_rsa public key to gitserver, which needs it to allow git test client access over ssh
+  #
+  [[ $# -lt 6 || "${0^^}" == "HELP" ]] && {
+    local -r lUsage='
+  Usage: 
+    fn__IntroduceClientsToServerUsingClientsPublicKey \
+      ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+      ${__GIT_TEST_CLIENT_USERNAME} \
+      ${__GIT_TEST_CLIENT_ID_RSA_PUB_}  \
+      ${__GITSERVER_CONTAINER_NAME} \
+      ${__GIT_USERNAME} \
+      ${__GITSERVER_SHELL} \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+        '
+    return ${__FAILED}
+  }
+ 
+  local -r pClientContainerName=${1?"${lUsage}"}
+  local -r pClientUsername=${2?"${lUsage}"}
+  local -r pClient_id_rsa_pub=${3?"${lUsage}"}
+  local -r pServerContainerName=${4?"${lUsage}"}
+  local -r pServerUsername=${5?"${lUsage}"}
+  local -r pShellInContainer=${6?"${lUsage}"}
+
+  local -r _CMD_="
+    { test -e \${HOME}/.ssh/authorized_keys \
+      || touch \${HOME}/.ssh/authorized_keys ; } &&
+
+    { mv \${HOME}/.ssh/authorized_keys ~/.ssh/authorized_keys_previous &&
+    chmod 0600 \${HOME}/.ssh/authorized_keys_previous ; } &&
+
+    { test -e \${HOME}/.ssh/authorized_keys \
+      && cp \${HOME}/.ssh/authorized_keys \${HOME}/.ssh/authorized_keys_previous \
+      || touch \${HOME}/.ssh/authorized_keys \${HOME}/.ssh/authorized_keys_previous ; } &&
+
+    sed \"/${pClientUsername}@${pClientContainerName}/d\" \${HOME}/.ssh/authorized_keys_previous > \${HOME}/.ssh/authorized_keys &&
+
+    echo "\"${pClient_id_rsa_pub}\"" >> \${HOME}/.ssh/authorized_keys &&
+
+    cat \${HOME}/.ssh/authorized_keys
+  "
+
+  local _CMD_OUTPUT_=""
+  fn__ExecCommandInContainerGetOutput \
+    ${pServerContainerName} \
+    ${pServerUsername} \
+    ${pShellInContainer} \
+    "${_CMD_}" \
+    "_CMD_OUTPUT_" \
+      && return ${__DONE} \
+      || return ${__FAILED}
+}
+
+
 function fnAddGITServerToLocalKnown_hostsAndTestSshAccess() {
-    echo "_______ add __GITSERVER ssh fingerprint to known_hosts and test access to git repository";
-    # https://www.techrepublic.com/article/how-to-easily-add-an-ssh-fingerprint-to-your-knownhosts-file-in-linux/
-    pContainerName=${1?"Usage: $0 requires Value of __DEBMIN_PPROJECT_NAME and __GITSERVER_NAME as its arguments"}
-    pGITServerName=${2?"Usage: $0 requires Value of __DEBMIN_PPROJECT_NAME and __GITSERVER_NAME as its arguments"}
-	${__DOCKER_EXE}  exec -itu node -w /home/node/dev ${pContainerName} ${__DEBMIN_SHELL} -c "
-ssh-keyscan -H ${pGITServerName} >> ~/.ssh/known_hosts
-ssh git@${pGITServerName} list && echo 'Can connect to the remote git repo' || echo 'Cannot connect to the remote git repo'
-"
+  echo 'hello'
 }
 
 
 function fnCreateRemoteGitRepoForThisProject() {
-    pGITServerName=${1?"Usage: $0 requires Values of __GITSERVER_NAME, __GITSERVER_REPOS_ROOT and __GIT_REMOTE_REPO_NAME as its arguments"}
-    pGITServerReposRoot=${2?"Usage: $0 requires Values of __GITSERVER_NAME, __GITSERVER_REPOS_ROOT and __GIT_REMOTE_REPO_NAME as its arguments"}
-    pGITServerRepoName=${3?"Usage: $0 requires Values of __GITSERVER_NAME, __GITSERVER_REPOS_ROOT and __GIT_REMOTE_REPO_NAME as its arguments"}
-    echo "_______ As root on ${pGITServerName}, creating remote repository for this container's project";
-    ${__DOCKER_EXE} container exec -itu root ${pGITServerName} ${__GITSERVER_SHELL} -lc "
-[[ -d ${pGITServerReposRoot}/${pGITServerRepoName}.git ]] && rm -Rf ${pGITServerReposRoot}/${pGITServerRepoName}.git
-mkdir -pv ${pGITServerReposRoot}/${pGITServerRepoName}.git
-cd ${pGITServerReposRoot}/${pGITServerRepoName}.git
-git init --bare
-chown -R git:developers ${pGITServerReposRoot}/${pGITServerRepoName}.git 
-chmod -R g+s ${pGITServerReposRoot}/${pGITServerRepoName}.git
-"
+  echo 'hello'
 }
 
 
 function fnPerformGitSetupOnHost() {
-# fnPerformGitSetupOnHost ${__DEBMIN_HOME} ${__GITSERVER_NAME} ${__GIT_REMOTE_REPO_NAME}
-
-    echo "_______ initialise host git repository for this project";
-    local pDebminHome=${1?"Usage: $0 requires __DEBMIN_HOME, __DEBMIN_PPROJECT_NAME, __GITSERVER_NAME and __GIT_REMOTE_REPO_NAME as its arguments"}
-    local pGitServerName=${2?"Usage: $0 requires __DEBMIN_HOME, __DEBMIN_PPROJECT_NAME, __GITSERVER_NAME and __GIT_REMOTE_REPO_NAME as its arguments"}
-    local pGITServerRepoName=${3?"Usage: $0 requires __DEBMIN_HOME, __DEBMIN_PPROJECT_NAME, __GITSERVER_NAME and __GIT_REMOTE_REPO_NAME as its arguments"}
-
-# ${__DEBMIN_HOME}/dev is bind mounted in the container
-# certain operations are not permitted from within the container
-# they need to be performed on the host
-#
-    cd ${pDebminHome}/dev
-    rm -Rf .git
-    git init
-    git remote remove origin 2>/dev/null || true
-    git remote add origin ssh://git@${pGitServerName}/opt/gitrepos/${pGITServerRepoName}.git
-    cd -
+  echo 'hello'
 }
 
 
 function fnTestRemoteGitRepoOperation() {
-#
-# fnTestRemoteGitRepoOperation \
-#     ${__DEBMIN_HOME} \
-#     ${__DEBMIN_PPROJECT_NAME}  \
-#     ${__GITSERVER_NAME} \
-#     ${__GIT_REMOTE_REPO_NAME}
-#
-    echo "_______ test git repository operations";
-    local pContainerName=${1?"Usage: $0 requires __DEBMIN_HOME, __DEBMIN_PPROJECT_NAME, __GITSERVER_NAME and __GIT_REMOTE_REPO_NAME as its arguments"}
-    local pGitServerName=${2?"Usage: $0 requires __DEBMIN_HOME, __DEBMIN_PPROJECT_NAME, __GITSERVER_NAME and __GIT_REMOTE_REPO_NAME as its arguments"}
-    local pGITServerRepoName=${3?"Usage: $0 requires __DEBMIN_HOME, __DEBMIN_PPROJECT_NAME, __GITSERVER_NAME and __GIT_REMOTE_REPO_NAME as its arguments"}
-
-# # ${__DEBMIN_HOME}/dev is bind mounted in the container
-# # certain operations are not permitted from within the container
-# # they need to be performed on the host
-# #
-# cd ${pDebminHome}/dev
-# rm -Rvf .git
-# git init
-# git remote remove origin
-# git remote add origin ssh://git@${pGitServerName}/opt/gitrepos/${pGITServerRepoName}.git
-# cd -
-
-	${__DOCKER_EXE}  exec -itu node -w /home/node/dev ${pContainerName} ${__DEBMIN_SHELL} -c "
-git add .
-git commit -m 'create commit'
-#git remote remove origin
-#git remote add origin ssh://git@${pGitServerName}/opt/gitrepos/${pGITServerRepoName}.git
-git remote -v show origin
-git remote -v
-git push origin master
-
-mkdir -pv ../${pGITServerRepoName}2
-cd ../${pGITServerRepoName}2
-git init
-git remote add origin ssh://git@${pGitServerName}/opt/gitrepos/${pGITServerRepoName}.git
-git remote -v
-git pull origin master
-cd ..
-rm -Rf ./${pGITServerRepoName}2
-"
+  echo 'hello'
 }
 
 
@@ -449,162 +473,108 @@ else
   fi
 fi
 
-# generate id_rsa keypair
-#
-_CMD_='
-  rm -rvf ${HOME}/.ssh/id_rsa* >/dev/null || true
-  ssh-keygen -f ${HOME}/.ssh/id_rsa -t rsa -b 2048 -q -N "" >/dev/null
-  cat ${HOME}/.ssh/id_rsa.pub
-'
-__GIT_TEST_CLIENT_ID_RSA_PUB_=""
-fn__ExecCommandInContainerGetOutput \
+# # generate id_rsa keypair
+# #
+# _CMD_='
+#   rm -rvf ${HOME}/.ssh/id_rsa* >/dev/null || true
+#   ssh-keygen -f ${HOME}/.ssh/id_rsa -t rsa -b 2048 -q -N "" >/dev/null
+#   cat ${HOME}/.ssh/id_rsa.pub
+# '
+__GIT_TEST_CLIENT_ID_RSA_PUB_="a"
+fn__GenerateSSHKeyPair \
   ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
   ${__GIT_TEST_CLIENT_USERNAME} \
   ${__GIT_TEST_CLIENT_SHELL} \
-  "${_CMD_}" \
   "__GIT_TEST_CLIENT_ID_RSA_PUB_" \
     && STS=${__DONE} \
     || STS=${__FAILED}
+echo "______ Generated ${__GIT_TEST_CLIENT_GUEST_HOME}'s ssh keypair"; 
 
-# echo -e "______ id_rsa.pub\n${__GIT_TEST_CLIENT_ID_RSA_PUB_}"; 
-
-# introduce client's id_rsa public key to gitserver, which needs it to allow git test client access over ssh
-#
-_CMD_="
-  { test -e \${HOME}/.ssh/authorized_keys \
-    || touch \${HOME}/.ssh/authorized_keys ; } &&
-
-  { mv \${HOME}/.ssh/authorized_keys ~/.ssh/authorized_keys_previous &&
-  chmod 0600 \${HOME}/.ssh/authorized_keys_previous ; } &&
-
-  { test -e \${HOME}/.ssh/authorized_keys \
-    && cp \${HOME}/.ssh/authorized_keys \${HOME}/.ssh/authorized_keys_previous \
-    || touch \${HOME}/.ssh/authorized_keys \${HOME}/.ssh/authorized_keys_previous ; } &&
-
-  sed \"/${__GIT_TEST_CLIENT_USERNAME}@${__GIT_TEST_CLIENT_CONTAINER_NAME}/d\" \${HOME}/.ssh/authorized_keys_previous > \${HOME}/.ssh/authorized_keys &&
-
-  echo "\"${__GIT_TEST_CLIENT_ID_RSA_PUB_}\"" >> \${HOME}/.ssh/authorized_keys &&
-
-  cat \${HOME}/.ssh/authorized_keys
-"
-_CMD_OUTPUT_=""
-fn__ExecCommandInContainerGetOutput \
+fn__IntroduceClientsToServerUsingClientsPublicKey \
+  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+  ${__GIT_TEST_CLIENT_USERNAME} \
+  "${__GIT_TEST_CLIENT_ID_RSA_PUB_}"  \
   ${__GITSERVER_CONTAINER_NAME} \
   ${__GIT_USERNAME} \
   ${__GITSERVER_SHELL} \
-  "${_CMD_}" \
-  "_CMD_OUTPUT_" \
     && STS=${__DONE} \
     || STS=${__FAILED}
-# echo -e "______ STS _CMD_OUTPUT_:\n${STS}\n${_CMD_OUTPUT_}"; 
-
-_CMD_="
-ssh-keyscan -H ${__GITSERVER_HOST_NAME} >> ~/.ssh/known_hosts &&
-ssh git@${__GITSERVER_HOST_NAME} list && echo 'Can connect to the remote git repo' || echo 'Cannot connect to the remote git repo'
-"
-_CMD_OUTPUT_=""
-fn__ExecCommandInContainerGetOutput \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-  ${__GIT_TEST_CLIENT_USERNAME} \
-  ${__GIT_TEST_CLIENT_SHELL} \
-  "${_CMD_}" \
-  "_CMD_OUTPUT_" \
-    && STS=${__DONE} \
-    || STS=${__FAILED}
-#echo -e "______ STS _CMD_OUTPUT_:\n${STS}\n${_CMD_OUTPUT_}"; 
-
-_CMD_="
-  echo '0 ----------------------------------------' &&
-  mkdir -pv ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
-  cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
-  rm -Rvf .git * &&
-  echo '1 ----------------------------------------' &&
-
-  git init &&
-  echo '2 ----------------------------------------' &&
-
-  git config core.editor nano &&
-  git config user.name \"postmaster\" &&
-  git config user.email \"postmaster@localhost\" &&
-  echo '3 ----------------------------------------' &&
-
-  { git remote remove origin 2>/dev/null || true ; } &&
-  echo '4 ----------------------------------------' &&
-
-  git remote add origin ssh://${__GIT_USERNAME}@${__GITSERVER_HOST_NAME}${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
-  git config --list &&
-  echo '5 ----------------------------------------' &&
-
-  ls -al .git &&
-  echo '6 ----------------------------------------' &&
-  ls -al &&
-  echo '7 ----------------------------------------' &&
-
-  { git pull origin master || true ; } &&
-  echo '8 ----------------------------------------' &&
-
-  echo \"echo 'Hello, ${__GIT_TEST_CLIENT_USERNAME}'\" > greet.sh &&
-  chmod u+x greet.sh &&
-  touch READEME.txt random.cpp random.h &&
-  echo '9 ----------------------------------------' &&
-
-  git add . || true &&
-  git status  || true &&
-  git commit -m 'test commit'  || true &&
-  echo '10 ----------------------------------------' &&
-
-  git remote &&
-  git remote -v show origin &&
-  echo '11 ----------------------------------------' &&
-  git push origin master &&
-  echo '12 ----------------------------------------' &&
-
-  cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
-  rm -Rfv .git || true &&
-  rm -vf *.{txt,sh,cpp,h} || true &&
-  ls -al &&
-  echo '12 a ----------------------------------------' &&
-
-  cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
-  git init || true &&
-  echo '13 ----------------------------------------' &&
-  { git remote remove origin 2>/dev/null || true ; } &&
-  git remote add origin ssh://${__GIT_USERNAME}@${__GITSERVER_HOST_NAME}${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
-  git config --list &&
-  echo '14 ----------------------------------------' &&
-
-  git pull origin master &&
-  echo '15 ----------------------------------------' &&
-  chmod u+x ./greet.sh &&
-  ./greet.sh &&
-  echo '1 ----------------------------------------' &&
-  ls -al &&
-  echo '1 ----------------------------------------'
-"
-echo '-------------------------------------------------------'
-echo ${_CMD_}
-echo '-------------------------------------------------------'
-_CMD_OUTPUT_=""
-fn__ExecCommandInContainerGetOutput \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-  ${__GIT_TEST_CLIENT_USERNAME} \
-  ${__GIT_TEST_CLIENT_SHELL} \
-  "${_CMD_}" \
-  "_CMD_OUTPUT_" \
-    && STS=${__DONE} \
-    || STS=${__FAILED}
-echo '-------------------------------------------------------'
-echo -e "______ STS _CMD_OUTPUT_:\n${STS}\n${_CMD_OUTPUT_}"; 
-echo '-------------------------------------------------------'
+echo "______ Added ${__GIT_TEST_CLIENT_GUEST_HOME}'s public key to ${__GITSERVER_HOST_NAME}'s ~/.ssh/authorised_keys"; 
 
 
-[[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {
-  fn__CreateWindowsShortcutsForShellInContainer \
-    "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
-    "${__DEBMIN_HOME_DOS}" \
-    "${__GIT_TEST_CLIENT_SHELL}" \
-    "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
-  echo "______ Created Windows Shortcuts"; 
-}
+# _CMD_="
+# ssh-keyscan -H ${__GITSERVER_HOST_NAME} >> ~/.ssh/known_hosts &&
+# ssh git@${__GITSERVER_HOST_NAME} list && echo 'Can connect to the remote git repo' || echo 'Cannot connect to the remote git repo'
+# "
+# _CMD_OUTPUT_=""
+# fn__ExecCommandInContainerGetOutput \
+#   ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+#   ${__GIT_TEST_CLIENT_USERNAME} \
+#   ${__GIT_TEST_CLIENT_SHELL} \
+#   "${_CMD_}" \
+#   "_CMD_OUTPUT_" \
+#     && STS=${__DONE} \
+#     || STS=${__FAILED}
+# echo "______ Added ${__GITSERVER_HOST_NAME} to ${__GIT_TEST_CLIENT_GUEST_HOME}'s ~/.ssh/known_hosts"; 
+
+# # test script to exercise local and remote git repository functionality,
+# # ssh configuration and object ownership
+# #
+# _CMD_="
+#   mkdir -p ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
+#   cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
+#   rm -Rf .git * &&
+
+#   git init &&
+
+#   git config core.editor nano &&
+#   git config user.name \"postmaster\" &&
+#   git config user.email \"postmaster@localhost\" &&
+
+#   { git remote remove origin 2>/dev/null || true ; } &&
+#   git remote add origin ssh://${__GIT_USERNAME}@${__GITSERVER_HOST_NAME}${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
+
+#   { git pull origin master || true ; } &&
+
+#   echo \"echo 'Hello, ${__GIT_TEST_CLIENT_USERNAME}'\" > greet.sh &&
+#   chmod u+x greet.sh &&
+#   touch READEME.txt random.cpp random.h &&
+
+#   git add . || true &&
+#   git commit -m 'test commit'  || true &&
+
+#   git push origin master &&
+
+#   cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
+#   rm -Rf .git || true &&
+#   rm -f *.{txt,sh,cpp,h} || true &&
+
+#   cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
+#   git init || true &&
+#   { git remote remove origin 2>/dev/null || true ; } &&
+#   git remote add origin ssh://${__GIT_USERNAME}@${__GITSERVER_HOST_NAME}${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
+
+#   git pull origin master &&
+#   chmod u+x ./greet.sh &&
+#   ./greet.sh
+# "
+# _CMD_OUTPUT_=""
+# fn__ExecCommandInContainerGetOutput \
+#   ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+#   ${__GIT_TEST_CLIENT_USERNAME} \
+#   ${__GIT_TEST_CLIENT_SHELL} \
+#   "${_CMD_}" \
+#   "_CMD_OUTPUT_" \
+#       && echo "______ Local abd Remote Git repository test completed" \
+#       || echo "______ Local abd Remote Git repository test failed - investigate!!!"
+
+# [[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {
+#   fn__CreateWindowsShortcutsForShellInContainer \
+#     "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
+#     "${__DEBMIN_HOME_DOS}" \
+#     "${__GIT_TEST_CLIENT_SHELL}" \
+#     "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
+#   echo "______ Created Windows Shortcuts"; 
+# }
 
 echo "______ ${0} Done"
