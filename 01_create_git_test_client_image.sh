@@ -13,16 +13,20 @@ trap traperr ERR
 
 # common environment variable values and utility functions
 #
-source ./utils/__env_YesNoSuccessFailureContants.sh
-source ./utils/fn__DockerGeneric.sh
-source ./utils/__env_devcicd_net.sh
-source ./utils/__env_gitserverConstants.sh
+[[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
 
-source ./utils/fn__WSLPathToDOSandWSDPaths.sh
-source ./utils/fn__ConfirmYN.sh
-source ./utils/fn__FileSameButForDate.sh
+[[ ${fn__DockerGeneric} ]] || source ./utils/fn__DockerGeneric.sh
+[[ ${__env_devcicd_net} ]] || source ./utils/__env_devcicd_net.sh
+[[ ${__env_gitserverConstants} ]] || source ./utils/__env_gitserverConstants.sh
+[[ ${__env_gitTestClientConstants} ]] || source ./utils/__env_gitTestClientConstants.sh
 
-source ./utils/fn__CreateWindowsShortcut.sh
+[[ ${fn__WSLPathToDOSandWSDPaths} ]] || source ./utils/fn__WSLPathToDOSandWSDPaths.sh
+[[ ${fn__ConfirmYN} ]] || source ./utils/fn__ConfirmYN.sh
+[[ ${fn__FileSameButForDate} ]] || source ./utils/fn__FileSameButForDate.sh
+
+[[ ${fn__CreateWindowsShortcut} ]] || source ./utils/fn__CreateWindowsShortcut.sh
+
+## #######################################################################################
 
 function fn__SetEnvironmentVariables() {
 
@@ -37,9 +41,9 @@ function fn__SetEnvironmentVariables() {
   __DEBMIN_SOURCE_IMAGE_NAME="bitnami/minideb:jessie"
   __TZ_PATH=Australia/Sydney
   __TZ_NAME=Australia/Sydney
-  __ENV="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+  __ENV="${__GIT_TEST_CLIENT_SHELL_GLOBAL_PROFILE}"
 
-  __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${__GITSERVER_IMAGE_NAME}
+  __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${__GIT_TEST_CLIENT_IMAGE_NAME}
 
   ## toggles 
   __REMOVE_CONTAINER_ON_STOP=${__YES} # container started using this image is nto supposed to be used for work
@@ -48,17 +52,15 @@ function fn__SetEnvironmentVariables() {
 }
 
 function fn__Create_docker_entry_point_file() {
-
   [[ $# -lt  1 || "${0^^}" == "HELP" ]] && {
     echo '
-Usage: 
-    fn__Create_docker_entry_point_file \
-      ${__GITSERVER_SHELL}
+  Usage: 
+      fn__Create_docker_entry_point_file \
+        ${__GIT_TEST_CLIENT_SHELL}
 '
     return ${__FAILED}
   }
- 
-  local pGuestShell=${1?"Full path to guest's shell binary, for example /bin/bash or /bin/ash or /bin/sh"}
+   local pGuestShell=${1?"Full path to guest's shell binary, for example /bin/bash or /bin/ash or /bin/sh"}
 
   cat <<-EOF > ${__DEBMIN_HOME}/docker-entrypoint.sh
 #!/bin/bash
@@ -90,9 +92,10 @@ FROM ${__DEBMIN_SOURCE_IMAGE_NAME}
 # the environment variables below will be used in creating the image
 # and will be available to the containers created from the image ...
 #
-ENV DEBMIN_USERNAME=${__GIT_USERNAME} \\
-    DEBMIN_SHELL=${__GITSERVER_SHELL} \\
-    DEBMIN_SHELL_PROFILE=${__GITSERVER_SHELL_PROFILE} \\
+ENV DEBMIN_USERNAME=${__GIT_TEST_CLIENT_USERNAME} \\
+    DEBMIN_SHELL=${__GIT_TEST_CLIENT_SHELL} \\
+    DEBMIN_SHELL_PROFILE=${__GIT_TEST_CLIENT_SHELL_PROFILE} \\
+    DEBMIN_GUEST_HOME=${__GIT_TEST_CLIENT_GUEST_HOME} \\
     GITSERVER_REPOS_ROOT=${__GITSERVER_REPOS_ROOT} \\
     TZ_PATH=${__TZ_PATH} \\
     TZ_NAME=${__TZ_NAME}  \\
@@ -114,62 +117,23 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
     net-tools \\
     iputils-ping \\
     openssh-client \\
-    openssh-server \\
     nano \\
-# the following are needed to download, builld and install git from sources
-    wget \\
-    unzip \\
-    build-essential \\
-    libssl-dev \\
-    libcurl4-openssl-dev \\
-    libexpat1-dev \\
-    gettext && \\
+    git && \\
+\\
+    git --version && \\
 \\
 # set timezone - I live in Sydney - change as you see fit in the env variables above
     cp -v /usr/share/zoneinfo/\${TZ_PATH} /etc/localtime && \\
     echo "\${TZ_NAME}" > /etc/timezone && \\
     echo \$(date) && \\
 \\
-# create git user
+# create non-root user 
     addgroup developers && \\
     useradd -G developers -m \${DEBMIN_USERNAME} -s \${DEBMIN_SHELL} -p \${DEBMIN_USERNAME} && \\
 \\
-## configure git and ssh access to git repositories on this git server
-    sed -i 's|#PasswordAuthentication yes|PasswordAuthentication no|' /etc/ssh/sshd_config && \\
-\\
-# download and install latest git
-    mkdir -pv /root/Downloads/git-master && \\
-    cd /root/Downloads && \\
-    wget https://github.com/git/git/archive/master.zip -O /root/Downloads/git-master-${TS}.zip  && \\
-    unzip /root/Downloads/git-master-${TS}.zip && \\
-    cd /root/Downloads/git-master && \\
-    make prefix=/usr all  && \\
-    make prefix=/usr install  && \\
-    git --version && \\
-\\
-# create user's .ssh directory
-    mkdir -pv /home/\${DEBMIN_USERNAME}/.ssh/ && \\
-    touch /home/\${DEBMIN_USERNAME}/.ssh/authorized_keys && \\
-    chmod 600 /home/\${DEBMIN_USERNAME}/.ssh/authorized_keys && \\
-    mkdir -pv \${GITSERVER_REPOS_ROOT} && \\
-    chown -Rv \${DEBMIN_USERNAME}:developers \${GITSERVER_REPOS_ROOT} && \\
-    chmod -v g+rxs \${GITSERVER_REPOS_ROOT} && \\
-    echo /usr/bin/git-shell >> /etc/shells && \\
-    chsh git -s /usr/bin/git-shell && \\
-\\
-# remove git source and build tools
-  apt-get update && \\
-  apt-get remove -y \\
-    wget \\
-    unzip \\
-    build-essential \\
-    libssl-dev \\
-    libcurl4-openssl-dev \\
-    libexpat1-dev \\
-    gettext && \\
-    apt-get update && \\
-  apt-get autoremove -y && \\
-  rm -Rvf /root/Downloads
+# configure ssh client directory
+    mkdir -pv \${DEBMIN_GUEST_HOME}/.ssh && \\
+    chown -Rv \${DEBMIN_USERNAME}:\${DEBMIN_USERNAME} \${DEBMIN_GUEST_HOME}/.ssh
 EOF
 
 ## ##########################################################################
@@ -193,7 +157,6 @@ EOF
       __NEEDS_REBUILDING=${__YES}
     fi
   fi
-  # echo "__NEEDS_REBUILDING: ${__NEEDS_REBUILDING}"
   return ${__NEEDS_REBUILDING}
 
 }
@@ -202,10 +165,10 @@ function fnUpdateOwnershipOfNonRootUserResources() {
   local lUsage='
       Usage: 
         fnUpdateOwnershipOfNonRootUserResources  \
-          ${__GITSERVER_CONTAINER_NAME} \
+          ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
           ${__GIT_USERNAME} \
-          ${__GITSERVER_GUEST_HOME}  \
-          ${__GITSERVER_SHELL}  \
+          ${DEBMIN_GUEST_HOME}  \
+          ${__GIT_TEST_CLIENT_SHELL}  \
           ${__GITSERVER_REPOS_ROOT}
       '
   [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
@@ -235,8 +198,7 @@ function fnUpdateOwnershipOfNonRootUserResources() {
 
 fn__PushToRemoteDockerRepo ${1} && STS=${__YES} || STS=${__NO} 
 readonly __PUSH_TO_REMOTE_DOCKER_REPO=$STS
-
-echo "______ Push of the image to the remote Docker repository has $([[ ${__PUSH_TO_REMOTE_DOCKER_REPO} -eq ${__NO} ]] && echo "NOT ")been request."
+echo "______ Push of the image to the remote Docker repository has $([[ ${__PUSH_TO_REMOTE_DOCKER_REPO} -eq ${__NO} ]] && echo "NOT ")been requested."
 
 # confirm working directory
 #
@@ -247,11 +209,12 @@ fn__ConfirmYN "Artefacts location will be ${__DEBMIN_HOME} - Is this correct?" &
   exit
 }
 
+
 fn__SetEnvironmentVariables ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
 echo "_____ Set environment variables" 
 
 
-fn__Create_docker_entry_point_file ${__GITSERVER_SHELL} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
+fn__Create_docker_entry_point_file ${__GIT_TEST_CLIENT_SHELL} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
 echo "_____ Created docker-entrypoint.sh" 
 
 
@@ -259,80 +222,108 @@ fn__CreateDockerfile && __REBUILD_IMAGE=${__YES} || __REBUILD_IMAGE=${__NO} # if
 echo "_____ Created Dockerfile: ${__DOCKERFILE_PATH}" 
 
 fn__ImageExists \
-  "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" &&
+  "${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}" &&
     __IMAGE_EXISTS=${__YES} || 
     __IMAGE_EXISTS=${__NO}
 [[ ${STS} -eq ${__YES} ]]  \
-  && echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} exists" \
-  || echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} does not exist"
-
-[[ ${__IMAGE_EXISTS} -eq ${__NO} ]] && __REBUILD_IMAGE=${__YES}
+  && echo "_____ Image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} exists" \
+  || {
+    echo "_____ Image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} does not exist"
+    __REBUILD_IMAGE=${__YES}
+  }
 
 if [[ ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
   fn__BuildImage  \
     ${__REBUILD_IMAGE} \
-    ${__GITSERVER_IMAGE_NAME} \
-    ${__GITSERVER_IMAGE_VERSION} \
-    ${__DEBMIN_HOME_DOS}/Dockerfile.${__GITSERVER_IMAGE_NAME} \
+    ${__GIT_TEST_CLIENT_IMAGE_NAME} \
+    ${__GIT_TEST_CLIENT_IMAGE_VERSION} \
+    ${__DEBMIN_HOME_DOS}/Dockerfile.${__GIT_TEST_CLIENT_IMAGE_NAME} \
     ${__DEVCICD_NET} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it abort if failed
-  echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} (re-)built"
+  echo "_____ Image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} (re-)built"
 fi
 
 
 fn__ContainerExists \
-  ${__GITSERVER_CONTAINER_NAME} \
+  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
     && STS=${__YES} \
     || STS=${__NO}
 
 if [[ $STS -eq ${__YES} ]]; then
-  echo "_____ Container ${__GITSERVER_CONTAINER_NAME} exists - will stopp and remove"
-  fn__StopAndRemoveContainer  ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
-  echo "_____ Container ${__GITSERVER_CONTAINER_NAME} stopped and removed"
+  echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} exists - will stopp and remove"
+  fn__StopAndRemoveContainer  \
+    ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+      && STS=${__YES} \
+      || STS=${__NO}
+  echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} stopped and removed"
 else
-  echo "_____ Container ${__GITSERVER_CONTAINER_NAME} does not exist"
+  echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} does not exist"
 fi
 
 
 fn__RunContainerDetached \
-  ${__GITSERVER_IMAGE_NAME} \
-  ${__GITSERVER_IMAGE_VERSION} \
-  ${__GITSERVER_CONTAINER_NAME} \
-  ${__GITSERVER_HOST_NAME} \
+  ${__GIT_TEST_CLIENT_IMAGE_NAME} \
+  ${__GIT_TEST_CLIENT_IMAGE_VERSION} \
+  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+  ${__GIT_TEST_CLIENT_HOST_NAME} \
   ${__REMOVE_CONTAINER_ON_STOP} \
   ${__EMPTY} \
   ${__DEVCICD_NET} \
     && STS=${__DONE} || \
     STS=${__FAILED}
-echo "_____ Container ${__GITSERVER_CONTAINER_NAME} started"
+echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} started"
 
 if [[ $STS -eq ${__DONE} ]]; then
 
-  fnUpdateOwnershipOfNonRootUserResources  \
-    ${__GITSERVER_CONTAINER_NAME} \
-    ${__GIT_USERNAME} \
-    ${__GITSERVER_GUEST_HOME}  \
-    ${__GITSERVER_SHELL}  \
-    ${__GITSERVER_REPOS_ROOT}
-  echo "_____ Updated ownership of resources for user ${__GIT_USERNAME}"
-
   fn__CommitChangesStopContainerAndSaveImage   \
-    "${__GITSERVER_CONTAINER_NAME}" \
-    "${__GITSERVER_IMAGE_NAME}" \
-    "${__GITSERVER_IMAGE_VERSION}"
-  echo "_____ Commited changes to ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
+    "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
+    "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
+    "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
+  echo "_____ Commited changes to ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
 
   if [[ ${__PUSH_TO_REMOTE_DOCKER_REPO} == ${__YES} ]]; then
     fn__PushImageToRemoteRepository   \
       "${__DOCKER_REPOSITORY_HOST}"  \
-      "${__GITSERVER_IMAGE_NAME}" \
-      "${__GITSERVER_IMAGE_VERSION}"
-    echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" 
+      "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
+      "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
+    echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}" 
   else
-    echo "_____ On user request on user request image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
+    echo "_____ On user request on user request image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
   fi
-
 else
   ${__INDUCE_ERROR}
 fi
 
 echo "Done..."
+
+
+# if [[ $STS -eq ${__DONE} ]]; then
+
+#   fnUpdateOwnershipOfNonRootUserResources  \
+#     ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+#     ${__GIT_USERNAME} \
+#     ${DEBMIN_GUEST_HOME}  \
+#     ${__GIT_TEST_CLIENT_SHELL}  \
+#     ${__GITSERVER_REPOS_ROOT}
+#   echo "_____ Updated ownership of resources for user ${__GIT_USERNAME}"
+
+#   fn__CommitChangesStopContainerAndSaveImage   \
+#     "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
+#     "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
+#     "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
+#   echo "_____ Commited changes to ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
+
+#   if [[ ${__PUSH_TO_REMOTE_DOCKER_REPO} == ${__YES} ]]; then
+#     fn__PushImageToRemoteRepository   \
+#       "${__DOCKER_REPOSITORY_HOST}"  \
+#       "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
+#       "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
+#     echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}" 
+#   else
+#     echo "_____ On user request on user request image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
+#   fi
+
+# else
+#   ${__INDUCE_ERROR}
+# fi
+
+# echo "Done..."

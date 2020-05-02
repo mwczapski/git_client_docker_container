@@ -134,15 +134,15 @@ function fn__PushImageToRemoteRepository() {
 
 
 function fn__PullImageFromRemoteRepository() {
-  local lUsage='*'
-  # local lUsage='
-  #   fn__PullImageFromRemoteRepository   \
-  #     "${__DOCKER_REPOSITORY_HOST}"  \
-  #     "${__DEBMIN_NEW_IMAGE_NAME}" \
-  #     "${__DEBMIN_NEW_IMAGE_VERSION}" \
-  #       && STS=${__SUCCESS} \
-  #       || STS=${__FAILED}
-  #   '
+  local lUsage='
+  Usage:
+    fn__PullImageFromRemoteRepository   \
+      "${__DOCKER_REPOSITORY_HOST}"  \
+      "${__DEBMIN_NEW_IMAGE_NAME}" \
+      "${__DEBMIN_NEW_IMAGE_VERSION}" \
+        && STS=${__SUCCESS} \
+        || STS=${__FAILED}
+    '
   local pDockerRepoHost=${1?"${lUsage}"}
   local pImageName=${2?"${lUsage}"}
   local pImageVersion=${3?"${lUsage}"}
@@ -224,7 +224,13 @@ EXAMPLE----------------------------------------------------------
 function fn_DockerComposeUpDetached() {
   local pDockerComposeFilePath=${1?"Usage: ${0}:${FUNCNAME} requires full DOS Path to docker-compose file"}
   local pContainerName=${2?"Usage: ${0}:${FUNCNAME} requires Container Name, which is the same as Service Name which to start"}
-  ${__DOCKER_COMPOSE_EXE} -f "${pDockerComposeFilePath}" up --detach ${pContainerName} && return ${__DONE} || return ${__FAILED}
+  ${__DOCKER_COMPOSE_EXE} \
+    -f "${pDockerComposeFilePath}" \
+    up \
+    --detach \
+      ${pContainerName} \
+        && return ${__DONE} \
+        || return ${__FAILED}
 } 
 
 
@@ -241,7 +247,7 @@ function fn_GetDockerComposeDOSCommandLine() {
 
 
 :<<-'EXAMPLE----------------------------------------------------------'
-  # Y or P is __YES, anything else, inclyuding nothing if default of __NO
+  # Y or P is __YES, anything else, including nothing if default of __NO
   [[ fn__PushToRemoteDockerRepo ${1} ]] && __PUSH2REMOTEREPO=${__YES} || __PUSH2REMOTEREPO=${__NO} 
 EXAMPLE----------------------------------------------------------
 function fn__PushToRemoteDockerRepo() {
@@ -266,6 +272,7 @@ function fn__PushToRemoteDockerRepo() {
 
 function fn__DockerNetworkExists() {
   local lUsage='
+  Usage:
     fn__DockerNetworkExists \
       ${__DEVCICD_NET} \
         && STS=${__YES} \
@@ -280,6 +287,7 @@ function fn__DockerNetworkExists() {
 
 function fn__CreateDockerNetwork() {
   local lUsage='
+  Usage:
     fn__CreateDockerNetwork \
       ${__DEVCICD_NET} \
       ${__DEVCICD_SUBNET_ADDRESS} \
@@ -299,5 +307,54 @@ function fn__CreateDockerNetwork() {
     --gateway ${__DEVCICD_SUBNET_GATEWAY} \
         && STS=${__YES} \
         || STS=${__NO}
+  return ${STS}
+}
+
+
+function fn__ExecCommandInContainer() {
+
+  local lUsage='
+  Usage:
+    fn__ExecCommandInContainer \
+      ${__CONTAINER_NAME} \
+      ${__CONTAINER_USERNAME} \
+      ${__CONTAINER_SHELL} \
+      ${__CONATINER_COMMAND} \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+    '
+  local pContainerName=${1?"${lUsage}"}
+  local pContainerUsername=${2?"${lUsage}"}
+  local pContainerShell=${3?"${lUsage}"}
+  local pContainerCommand=${4?"${lUsage}"}
+
+  ${__DOCKER_EXE} exec -itu ${pContainerUsername} ${pContainerName} ${pContainerShell} -c "${pContainerCommand}" \
+    && STS=${__DONE} \
+    || STS=${__FAILED}
+  return ${STS}
+}
+
+function fn__ExecCommandInContainerGetOutput() {
+
+  local lUsage='
+  Usage:
+    fn__ExecCommandInContainerGetOutput \
+      ${__CONTAINER_NAME} \
+      ${__CONTAINER_USERNAME} \
+      ${__CONTAINER_SHELL} \
+      ${__CONATINER_COMMAND} \
+      "_OUTPUT_CAPTURE_VAR_NAME" \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+    '
+  local pContainerName=${1?"${lUsage}"}
+  local pContainerUsername=${2?"${lUsage}"}
+  local pContainerShell=${3?"${lUsage}"}
+  local pContainerCommand=${4?"${lUsage}"}
+  local -n pOutputCaptureVarName=${5?"${lUsage}"}
+
+  pOutputCaptureVarName=$( ${__DOCKER_EXE} exec -u ${pContainerUsername} ${pContainerName} ${pContainerShell} -lc "${pContainerCommand}" )  \
+    && STS=${__DONE} \
+    || STS=${__FAILED}
   return ${STS}
 }

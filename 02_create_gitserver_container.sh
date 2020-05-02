@@ -67,8 +67,8 @@ function fn__SetEnvironmentVariables() {
   local -r lContainerName=${lContainerName:${startPos}}
 
   readonly __DEBMIN_SOURCE_IMAGE_NAME="${pDebminSourceImageName}"
-  readonly __CONTAINER_NAME="${lContainerName}"
-  readonly __HOST_NAME="${lContainerName}"
+  # readonly __GITSERVER_CONTAINER_NAME="${lContainerName}"
+  # readonly __GITSERVER_HOST_NAME="${lContainerName}"
 
   __DEBMIN_HOME=${pDebminHome}
   readonly __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${pDebminHome})
@@ -85,8 +85,8 @@ function fn__CreateDockerComposeFile() {
     echo '
       Usage: 
           fn__CreateDockerComposeFile \
-            "${__CONTAINER_NAME}"  \
-            "${__HOST_NAME}"  \
+            "${__GITSERVER_CONTAINER_NAME}"  \
+            "${__GITSERVER_HOST_NAME}"  \
             "${__DEVCICD_NET_DC_INTERNAL}"  \
             "${__DEBMIN_SOURCE_IMAGE_NAME}"  \
             "__GITSERVER_PORT_MAPPINGS"  \
@@ -171,6 +171,8 @@ EOF
 
       if [[ ${STS} -eq ${__DIFFERENT} ]]; then
         echo "______ docker-compose.yml_${pContainerName} changed - container may need updating"
+      else
+        rm -fv ${pHostWSLPathToComposeFile}_${TS}
       fi
   fi
   return ${__DONE}
@@ -182,7 +184,7 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
     echo '
       Usage: 
         fn__CreateWindowsShortcutsForShellInContainer \
-          "${__CONTAINER_NAME}" \
+          "${__GITSERVER_CONTAINER_NAME}" \
           "${__DEBMIN_HOME_DOS}" \
           "${__GITSERVER_SHELL}" \
           "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
@@ -287,6 +289,28 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
 }
 
 
+:<<-'COMMENT-----------------------------------------------'
+
+Write-Output '-----------------------------------------------------------------'
+docker container ls | grep $GITSERVER_CONTAINER_NAME
+docker container exec -itu root $GITSERVER_CONTAINER_NAME sh -c "service ssh start"
+Write-Output '-----------------------------------------------------------------'
+
+write-output '---------------------------------------------------------------------------------------';
+write-output "------ As root on ${GITSERVER_CONTAINER_NAME}, creating Remote repository to test";
+write-output '---------------------------------------------------------------------------------------';
+docker container exec -itu root ${GITSERVER_CONTAINER_NAME} bash -c "
+[[ -d ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git ]] && rm -Rf ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git
+mkdir -p ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git
+chown -R git:developers ${__GITSERVER_REPOS_ROOT}
+chmod +s ${__GITSERVER_REPOS_ROOT}
+cd ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git
+su - -s /bin/bash -c 'git init --bare' git 
+# ls -al 
+"
+COMMENT-----------------------------------------------
+
+
 ## ##################################################################################
 ## ##################################################################################
 ## expect directory structure like
@@ -311,6 +335,8 @@ fn__SetEnvironmentVariables \
   "${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
 echo "______ Set local environment variables"; 
 
+fn__ConfirmYN "Create Windows Shortcuts?" && _CREATE_WINDOWS_SHORTCUTS_=${__YES} || _CREATE_WINDOWS_SHORTCUTS_=${__NO}
+
 fn__ConfirmYN "Artefact location will be ${__DEBMIN_HOME} - Is this correct?" && true || {
   echo -e "_______ Aborting ...\n"
   exit
@@ -319,8 +345,8 @@ fn__ConfirmYN "Artefact location will be ${__DEBMIN_HOME} - Is this correct?" &&
 # note that we are passing the name of the array of port mappings - the function deals with access to the array
 #
 fn__CreateDockerComposeFile \
-  "${__CONTAINER_NAME}"  \
-  "${__HOST_NAME}"  \
+  "${__GITSERVER_CONTAINER_NAME}"  \
+  "${__GITSERVER_HOST_NAME}"  \
   "${__DEVCICD_NET}"  \
   "${__DEBMIN_SOURCE_IMAGE_NAME}"  \
   "__GITSERVER_PORT_MAPPINGS"  \
@@ -348,44 +374,76 @@ echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_
 
 
 fn__ContainerExists \
-  ${__CONTAINER_NAME} \
+  ${__GITSERVER_CONTAINER_NAME} \
     && STS=${__YES} \
     || STS=${__NO}
 if [[ $STS -eq ${__YES} ]]; then
 
-  fn__ContainerIsRunning ${__CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
+  fn__ContainerIsRunning ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
   if [[ $STS -eq ${__YES} ]]; then
 
-    echo "______ Container ${__CONTAINER_NAME} Exist and is running ... - nothing needs doing"; 
+    echo "______ Container ${__GITSERVER_CONTAINER_NAME} Exist and is running ... - nothing needs doing"; 
     exit
 
   else
-    fn__StartContainer ${__CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
+    fn__StartContainer ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
     if [[ $STS -eq ${__DONE} ]]; then
-        echo "______ Container ${__CONTAINER_NAME} started"; 
+        echo "______ Container ${__GITSERVER_CONTAINER_NAME} started"; 
     else
-        echo "______ Failed to start container ${__CONTAINER_NAME} - investigate..."; 
+        echo "______ Failed to start container ${__GITSERVER_CONTAINER_NAME} - investigate..."; 
         exit
     fi
   fi
 
 else
   
-  fn_DockerComposeUpDetached "${__DOCKER_COMPOSE_FILE_DOS}" "${__CONTAINER_NAME}" && STS=${__DONE} || STS=${__FAILED}
+  fn_DockerComposeUpDetached "${__DOCKER_COMPOSE_FILE_DOS}" "${__GITSERVER_CONTAINER_NAME}" && STS=${__DONE} || STS=${__FAILED}
   if [[ $STS -eq ${__DONE} ]]; then
-    echo "______ Container ${__CONTAINER_NAME} started"; 
+    echo "______ Container ${__GITSERVER_CONTAINER_NAME} started"; 
   else
-    echo "______ Failed to start container ${__CONTAINER_NAME} - investigate"; 
+    echo "______ Failed to start container ${__GITSERVER_CONTAINER_NAME} - investigate"; 
     exit
   fi
-
 fi
 
-fn__CreateWindowsShortcutsForShellInContainer \
-  "${__CONTAINER_NAME}" \
-  "${__DEBMIN_HOME_DOS}" \
-  "${__GITSERVER_SHELL}" \
-  "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
-echo "______ Created Windows Shortcuts"; 
+_CMD_="service ssh start"
+fn__ExecCommandInContainer \
+  ${__GITSERVER_CONTAINER_NAME} \
+  "root" \
+  ${__GITSERVER_SHELL} \
+  "${_CMD_}" \
+    && STS=${__DONE} \
+    || STS=${__FAILED}
+echo "______ Started ssh server in ${__GITSERVER_CONTAINER_NAME} container"; 
+
+
+_CMD_="
+( [[ -d  ${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git ]] && \
+rm -Rfv  ${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git ; ) ;\
+ { 
+   mkdir -pv ${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git \
+   && chown -Rv ${__GIT_USERNAME}:developers  ${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git \
+   && chmod -v g+s ${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git \
+   && cd ${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git \
+   && su - -s ${__GITSERVER_SHELL} -c 'git init --bare ${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git' ${__GIT_USERNAME}; \
+  }"
+
+fn__ExecCommandInContainer \
+  ${__GITSERVER_CONTAINER_NAME} \
+  "root" \
+  ${__GITSERVER_SHELL} \
+  "${_CMD_}" \
+    && STS=${__DONE} \
+    || STS=${__FAILED}
+echo "______ Initialised test Git repository in ${__GITSERVER_CONTAINER_NAME} container"; 
+
+[[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {
+  fn__CreateWindowsShortcutsForShellInContainer \
+    "${__GITSERVER_CONTAINER_NAME}" \
+    "${__DEBMIN_HOME_DOS}" \
+    "${__GITSERVER_SHELL}" \
+    "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
+  echo "______ Created Windows Shortcuts"; 
+}
 
 echo "______ ${0} Done"

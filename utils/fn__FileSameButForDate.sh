@@ -21,6 +21,7 @@ function fn__FileSameButForDate() {
   diff -s --ignore-matching-lines='202[0-9][0-1][0-9][0-3][0-9]' \
     ${pFile1} \
     ${pFile2} \
+    >/dev/null \
       && return ${__THE_SAME} \
       || return ${__DIFFERENT}
 }
