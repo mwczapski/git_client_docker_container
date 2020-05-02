@@ -514,58 +514,88 @@ fn__ExecCommandInContainerGetOutput \
 #echo -e "______ STS _CMD_OUTPUT_:\n${STS}\n${_CMD_OUTPUT_}"; 
 
 _CMD_="
+  echo '0 ----------------------------------------' &&
   mkdir -pv ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
   cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
   rm -Rvf .git * &&
-
-  git config --global core.editor nano &&
-  git config user.name \"postmaster\" &&
-  git config user.email \"postmaster@localhost\" &&
+  echo '1 ----------------------------------------' &&
 
   git init &&
+  echo '2 ----------------------------------------' &&
+
+  git config core.editor nano &&
+  git config user.name \"postmaster\" &&
+  git config user.email \"postmaster@localhost\" &&
+  echo '3 ----------------------------------------' &&
 
   { git remote remove origin 2>/dev/null || true ; } &&
-  git remote add origin ssh://git@${__GITSERVER_HOST_NAME}/opt/gitrepos/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
+  echo '4 ----------------------------------------' &&
+
+  git remote add origin ssh://${__GIT_USERNAME}@${__GITSERVER_HOST_NAME}${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
   git config --list &&
+  echo '5 ----------------------------------------' &&
+
   ls -al .git &&
+  echo '6 ----------------------------------------' &&
   ls -al &&
+  echo '7 ----------------------------------------' &&
+
+  { git pull origin master || true ; } &&
+  echo '8 ----------------------------------------' &&
 
   echo \"echo 'Hello, ${__GIT_TEST_CLIENT_USERNAME}'\" > greet.sh &&
   chmod u+x greet.sh &&
-  touch READEM.txt random.cpp random.h &&
+  touch READEME.txt random.cpp random.h &&
+  echo '9 ----------------------------------------' &&
 
-  git add . &&
-  git status &&
-  git commit -m 'test commit' &&
+  git add . || true &&
+  git status  || true &&
+  git commit -m 'test commit'  || true &&
+  echo '10 ----------------------------------------' &&
 
   git remote &&
   git remote -v show origin &&
+  echo '11 ----------------------------------------' &&
   git push origin master &&
+  echo '12 ----------------------------------------' &&
 
-  rm -Rfv .git &&
-  rm -vf *.{txt,sh,cpp,h} &
+  cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
+  rm -Rfv .git || true &&
+  rm -vf *.{txt,sh,cpp,h} || true &&
   ls -al &&
+  echo '12 a ----------------------------------------' &&
 
-  git init &&
+  cd ${__GIT_TEST_CLIENT_GUEST_HOME}/dev &&
+  git init || true &&
+  echo '13 ----------------------------------------' &&
   { git remote remove origin 2>/dev/null || true ; } &&
-  git remote add origin ssh://git@${__GITSERVER_HOST_NAME}/opt/gitrepos/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
+  git remote add origin ssh://${__GIT_USERNAME}@${__GITSERVER_HOST_NAME}${__GITSERVER_REPOS_ROOT}/${__GITSERVER_REM_TEST_REPO_NAME}.git &&
   git config --list &&
+  echo '14 ----------------------------------------' &&
 
   git pull origin master &&
+  echo '15 ----------------------------------------' &&
+  chmod u+x ./greet.sh &&
   ./greet.sh &&
-  ls -al
+  echo '1 ----------------------------------------' &&
+  ls -al &&
+  echo '1 ----------------------------------------'
 "
+echo '-------------------------------------------------------'
 echo ${_CMD_}
-# _CMD_OUTPUT_=""
-# fn__ExecCommandInContainerGetOutput \
-#   ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-#   ${__GIT_TEST_CLIENT_USERNAME} \
-#   ${__GIT_TEST_CLIENT_SHELL} \
-#   "${_CMD_}" \
-#   "_CMD_OUTPUT_" \
-#     && STS=${__DONE} \
-#     || STS=${__FAILED}
-# echo -e "______ STS _CMD_OUTPUT_:\n${STS}\n${_CMD_OUTPUT_}"; 
+echo '-------------------------------------------------------'
+_CMD_OUTPUT_=""
+fn__ExecCommandInContainerGetOutput \
+  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+  ${__GIT_TEST_CLIENT_USERNAME} \
+  ${__GIT_TEST_CLIENT_SHELL} \
+  "${_CMD_}" \
+  "_CMD_OUTPUT_" \
+    && STS=${__DONE} \
+    || STS=${__FAILED}
+echo '-------------------------------------------------------'
+echo -e "______ STS _CMD_OUTPUT_:\n${STS}\n${_CMD_OUTPUT_}"; 
+echo '-------------------------------------------------------'
 
 
 [[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {
