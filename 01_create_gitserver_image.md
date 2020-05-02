@@ -17,9 +17,9 @@
 
 ## 1.1. Introduction
 
-The intent of this script is to facilitate creation of a Docker Image for a private GIT Server running as a Docker Container, which uses the most recent GIT distribution, as at the time of this writing: 2.26. The container can be used to provide the docker network wide Git repository for small to medium teams workng on projects whose sources cannot or should not be stored in cloud-hosted Git repositories. Small to meduim start-ups might be an example.
+The intent of this script is to facilitate creation of a Docker Image for a private GIT Server running as a Docker Container, which uses the most recent GIT distribution (2.26 at the time of this writing). The container can be used to provide the docker network wide Git repository for small to medium teams workng on projects whose sources cannot or should not be stored in cloud-hosted Git repositories. Small to meduim start-ups might be an example.
 
-Th image is based on [bitnami/minideb:jessie](https://github.com/bitnami/minideb) image, from the Docker Hub as at 20200429 or thereabouts.
+Th image is based on [bitnami/minideb:jessie](https://github.com/bitnami/minideb) image as at 20200429 or thereabouts.
 
 Installing latest Git from sources, and pre-requisites for building Git from sources, blows the image up from about 51MB (`bitnami/minideb:jessie`) to about 778MB during the build process, and then shrinks it back to 238MB once the build is finished and build tools are removed.
 The image is saved as the `gitserver:1.0.0` Docker Image and, if the user invokes the script with the correct argument, also uploaded to the remote docker repository.
