@@ -621,8 +621,8 @@ fn__TestLocalAndRemoteGitReposOperation \
   ${__GIT_USERNAME} \
   ${__GITSERVER_REPOS_ROOT} \
   ${__GITSERVER_REM_TEST_REPO_NAME} \
-    && echo "______ Local abd Remote Git repository test completed" \
-    || echo "______ Local abd Remote Git repository test failed - investigate!!!"
+    && echo "______ Local and Remote Git repository test completed" \
+    || echo "______ Local and Remote Git repository test failed - investigate!!!"
 
 
 [[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {

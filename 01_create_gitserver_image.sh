@@ -225,6 +225,131 @@ function fnUpdateOwnershipOfNonRootUserResources() {
   echo "_____ Updated ownership of ${pGitUsername} resources on ${pContainerName}"
 }
 
+
+## functions
+function fn__MakeCustomGitShellCommandsDirectory() {
+  
+  [[ $# -lt 3 || "${0^^}" == "HELP" ]] && {
+    local -r lUsage='
+  Usage: 
+    fn__PopulateGitShellCommandsCustom \
+      ${__GITSERVER_CONTAINER_NAME} \
+      ${__GIT_USERNAME} \
+      ${__GITSERVER_SHELL} \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+        '
+    return ${__FAILED}
+  }
+
+  local -r pServerContainerName=${1?"${lUsage}"}
+  local -r pGitUsername=${2?"${lUsage}"}
+  local -r pShellInContainer=${3?"${lUsage}"}
+
+  _CMD_="mkdir -p ${__GITSERVER_GUEST_HOME}/git-shell-commands"
+  fn__ExecCommandInContainer \
+    ${pServerContainerName} \
+    ${pGitUsername} \
+    ${pShellInContainer} \
+    "${_CMD_}" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
+  echo "______ Created Custom Git Shell Commands directory"; 
+}
+
+
+function fn__CreateCustomGitShellCommandsAndCopyToServer() {
+
+  [[ $# -lt 5 || "${0^^}" == "HELP" ]] && {
+  local -r lUsage='
+  Usage: 
+    fn__CreateCustomGitShellCommandsAndCopyToServer \
+      ${__GITSERVER_CONTAINER_NAME} \
+      ${__GIT_USERNAME} \
+      ${__GITSERVER_SHELL} \
+      ${__DEBMIN_HOME_DOS}  \
+      ${__DEBMIN_HOME}  \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+        '
+    return ${__FAILED}
+  }
+
+  local -r pServerContainerName=${1?"${lUsage}"}
+  local -r pGitUsername=${2?"${lUsage}"}
+  local -r pShellInContainer=${3?"${lUsage}"}
+  local -r pDebminHomeDosPath=${4?"${lUsage}"}
+  local -r pDebminHome=${5?"${lUsage}"}
+
+  # make and copy local files
+  #
+  mkdir -p ${pDebminHome}/git-shell-commands
+
+  cat <<-'EOF' > ${pDebminHome}/git-shell-commands/menu.data
+  The following commands are implemented
+
+  -   help - show this help message
+  -   list - list all git repositories
+
+EOF
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\menu.data" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
+
+
+  cat <<-EOF >${pDebminHome}/git-shell-commands/no-interactive-login 
+#!/bin/sh
+echo '----------------------------------------------------------------------'
+printf '%s\n' "Hi ${USER}! You've successfully authenticated, but I do not"
+printf '%s\n' "provide interactive shell access."
+echo '----------------------------------------------------------------------'
+echo "\$(IFS= cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo -e "\${line}"; done)"
+echo '----------------------------------------------------------------------'
+#exit 128
+EOF
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\no-interactive-login" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/no-interactive-login" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
+
+
+  cat <<-EOF > ${pDebminHome}/git-shell-commands/help
+#!/bin/sh
+echo "\$(IFS=  cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo "\${line}"; done)"
+exit 0
+EOF
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\help" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/help" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
+
+
+  cat <<-EOF > ${pDebminHome}/git-shell-commands/list
+#!/bin/sh
+__GITSERVER_REPOS_ROOT="${__GITSERVER_REPOS_ROOT}"
+echo
+echo 'Repository Name'
+echo '----------------------------------------------------------------------'
+find ${__GITSERVER_REPOS_ROOT} -name \*.git -exec basename {} \; | while read i; do echo \${i%%.git}; done
+echo '----------------------------------------------------------------------'
+exit 0
+EOF
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\list" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/list" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
+
+}
+
 ## ##################################################################################
 ## ##################################################################################
 ## 
@@ -314,6 +439,25 @@ if [[ $STS -eq ${__DONE} ]]; then
     ${__GITSERVER_SHELL}  \
     ${__GITSERVER_REPOS_ROOT}
   echo "_____ Updated ownership of resources for user ${__GIT_USERNAME}"
+
+  fn__MakeCustomGitShellCommandsDirectory \
+    ${__GITSERVER_CONTAINER_NAME} \
+    ${__GIT_USERNAME} \
+    ${__GITSERVER_SHELL} \
+      && {
+
+        fn__CreateCustomGitShellCommandsAndCopyToServer \
+          ${__GITSERVER_CONTAINER_NAME} \
+          ${__GIT_USERNAME} \
+          ${__GITSERVER_SHELL} \
+          ${__DEBMIN_HOME_DOS}  \
+          ${__DEBMIN_HOME}  \
+            && {
+              echo "______ Created Custom Git Shell Commands"; 
+            } \
+            || STS=${__FAILED}
+      } \
+      || STS=${__FAILED}
 
   fn__CommitChangesStopContainerAndSaveImage   \
     "${__GITSERVER_CONTAINER_NAME}" \

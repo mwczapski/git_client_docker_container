@@ -1,0 +1,10 @@
+#!/bin/sh
+echo '----------------------------------------------------------------------'
+printf '%s\n' "Hi mcz! You've successfully authenticated, but I do not"
+printf '%s\n' "provide interactive shell access."
+echo '----------------------------------------------------------------------'
+echo "ERROR: ------------------------------------------------
+ERROR: ./02_create_gitserver_container.sh at about 371
+ERROR: ------------------------------------------------"
+echo '----------------------------------------------------------------------'
+#exit 128

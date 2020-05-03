@@ -289,33 +289,170 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
 }
 
 
+function fnTestTest() {
+
+
+  ## functions
+  function fn__MakeCustomGitShellCommandsDirectory() {
+    
+    [[ $# -lt 3 || "${0^^}" == "HELP" ]] && {
+      local -r lUsage='
+    Usage: 
+      fn__PopulateGitShellCommandsCustom \
+        ${__GITSERVER_CONTAINER_NAME} \
+        ${__GIT_USERNAME} \
+        ${__GITSERVER_SHELL} \
+          && STS=${__DONE} \
+          || STS=${__FAILED}
+          '
+      return ${__FAILED}
+    }
+  
+    local -r pServerContainerName=${1?"${lUsage}"}
+    local -r pGitUsername=${2?"${lUsage}"}
+    local -r pShellInContainer=${3?"${lUsage}"}
+  
+    _CMD_="mkdir -p ${__GITSERVER_GUEST_HOME}/git-shell-commands"
+    fn__ExecCommandInContainer \
+      ${pServerContainerName} \
+      ${pGitUsername} \
+      ${pShellInContainer} \
+      "${_CMD_}" \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+    echo "______ Created Custom Git Shell Commands directory"; 
+  }
+
+
+  function fn__CreateCustomGitShellCommandsAndCopyToServer() {
+
+    [[ $# -lt 5 || "${0^^}" == "HELP" ]] && {
+    local -r lUsage='
+    Usage: 
+      fn__CreateCustomGitShellCommandsAndCopyToServer \
+        ${__GITSERVER_CONTAINER_NAME} \
+        ${__GIT_USERNAME} \
+        ${__GITSERVER_SHELL} \
+        ${__DEBMIN_HOME_DOS}  \
+        ${__DEBMIN_HOME}  \
+          && STS=${__DONE} \
+          || STS=${__FAILED}
+          '
+      return ${__FAILED}
+    }
+  
+    local -r pServerContainerName=${1?"${lUsage}"}
+    local -r pGitUsername=${2?"${lUsage}"}
+    local -r pShellInContainer=${3?"${lUsage}"}
+    local -r pDebminHomeDosPath=${4?"${lUsage}"}
+    local -r pDebminHome=${5?"${lUsage}"}
+
+    # make and copy local files
+    #
+    mkdir -p ${pDebminHome}/git-shell-commands
+
+    cat <<-'EOF' > ${pDebminHome}/git-shell-commands/menu.data
+    The following commands are implemented
+
+    -   help - show this help message
+    -   list - list all git repositories
+
+EOF
+    fn__CopyFileFromHostToContainer \
+      ${pServerContainerName} \
+      "${pDebminHomeDosPath}\git-shell-commands\menu.data" \
+      "${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data" \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+
+
+    cat <<-EOF >${pDebminHome}/git-shell-commands/no-interactive-login 
+#!/bin/sh
+echo '----------------------------------------------------------------------'
+printf '%s\n' "Hi ${USER}! You've successfully authenticated, but I do not"
+printf '%s\n' "provide interactive shell access."
+echo '----------------------------------------------------------------------'
+echo "\$(IFS= cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo -e "\${line}"; done)"
+echo '----------------------------------------------------------------------'
+#exit 128
+EOF
+    fn__CopyFileFromHostToContainer \
+      ${pServerContainerName} \
+      "${pDebminHomeDosPath}\git-shell-commands\no-interactive-login" \
+      "${__GITSERVER_GUEST_HOME}/git-shell-commands/no-interactive-login" \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+
+
+    cat <<-EOF > ${pDebminHome}/git-shell-commands/help
+#!/bin/sh
+echo "\$(IFS=  cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo "\${line}"; done)"
+exit 0
+EOF
+    fn__CopyFileFromHostToContainer \
+      ${pServerContainerName} \
+      "${pDebminHomeDosPath}\git-shell-commands\help" \
+      "${__GITSERVER_GUEST_HOME}/git-shell-commands/help" \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+
+
+    cat <<-'EOF' > ${pDebminHome}/git-shell-commands/list
+#!/bin/sh
+__GITSERVER_REPOS_ROOT="/opt/gitrepos"
+echo
+echo 'Repository Name'
+echo '----------------------------------------------------------------------'
+find ${__GITSERVER_REPOS_ROOT} -name \*.git -exec basename {} \; | while read i; do echo ${i%%.git}; done
+echo '----------------------------------------------------------------------'
+exit 0
+EOF
+    fn__CopyFileFromHostToContainer \
+      ${pServerContainerName} \
+      "${pDebminHomeDosPath}\git-shell-commands\list" \
+      "${__GITSERVER_GUEST_HOME}/git-shell-commands/list" \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+
+  }
+
+  ## ###########################################################################
+  ## run them
+  ##
+  fn__MakeCustomGitShellCommandsDirectory \
+    ${__GITSERVER_CONTAINER_NAME} \
+    ${__GIT_USERNAME} \
+    ${__GITSERVER_SHELL} \
+      && {
+
+        fn__CreateCustomGitShellCommandsAndCopyToServer \
+          ${__GITSERVER_CONTAINER_NAME} \
+          ${__GIT_USERNAME} \
+          ${__GITSERVER_SHELL} \
+          ${__DEBMIN_HOME_DOS}  \
+          ${__DEBMIN_HOME}  \
+            && {
+              echo "______ Created Custom Git Shell Commands"; 
+            } \
+            || STS=${__FAILED}
+      } \
+      || STS=${__FAILED}
+
+}
+
+
 :<<-'COMMENT-----------------------------------------------'
 
-Write-Output '-----------------------------------------------------------------'
-docker container ls | grep $GITSERVER_CONTAINER_NAME
-docker container exec -itu root $GITSERVER_CONTAINER_NAME sh -c "service ssh start"
-Write-Output '-----------------------------------------------------------------'
+expect directory structure like
+/mnt/x/dir1/dir2/..dirN/projectDir/_commonUtils/02_create_node13131_container
+and working directory /mnt/x/dir1/dir2/..dirN/projectDir/_commonUtils
 
-write-output '---------------------------------------------------------------------------------------';
-write-output "------ As root on ${GITSERVER_CONTAINER_NAME}, creating Remote repository to test";
-write-output '---------------------------------------------------------------------------------------';
-docker container exec -itu root ${GITSERVER_CONTAINER_NAME} bash -c "
-[[ -d ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git ]] && rm -Rf ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git
-mkdir -p ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git
-chown -R git:developers ${__GITSERVER_REPOS_ROOT}
-chmod +s ${__GITSERVER_REPOS_ROOT}
-cd ${__GITSERVER_REPOS_ROOT}/${GITSERVER_REM_TEST_REPO_NAME}.git
-su - -s /bin/bash -c 'git init --bare' git 
-# ls -al 
-"
 COMMENT-----------------------------------------------
 
 
 ## ##################################################################################
 ## ##################################################################################
-## expect directory structure like
-## /mnt/x/dir1/dir2/..dirN/projectDir/_commonUtils/02_create_node13131_container
-## and working directory /mnt/x/dir1/dir2/..dirN/projectDir/_commonUtils
+##
 ## ##################################################################################
 ## ##################################################################################
 
@@ -359,7 +496,7 @@ fn__ImageExists \
   "${__DEBMIN_SOURCE_IMAGE_NAME}" \
   && echo "______ Image ${__DEBMIN_SOURCE_IMAGE_NAME} exist" \
   || {
-echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}"
+    echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}"
     fn__PullImageFromRemoteRepository   \
       ${__DOCKER_REPOSITORY_HOST}  \
       ${__GITSERVER_IMAGE_NAME} \
@@ -383,7 +520,9 @@ if [[ $STS -eq ${__YES} ]]; then
   if [[ $STS -eq ${__YES} ]]; then
 
     echo "______ Container ${__GITSERVER_CONTAINER_NAME} Exist and is running ... - nothing needs doing"; 
-    exit
+
+# fnTestTest
+#     exit
 
   else
     fn__StartContainer ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}

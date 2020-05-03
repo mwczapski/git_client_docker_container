@@ -10,7 +10,83 @@ mkdir -pv ~/Downloads
 cd ~/Downloads
 wget https://github.com/git/git/archive/master.zip -O ./git_master_$(date +%Y%m%d).zip
 
-unzip git_master_20200428.zip
 
-make prefix=/usr all
-make prefix=/usr install
+
+mkdir -pv ${HOME}/git-shell-commands
+
+_HELP_='
+The following commands are implemented
+
+   help - show this help message
+   list - list all git repositories
+   
+'
+
+IFS= && for line in ${_HELP_}; do
+  echo "$line"
+done
+
+# --------------------------------------
+
+mkdir -pv ${HOME}/git-shell-commands
+cd ${HOME}/git-shell-commands
+
+cat <<-'EOF' > ./menu.data
+The following commands are implemented
+
+-   help - show this help message
+-   list - list all git repositories
+   
+EOF
+
+cat >${HOME}/git-shell-commands/no-interactive-login <<-EOF
+#!/bin/sh
+echo '----------------------------------------------------------------------'
+printf '%s\n' "Hi ${USER}! You've successfully authenticated, but I do not"
+printf '%s\n' "provide interactive shell access."
+echo '----------------------------------------------------------------------'
+echo "$(IFS=  cat ./menu.data | while read line; do echo -e "${line}"; done)"
+echo '----------------------------------------------------------------------'
+#exit 128
+EOF
+chmod +x ${HOME}/git-shell-commands/no-interactive-login
+cat ${HOME}/git-shell-commands/no-interactive-login
+
+cat <<-EOF > ${HOME}/git-shell-commands/help
+#!/bin/sh
+echo "$(IFS=  cat ./menu.data | while read line; do echo -e "${line}"; done)"
+exit 0
+EOF
+chmod +x ${HOME}/git-shell-commands/help
+
+
+
+cat <<-'EOF' > ${HOME}/git-shell-commands/list
+#!/bin/sh
+__GITSERVER_REPOS_ROOT="/opt/gitrepos"
+echo
+echo 'Repository Name'
+echo '----------------------------------------------------------------------'
+find ${__GITSERVER_REPOS_ROOT} -name \*.git -exec basename {} \; | while read i; do echo ${i%%.git}; done
+echo '----------------------------------------------------------------------'
+exit 0
+EOF
+chmod +x ${HOME}/git-shell-commands/list
+
+
+
+ls -BogG --full-time --author -H --time-style="locale" --color=never /opt/gitrepos/
+
+aa=$(ls -BogG --full-time --author -H --time-style="+%Y-%m-%d %H:%M:%S" --color=never /usr/ | cut -d '
+' -f3-3,5- ); \
+echo "${aa%%.git}" | while read i; do echo "~$i~"; done| grep -v '~~'|sed 's/~//g'
+
+root 2020-05-01 10:25:10 bin
+root 2018-06-14 23:03:58 games
+root 2020-05-01 10:25:08 include
+root 2020-05-01 10:25:09 lib
+root 2020-05-01 10:22:43 libexec
+root 2020-01-30 05:03:02 local
+root 2020-05-01 10:24:58 sbin
+root 2020-05-01 10:24:59 share
+root 2018-06-14 23:03:58 src

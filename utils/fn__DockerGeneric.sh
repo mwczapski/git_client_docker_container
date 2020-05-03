@@ -358,3 +358,21 @@ function fn__ExecCommandInContainerGetOutput() {
     || STS=${__FAILED}
   return ${STS}
 }
+
+function fn__CopyFileFromHostToContainer() {
+  local lUsage='
+  Usage:
+    fn__CopyFileFromHostToContainer \
+      ${__CONTAINER_NAME} \
+      ${__LOCAL_FILE_PATH} \
+      ${__REMOTE_FILE_PATH} \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+    '
+  local pContainerName=${1?"${lUsage}"}
+  local pLocalFilePath=${2?"${lUsage}"}
+  local pRemoteFilePath=${3?"${lUsage}"}
+
+  ${__DOCKER_EXE} cp ${pLocalFilePath} ${pContainerName}:${pRemoteFilePath} &&  STS=${?} || STS=${?}
+  return ${STS}
+}
