@@ -192,9 +192,10 @@ EOF
 
     if [[ ${STS} -eq ${__DIFFERENT} ]]; then
       __NEEDS_REBUILDING=${__YES}
+    else
+      rm -f ${__DOCKERFILE_PATH}_${TS}
     fi
   fi
-  # echo "__NEEDS_REBUILDING: ${__NEEDS_REBUILDING}"
   return ${__NEEDS_REBUILDING}
 
 }

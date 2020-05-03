@@ -1,8 +1,0 @@
-#!/bin/sh
-__GITSERVER_REPOS_ROOT="/opt/gitrepos"
-echo
-echo 'Repository Name'
-echo '----------------------------------------------------------------------'
-find ${__GITSERVER_REPOS_ROOT} -name \*.git -exec basename {} \; | while read i; do echo ${i%%.git}; done
-echo '----------------------------------------------------------------------'
-exit 0

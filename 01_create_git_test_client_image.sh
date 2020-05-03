@@ -156,6 +156,8 @@ EOF
 
     if [[ ${STS} -eq ${__DIFFERENT} ]]; then
       __NEEDS_REBUILDING=${__YES}
+    else 
+      rm -f ${__DOCKERFILE_PATH}_${TS}
     fi
   fi
   return ${__NEEDS_REBUILDING}
