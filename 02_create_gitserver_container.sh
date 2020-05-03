@@ -324,97 +324,132 @@ function fnTestTest() {
   }
 
 
-  function fn__CreateCustomGitShellCommandsAndCopyToServer() {
+ 
+function fn__CreateCustomGitShellCommandsAndCopyToServer() {
 
-    [[ $# -lt 5 || "${0^^}" == "HELP" ]] && {
-    local -r lUsage='
-    Usage: 
-      fn__CreateCustomGitShellCommandsAndCopyToServer \
-        ${__GITSERVER_CONTAINER_NAME} \
-        ${__GIT_USERNAME} \
-        ${__GITSERVER_SHELL} \
-        ${__DEBMIN_HOME_DOS}  \
-        ${__DEBMIN_HOME}  \
-          && STS=${__DONE} \
-          || STS=${__FAILED}
-          '
-      return ${__FAILED}
-    }
-  
-    local -r pServerContainerName=${1?"${lUsage}"}
-    local -r pGitUsername=${2?"${lUsage}"}
-    local -r pShellInContainer=${3?"${lUsage}"}
-    local -r pDebminHomeDosPath=${4?"${lUsage}"}
-    local -r pDebminHome=${5?"${lUsage}"}
-
-    # make and copy local files
-    #
-    mkdir -p ${pDebminHome}/git-shell-commands
-
-    cat <<-'EOF' > ${pDebminHome}/git-shell-commands/menu.data
-    The following commands are implemented
-
-    -   help - show this help message
-    -   list - list all git repositories
-
-EOF
-    fn__CopyFileFromHostToContainer \
-      ${pServerContainerName} \
-      "${pDebminHomeDosPath}\git-shell-commands\menu.data" \
-      "${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data" \
+  [[ $# -lt 5 || "${0^^}" == "HELP" ]] && {
+  local -r lUsage='
+  Usage: 
+    fn__CreateCustomGitShellCommandsAndCopyToServer \
+      ${__GITSERVER_CONTAINER_NAME} \
+      ${__GIT_USERNAME} \
+      ${__GITSERVER_SHELL} \
+      ${__DEBMIN_HOME_DOS}  \
+      ${__DEBMIN_HOME}  \
         && STS=${__DONE} \
         || STS=${__FAILED}
+        '
+    return ${__FAILED}
+  }
+
+  local -r pServerContainerName=${1?"${lUsage}"}
+  local -r pGitUsername=${2?"${lUsage}"}
+  local -r pShellInContainer=${3?"${lUsage}"}
+  local -r pDebminHomeDosPath=${4?"${lUsage}"}
+  local -r pDebminHome=${5?"${lUsage}"}
+
+  # make and copy local files
+  #
+  mkdir -p ${pDebminHome}/git-shell-commands
+
+  cat <<-'EOF' > ${pDebminHome}/git-shell-commands/menu.data
+  The following commands are implemented
+
+  -   help                    - show this help message
+  -   list                    - list all git repositories
+  -   backup <git repo name>  - backup the named repository
+
+EOF
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\menu.data" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
 
 
-    cat <<-EOF >${pDebminHome}/git-shell-commands/no-interactive-login 
+  cat <<-EOF >${pDebminHome}/git-shell-commands/no-interactive-login 
 #!/bin/sh
 echo '----------------------------------------------------------------------'
 printf '%s\n' "Hi ${USER}! You've successfully authenticated, but I do not"
 printf '%s\n' "provide interactive shell access."
 echo '----------------------------------------------------------------------'
-echo "\$(IFS= cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo -e "\${line}"; done)"
+echo "\$(IFS= cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo "\${line}"; done)"
 echo '----------------------------------------------------------------------'
 #exit 128
 EOF
-    fn__CopyFileFromHostToContainer \
-      ${pServerContainerName} \
-      "${pDebminHomeDosPath}\git-shell-commands\no-interactive-login" \
-      "${__GITSERVER_GUEST_HOME}/git-shell-commands/no-interactive-login" \
-        && STS=${__DONE} \
-        || STS=${__FAILED}
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\no-interactive-login" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/no-interactive-login" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
 
 
-    cat <<-EOF > ${pDebminHome}/git-shell-commands/help
+  cat <<-EOF > ${pDebminHome}/git-shell-commands/help
 #!/bin/sh
 echo "\$(IFS=  cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo "\${line}"; done)"
 exit 0
 EOF
-    fn__CopyFileFromHostToContainer \
-      ${pServerContainerName} \
-      "${pDebminHomeDosPath}\git-shell-commands\help" \
-      "${__GITSERVER_GUEST_HOME}/git-shell-commands/help" \
-        && STS=${__DONE} \
-        || STS=${__FAILED}
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\help" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/help" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
 
 
-    cat <<-'EOF' > ${pDebminHome}/git-shell-commands/list
+  cat <<-EOF > ${pDebminHome}/git-shell-commands/list
 #!/bin/sh
-__GITSERVER_REPOS_ROOT="/opt/gitrepos"
+__GITSERVER_REPOS_ROOT="${__GITSERVER_REPOS_ROOT}"
 echo
 echo 'Repository Name'
 echo '----------------------------------------------------------------------'
-find ${__GITSERVER_REPOS_ROOT} -name \*.git -exec basename {} \; | while read i; do echo ${i%%.git}; done
+find ${__GITSERVER_REPOS_ROOT} -name \*.git -exec basename {} \; | while read i; do echo \${i%%.git}; done
 echo '----------------------------------------------------------------------'
+exit 0
+EOF
+  fn__CopyFileFromHostToContainer \
+    ${pServerContainerName} \
+    "${pDebminHomeDosPath}\git-shell-commands\list" \
+    "${__GITSERVER_GUEST_HOME}/git-shell-commands/list" \
+      && STS=${__DONE} \
+      || STS=${__FAILED}
+
+
+    cat <<-EOF > ${pDebminHome}/git-shell-commands/backup
+#!/bin/sh
+GITSERVER_REPOS_ROOT="${__GITSERVER_REPOS_ROOT}"
+echo
+repoName=\${1?"Name of the Git Repository, which to back, up is required"}
+repoName=\${repoName%%.git}
+[ -d \${GITSERVER_REPOS_ROOT}/\${repoName}.git ] \
+  || { 
+    echo "Repository \${1} does not exist - aborting"
+    exit 1
+  }
+TS_FORMAT='+%Y-%m-%d_%H:%M:%S'
+TS=\$(date \${TS_FORMAT})
+cd \${GITSERVER_REPOS_ROOT}
+tar czf \${HOME}/backups/\${repoName}_\${TS} \${repoName}.git || {
+  STS=\$?
+  echo "Failed to back up repository \${1}"
+  echo "Please cpontact your git server administrator"
+  exit \${STS}
+}
+echo "______ Backed up repository \${repoName} to file \${repoName}_\${TS}"
+echo "______ \$(ls -lht --time-style="\${TS_FORMAT}" \${HOME}/backups/\${repoName}_\${TS} | cut -d' ' -f3- )"
+
 exit 0
 EOF
     fn__CopyFileFromHostToContainer \
       ${pServerContainerName} \
-      "${pDebminHomeDosPath}\git-shell-commands\list" \
-      "${__GITSERVER_GUEST_HOME}/git-shell-commands/list" \
+      "${pDebminHomeDosPath}\git-shell-commands\backup" \
+      "${__GITSERVER_GUEST_HOME}/git-shell-commands/backup" \
         && STS=${__DONE} \
         || STS=${__FAILED}
 
-  }
+}
 
   ## ###########################################################################
   ## run them
@@ -494,7 +529,9 @@ echo "______ Created ${__DOCKER_COMPOSE_FILE_WLS}";
 
 fn__ImageExists \
   "${__DEBMIN_SOURCE_IMAGE_NAME}" \
+
   && echo "______ Image ${__DEBMIN_SOURCE_IMAGE_NAME} exist" \
+
   || {
     echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION}"
     fn__PullImageFromRemoteRepository   \
@@ -514,6 +551,7 @@ fn__ContainerExists \
   ${__GITSERVER_CONTAINER_NAME} \
     && STS=${__YES} \
     || STS=${__NO}
+    
 if [[ $STS -eq ${__YES} ]]; then
 
   fn__ContainerIsRunning ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
@@ -521,8 +559,12 @@ if [[ $STS -eq ${__YES} ]]; then
 
     echo "______ Container ${__GITSERVER_CONTAINER_NAME} Exist and is running ... - nothing needs doing"; 
 
-# fnTestTest
-#     exit
+    ## ######################################
+    ## ######################################
+    # fnTestTest
+    #     exit
+    ## ######################################
+    ## ######################################
 
   else
     fn__StartContainer ${__GITSERVER_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}

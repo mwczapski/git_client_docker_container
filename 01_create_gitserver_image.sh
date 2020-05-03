@@ -169,7 +169,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
     gettext && \\
     apt-get update && \\
   apt-get autoremove -y && \\
-  rm -Rvf /root/Downloads
+  rm -Rf /root/Downloads
 EOF
 
 ## ##########################################################################
@@ -288,8 +288,9 @@ function fn__CreateCustomGitShellCommandsAndCopyToServer() {
   cat <<-'EOF' > ${pDebminHome}/git-shell-commands/menu.data
   The following commands are implemented
 
-  -   help - show this help message
-  -   list - list all git repositories
+  -   help                    - show this help message
+  -   list                    - list all git repositories
+  -   backup <git repo name>  - backup the named repository
 
 EOF
   fn__CopyFileFromHostToContainer \
@@ -306,7 +307,7 @@ echo '----------------------------------------------------------------------'
 printf '%s\n' "Hi ${USER}! You've successfully authenticated, but I do not"
 printf '%s\n' "provide interactive shell access."
 echo '----------------------------------------------------------------------'
-echo "\$(IFS= cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo -e "\${line}"; done)"
+echo "\$(IFS= cat ${__GITSERVER_GUEST_HOME}/git-shell-commands/menu.data | while read line; do echo "\${line}"; done)"
 echo '----------------------------------------------------------------------'
 #exit 128
 EOF
@@ -347,6 +348,39 @@ EOF
     "${__GITSERVER_GUEST_HOME}/git-shell-commands/list" \
       && STS=${__DONE} \
       || STS=${__FAILED}
+
+
+    cat <<-EOF > ${pDebminHome}/git-shell-commands/backup
+#!/bin/sh
+GITSERVER_REPOS_ROOT="${__GITSERVER_REPOS_ROOT}"
+echo
+repoName=\${1?"Name of the Git Repository, which to back, up is required"}
+repoName=\${repoName%%.git}
+[ -d \${GITSERVER_REPOS_ROOT}/\${repoName}.git ] \
+  || { 
+    echo "Repository \${1} does not exist - aborting"
+    exit 1
+  }
+TS_FORMAT='+%Y-%m-%d_%H:%M:%S'
+TS=\$(date \${TS_FORMAT})
+cd \${GITSERVER_REPOS_ROOT}
+tar czf \${HOME}/backups/\${repoName}_\${TS} \${repoName}.git || {
+  STS=\$?
+  echo "Failed to back up repository \${1}"
+  echo "Please cpontact your git server administrator"
+  exit \${STS}
+}
+echo "______ Backed up repository \${repoName} to file \${repoName}_\${TS}"
+echo "______ \$(ls -lht --time-style="\${TS_FORMAT}" \${HOME}/backups/\${repoName}_\${TS} | cut -d' ' -f3- )"
+
+exit 0
+EOF
+    fn__CopyFileFromHostToContainer \
+      ${pServerContainerName} \
+      "${pDebminHomeDosPath}\git-shell-commands\backup" \
+      "${__GITSERVER_GUEST_HOME}/git-shell-commands/backup" \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
 
 }
 

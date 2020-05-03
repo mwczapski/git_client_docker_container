@@ -75,6 +75,49 @@ chmod +x ${HOME}/git-shell-commands/list
 
 
 
+
+
+cat <<-'EOF' > ${HOME}/git-shell-commands/backup
+#!/bin/sh
+__GITSERVER_REPOS_ROOT="/opt/gitrepos"
+
+repoName=${1?"Name of the Git Repository, which to back, up is required"}
+repoName=${repoName%%.git}
+[ -d ${__GITSERVER_REPOS_ROOT}/${repoName}.git ] \
+  || { 
+    echo "Repository ${1} does not exist - aborting"
+    exit 1
+  }
+TS_FORMAT='+%Y-%m-%d_%H:%M:%S'
+TS=$(date ${TS_FORMAT})
+cd ${__GITSERVER_REPOS_ROOT}
+tar czf ${HOME}/backups/${repoName}_${TS} ${repoName}.git || {
+  STS=$?
+  echo "Failed to back up repository ${1}"
+  echo "Please cpontact your git server administrator"
+  exit ${STS}
+}
+
+echo "______ Backed up repository ${repoName} to file ${repoName}_${TS}"
+echo "______ $(ls -lht --time-style="${TS_FORMAT}" ${HOME}/backups/${repoName}_${TS} | cut -d' ' -f3- )"
+#ls -lh ${HOME}/backups/${repoName}_${TS} | cut -d' ' -f3-
+
+#echo
+#echo 'Repository Name'
+#echo '----------------------------------------------------------------------'
+#find ${__GITSERVER_REPOS_ROOT} -name \*.git -exec basename {} \; | while read i; do echo ${i%%.git}; done
+#echo '----------------------------------------------------------------------'
+#exit 0
+EOF
+chmod +x ${HOME}/git-shell-commands/backup
+
+
+
+
+
+
+
+
 ls -BogG --full-time --author -H --time-style="locale" --color=never /opt/gitrepos/
 
 aa=$(ls -BogG --full-time --author -H --time-style="+%Y-%m-%d %H:%M:%S" --color=never /usr/ | cut -d '
