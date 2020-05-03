@@ -118,6 +118,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
     iputils-ping \\
     openssh-client \\
     nano \\
+    less \\
     git && \\
 \\
     git --version && \\

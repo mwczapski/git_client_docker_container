@@ -115,6 +115,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
     iputils-ping \\
     openssh-client \\
     openssh-server \\
+    less \\
     nano \\
 # the following are needed to download, builld and install git from sources
     wget \\
