@@ -1,7 +1,12 @@
+# allow anything that starts with __env
+!__env*
+
+# disallow what's below
 15*.sh
 *.lnk
 *.lnk
 explorerpp.sh
 _*
 Downloads
-!__env*
+*.zip
+*.tar.gz
