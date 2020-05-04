@@ -1,3 +1,9 @@
+# #############################################
+# The MIT License (MIT)
+#
+# Copyright © 2020 Michael Czapski
+# #############################################
+
 declare -u fn__DockerGeneric="SOURCED"
 
 readonly __DOCKER_NO_EXT="docker"

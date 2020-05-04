@@ -1,3 +1,10 @@
+
+# #############################################
+# The MIT License (MIT)
+#
+# Copyright © 2020 Michael Czapski
+# #############################################
+
 declare -u __env_YesNoSuccessFailureContants="SOURCED"
 
 __ZERO__=0

@@ -195,7 +195,7 @@ This script has hard dependencies on a number of constants and functions whose s
 
 The MIT License (MIT)
 
-Copyright Â© 2020 Michael Czapski
+Copyright © 2020 Michael Czapski
 
 If you would like me to consider working for you, or engage in specific projects for you, feel free to contact me.
 

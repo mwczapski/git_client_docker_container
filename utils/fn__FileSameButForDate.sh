@@ -1,3 +1,8 @@
+# #############################################
+# The MIT License (MIT)
+#
+# Copyright © 2020 Michael Czapski
+# #############################################
 
 declare -u fn__FileSameButForDate="SOURCED"
 

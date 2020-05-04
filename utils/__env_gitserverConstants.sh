@@ -1,4 +1,10 @@
 
+# #############################################
+# The MIT License (MIT)
+#
+# Copyright © 2020 Michael Czapski
+# #############################################
+
 declare -u __env_gitserverConstants="SOURCED"
 
 [[ ${__env_devcicd_net} ]] || source __env_devcicd_net.sh

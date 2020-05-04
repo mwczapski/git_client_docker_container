@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# #############################################
+# The MIT License (MIT)
+#
+# Copyright © 2020 Michael Czapski
+# #############################################
+
 set -o pipefail
 set -o errexit
 
