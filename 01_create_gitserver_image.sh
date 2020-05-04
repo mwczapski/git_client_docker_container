@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# #############################################
+# The MIT License (MIT)
+#
+# Copyright © 2020 Michael Czapski
+# #############################################
+
 set -o pipefail
 set -o errexit
 
@@ -23,6 +29,8 @@ source ./utils/fn__ConfirmYN.sh
 source ./utils/fn__FileSameButForDate.sh
 
 source ./utils/fn__CreateWindowsShortcut.sh
+
+
 
 function fn__SetEnvironmentVariables() {
 
@@ -172,15 +180,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
   apt-get autoremove -y && \\
   rm -Rf /root/Downloads
 EOF
-
-## ##########################################################################
-## ##########################################################################
-## 
-## lookup https://git-scm.com/docs/git-shell to create git-shell-commands for use over ssh
-## like help, list, backup and suchlike
-## 
-## ##########################################################################
-## ##########################################################################
 
   if [[ -e ${__DOCKERFILE_PATH}_${TS} ]]; then
 
@@ -427,7 +426,7 @@ fn__ImageExists \
   && echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} exists" \
   || echo "_____ Image ${__GITSERVER_IMAGE_NAME}:${__GITSERVER_IMAGE_VERSION} does not exist"
 
-[[ ${__IMAGE_EXISTS} -eq ${__NO} ]] && __REBUILD_IMAGE=${__YES}
+[[ ${__IMAGE_EXISTS} -eq ${__NO} ]] || __REBUILD_IMAGE=${__YES}
 
 if [[ ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
   fn__BuildImage  \
