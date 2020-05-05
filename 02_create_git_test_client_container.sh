@@ -46,8 +46,8 @@ function fn__SetEnvironmentVariables() {
       Usage: 
           fn__SetEnvironmentVariables \
             "${__DEBMIN_HOME}" \
-            "${__GIT_TEST_CLIENT_USERNAME}" \
-            "${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}"
+            "${__GIT_CLIENT_USERNAME}" \
+            "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
       '
     return ${__FAILED}
   }
@@ -64,7 +64,7 @@ function fn__SetEnvironmentVariables() {
   pDebminHome=${pDebminHome%%/_commonUtils} # strip _commonUtils
   local -r lDebminHome_DOS=$(fn__WSLPathToRealDosPath ${pDebminHome})
 
-  local lContainerName=${__GIT_TEST_CLIENT_CONTAINER_NAME}
+  local lContainerName=${__GIT_CLIENT_CONTAINER_NAME}
   # local lContainerName=${pDebminHome##*/} # strip directory hierarchy before parent of _commonUtils
   # lContainerName=${lContainerName//[ _^%@-]/}  # remove special characters, if any, from project name
 
@@ -92,11 +92,11 @@ function fn__CreateDockerComposeFile() {
     echo '
       Usage: 
           fn__CreateDockerComposeFile \
-            "${__GIT_TEST_CLIENT_CONTAINER_NAME}"  \
-            "${__GIT_TEST_CLIENT_HOST_NAME}"  \
+            "${__GIT_CLIENT_CONTAINER_NAME}"  \
+            "${__GIT_CLIENT_HOST_NAME}"  \
             "${__DEVCICD_NET_DC_INTERNAL}"  \
             "${__DEBMIN_SOURCE_IMAGE_NAME}"  \
-            "${__DEBMIN_HOME_DOS}:${__GIT_TEST_CLIENT_GUEST_HOME}" \
+            "${__DEBMIN_HOME_DOS}:${__GIT_CLIENT_GUEST_HOME}" \
             "${__DOCKER_COMPOSE_FILE_WLS}"
       '
     return ${__FAILED}
@@ -164,9 +164,9 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
     echo '
       Usage: 
         fn__CreateWindowsShortcutsForShellInContainer \
-          "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
+          "${__GIT_CLIENT_CONTAINER_NAME}" \
           "${__DEBMIN_HOME_DOS}" \
-          "${__GIT_TEST_CLIENT_SHELL}" \
+          "${__GIT_CLIENT_SHELL}" \
           "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
       '
     return ${__FAILED}
@@ -183,9 +183,9 @@ function fn__CreateWindowsShortcutsForShellInContainer() {
 
   # create windows shortcuts for shell in container
 
-  lARGS="/c wsl -d Debian -- bash -lc \"docker.exe container exec -itu ${__GIT_TEST_CLIENT_USERNAME} --workdir ${__GIT_TEST_CLIENT_GUEST_HOME} ${pContainerName} ${pShellInContainer} -l\" || pause"
+  lARGS="/c wsl -d Debian -- bash -lc \"docker.exe container exec -itu ${__GIT_CLIENT_USERNAME} --workdir ${__GIT_CLIENT_GUEST_HOME} ${pContainerName} ${pShellInContainer} -l\" || pause"
   fn__CreateWindowsShortcut \
-    "${pHomeDosPath}\dcc exec -itu ${__GIT_TEST_CLIENT_USERNAME} ${pContainerName}.lnk" \
+    "${pHomeDosPath}\dcc exec -itu ${__GIT_CLIENT_USERNAME} ${pContainerName}.lnk" \
     "C:\Windows\System32\cmd.exe" \
     "%~dp0" \
     "${fn__CreateWindowsShortcut__RUN_NORMAL_WINDOW}" \
@@ -274,10 +274,10 @@ function fn__GenerateSSHKeyPair() {
     echo '
   Usage: 
     fn__GenerateSSHKeyPair \
-      ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-      ${__GIT_TEST_CLIENT_USERNAME} \
-      ${__GIT_TEST_CLIENT_SHELL} \
-      "__GIT_TEST_CLIENT_ID_RSA_PUB_" \
+      ${__GIT_CLIENT_CONTAINER_NAME} \
+      ${__GIT_CLIENT_USERNAME} \
+      ${__GIT_CLIENT_SHELL} \
+      "__GIT_CLIENT_ID_RSA_PUB_" \
         && return ${__DONE} \
         || return ${__FAILED}
         '
@@ -318,9 +318,9 @@ function fn__IntroduceClientsToServerUsingClientsPublicKey() {
     local -r lUsage='
   Usage: 
     fn__IntroduceClientsToServerUsingClientsPublicKey \
-      ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-      ${__GIT_TEST_CLIENT_USERNAME} \
-      ${__GIT_TEST_CLIENT_ID_RSA_PUB_}  \
+      ${__GIT_CLIENT_CONTAINER_NAME} \
+      ${__GIT_CLIENT_USERNAME} \
+      ${__GIT_CLIENT_ID_RSA_PUB_}  \
       ${__GITSERVER_CONTAINER_NAME} \
       ${__GIT_USERNAME} \
       ${__GITSERVER_SHELL} \
@@ -374,9 +374,9 @@ function fn__AddGITServerToLocalKnown_hostsAndTestSshAccess() {
     local -r lUsage='
   Usage: 
     fn__AddGITServerToLocalKnown_hostsAndTestSshAccess \
-      ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-      ${__GIT_TEST_CLIENT_USERNAME} \
-      ${__GIT_TEST_CLIENT_SHELL} \
+      ${__GIT_CLIENT_CONTAINER_NAME} \
+      ${__GIT_CLIENT_USERNAME} \
+      ${__GIT_CLIENT_SHELL} \
         && STS=${__DONE} \
         || STS=${__FAILED}
         '
@@ -412,10 +412,10 @@ function fn__TestLocalAndRemoteGitReposOperation() {
     local -r lUsage='
   Usage: 
     fn__TestLocalAndRemoteGitReposOperation \
-      ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-      ${__GIT_TEST_CLIENT_USERNAME} \
-      ${__GIT_TEST_CLIENT_SHELL} \
-      ${__GIT_TEST_CLIENT_GUEST_HOME} \
+      ${__GIT_CLIENT_CONTAINER_NAME} \
+      ${__GIT_CLIENT_USERNAME} \
+      ${__GIT_CLIENT_SHELL} \
+      ${__GIT_CLIENT_GUEST_HOME} \
       ${__GITSERVER_HOST_NAME} \
       ${__GIT_USERNAME} \
       ${__GITSERVER_REPOS_ROOT} \
@@ -507,8 +507,8 @@ readonly __CWD_NAME=$(basename ${__DEBMIN_HOME})
 
 fn__SetEnvironmentVariables \
   "${__DEBMIN_HOME}" \
-  "${__GIT_TEST_CLIENT_USERNAME}" \
-  "${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
+  "${__GIT_CLIENT_USERNAME}" \
+  "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
 echo "______ Set local environment variables"; 
 
 
@@ -522,11 +522,11 @@ fn__ConfirmYN "Artefact location will be ${__DEBMIN_HOME} - Is this correct?" &&
 
 
 fn__CreateDockerComposeFile \
-  "${__GIT_TEST_CLIENT_CONTAINER_NAME}"  \
-  "${__GIT_TEST_CLIENT_HOST_NAME}"  \
+  "${__GIT_CLIENT_CONTAINER_NAME}"  \
+  "${__GIT_CLIENT_HOST_NAME}"  \
   "${__DEVCICD_NET}"  \
   "${__DEBMIN_SOURCE_IMAGE_NAME}"  \
-  "${__DEBMIN_HOME_WSD}/${__GIT_TEST_CLIENT_CONTAINER_NAME}/backups:${__GIT_TEST_CLIENT_GUEST_HOME}/backups" \
+  "${__DEBMIN_HOME_WSD}/${__GIT_CLIENT_CONTAINER_NAME}/backups:${__GIT_CLIENT_GUEST_HOME}/backups" \
   "${__DOCKER_COMPOSE_FILE_WLS}"
 echo "______ Created ${__DOCKER_COMPOSE_FILE_WLS}"; 
 
@@ -535,14 +535,14 @@ fn__ImageExists \
   "${__DEBMIN_SOURCE_IMAGE_NAME}" \
   && echo "______ Image ${__DEBMIN_SOURCE_IMAGE_NAME} exist" \
   || {
-    echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}"
+    echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
     fn__PullImageFromRemoteRepository   \
       ${__DOCKER_REPOSITORY_HOST}  \
-      ${__GIT_TEST_CLIENT_IMAGE_NAME} \
-      ${__GIT_TEST_CLIENT_IMAGE_VERSION} \
-        && echo "______ Image ${__DOCKER_REPOSITORY_HOST}/${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} pulled from remote docker repository" \
+      ${__GIT_CLIENT_IMAGE_NAME} \
+      ${__GIT_CLIENT_IMAGE_VERSION} \
+        && echo "______ Image ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} pulled from remote docker repository" \
         || {
-          echo "______ Cannot find image ${__DEBMIN_SOURCE_IMAGE_NAME} [${__DOCKER_REPOSITORY_HOST}/${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}]" 
+          echo "______ Cannot find image ${__DEBMIN_SOURCE_IMAGE_NAME} [${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}]" 
           echo "______ Aborting script execution ..." 
           exit
         }
@@ -550,78 +550,78 @@ fn__ImageExists \
 
 
 fn__ContainerExists \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+  ${__GIT_CLIENT_CONTAINER_NAME} \
     && STS=${__YES} \
     || STS=${__NO}
 
 if [[ $STS -eq ${__YES} ]]; then
 
-  fn__ContainerIsRunning ${__GIT_TEST_CLIENT_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
+  fn__ContainerIsRunning ${__GIT_CLIENT_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
   if [[ $STS -eq ${__YES} ]]; then
-    echo "______ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} Exist and is running ... - nothing needs doing"; 
+    echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} Exist and is running ... - nothing needs doing"; 
     exit
 
   else
 
-    fn__StartContainer ${__GIT_TEST_CLIENT_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
+    fn__StartContainer ${__GIT_CLIENT_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
     if [[ $STS -eq ${__DONE} ]]; then
-        echo "______ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} started"; 
+        echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} started"; 
     else
-        echo "______ Failed to start container ${__GIT_TEST_CLIENT_CONTAINER_NAME} - investigate..."; 
+        echo "______ Failed to start container ${__GIT_CLIENT_CONTAINER_NAME} - investigate..."; 
         exit
     fi
   fi
 
 else
   
-  fn_DockerComposeUpDetached "${__DOCKER_COMPOSE_FILE_DOS}" "${__GIT_TEST_CLIENT_CONTAINER_NAME}" && STS=${__DONE} || STS=${__FAILED}
+  fn_DockerComposeUpDetached "${__DOCKER_COMPOSE_FILE_DOS}" "${__GIT_CLIENT_CONTAINER_NAME}" && STS=${__DONE} || STS=${__FAILED}
   if [[ $STS -eq ${__DONE} ]]; then
-    echo "______ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} started"; 
+    echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} started"; 
   else
-    echo "______ Failed to start container ${__GIT_TEST_CLIENT_CONTAINER_NAME} - investigate"; 
+    echo "______ Failed to start container ${__GIT_CLIENT_CONTAINER_NAME} - investigate"; 
     exit
   fi
 fi
 
 
-__GIT_TEST_CLIENT_ID_RSA_PUB_="a"
+__GIT_CLIENT_ID_RSA_PUB_="a"
 fn__GenerateSSHKeyPair \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-  ${__GIT_TEST_CLIENT_USERNAME} \
-  ${__GIT_TEST_CLIENT_SHELL} \
-  "__GIT_TEST_CLIENT_ID_RSA_PUB_" \
+  ${__GIT_CLIENT_CONTAINER_NAME} \
+  ${__GIT_CLIENT_USERNAME} \
+  ${__GIT_CLIENT_SHELL} \
+  "__GIT_CLIENT_ID_RSA_PUB_" \
     && STS=${__DONE} \
     || STS=${__FAILED}
-echo "______ Generated ${__GIT_TEST_CLIENT_GUEST_HOME}'s ssh keypair"; 
+echo "______ Generated ${__GIT_CLIENT_GUEST_HOME}'s ssh keypair"; 
 
 
 fn__IntroduceClientsToServerUsingClientsPublicKey \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-  ${__GIT_TEST_CLIENT_USERNAME} \
-  "${__GIT_TEST_CLIENT_ID_RSA_PUB_}"  \
+  ${__GIT_CLIENT_CONTAINER_NAME} \
+  ${__GIT_CLIENT_USERNAME} \
+  "${__GIT_CLIENT_ID_RSA_PUB_}"  \
   ${__GITSERVER_CONTAINER_NAME} \
   ${__GIT_USERNAME} \
   ${__GITSERVER_SHELL} \
     && STS=${__DONE} \
     || STS=${__FAILED}
-echo "______ Added ${__GIT_TEST_CLIENT_GUEST_HOME}'s public key to ${__GITSERVER_HOST_NAME}'s ~/.ssh/authorised_keys"; 
+echo "______ Added ${__GIT_CLIENT_GUEST_HOME}'s public key to ${__GITSERVER_HOST_NAME}'s ~/.ssh/authorised_keys"; 
 
 
 fn__AddGITServerToLocalKnown_hostsAndTestSshAccess \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-  ${__GIT_TEST_CLIENT_USERNAME} \
-  ${__GIT_TEST_CLIENT_SHELL} \
+  ${__GIT_CLIENT_CONTAINER_NAME} \
+  ${__GIT_CLIENT_USERNAME} \
+  ${__GIT_CLIENT_SHELL} \
     && STS=${__DONE} \
     || STS=${__FAILED}
 echo "STS:${STS}"
-echo "______ Added ${__GITSERVER_HOST_NAME} to ${__GIT_TEST_CLIENT_GUEST_HOME}'s \${HOME}/.ssh/known_hosts"; 
+echo "______ Added ${__GITSERVER_HOST_NAME} to ${__GIT_CLIENT_GUEST_HOME}'s \${HOME}/.ssh/known_hosts"; 
 
 
 fn__TestLocalAndRemoteGitReposOperation \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-  ${__GIT_TEST_CLIENT_USERNAME} \
-  ${__GIT_TEST_CLIENT_SHELL} \
-  ${__GIT_TEST_CLIENT_GUEST_HOME} \
+  ${__GIT_CLIENT_CONTAINER_NAME} \
+  ${__GIT_CLIENT_USERNAME} \
+  ${__GIT_CLIENT_SHELL} \
+  ${__GIT_CLIENT_GUEST_HOME} \
   ${__GITSERVER_HOST_NAME} \
   ${__GIT_USERNAME} \
   ${__GITSERVER_REPOS_ROOT} \
@@ -632,9 +632,9 @@ fn__TestLocalAndRemoteGitReposOperation \
 
 [[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {
   fn__CreateWindowsShortcutsForShellInContainer \
-    "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
+    "${__GIT_CLIENT_CONTAINER_NAME}" \
     "${__DEBMIN_HOME_DOS}" \
-    "${__GIT_TEST_CLIENT_SHELL}" \
+    "${__GIT_CLIENT_SHELL}" \
     "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
   echo "______ Created Windows Shortcuts"; 
 }

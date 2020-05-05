@@ -3,7 +3,7 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 set -o pipefail
@@ -47,13 +47,13 @@ function fn__SetEnvironmentVariables() {
   __DEBMIN_SOURCE_IMAGE_NAME="bitnami/minideb:jessie"
   __TZ_PATH=Australia/Sydney
   __TZ_NAME=Australia/Sydney
-  __ENV="${__GIT_TEST_CLIENT_SHELL_GLOBAL_PROFILE}"
+  __ENV="${__GIT_CLIENT_SHELL_GLOBAL_PROFILE}"
 
-  __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${__GIT_TEST_CLIENT_IMAGE_NAME}
+  __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${__GIT_CLIENT_IMAGE_NAME}
 
   ## toggles 
-  __REMOVE_CONTAINER_ON_STOP=${__YES} # container started using this image is nto supposed to be used for work
-  __NEEDS_REBUILDING=${__NO}  # set to ${__YES} if image does not exist of Dockerfile changed
+  __REMOVE_CONTAINER_ON_STOP=${__YES} # container started using this image is not supposed to be used for work
+  __NEEDS_REBUILDING=${__NO}  # set to ${__YES} if image does not exist or Dockerfile changed
 
 }
 
@@ -62,7 +62,7 @@ function fn__Create_docker_entry_point_file() {
     echo '
   Usage: 
       fn__Create_docker_entry_point_file \
-        ${__GIT_TEST_CLIENT_SHELL}
+        ${__GIT_CLIENT_SHELL}
 '
     return ${__FAILED}
   }
@@ -98,10 +98,10 @@ FROM ${__DEBMIN_SOURCE_IMAGE_NAME}
 # the environment variables below will be used in creating the image
 # and will be available to the containers created from the image ...
 #
-ENV DEBMIN_USERNAME=${__GIT_TEST_CLIENT_USERNAME} \\
-    DEBMIN_SHELL=${__GIT_TEST_CLIENT_SHELL} \\
-    DEBMIN_SHELL_PROFILE=${__GIT_TEST_CLIENT_SHELL_PROFILE} \\
-    DEBMIN_GUEST_HOME=${__GIT_TEST_CLIENT_GUEST_HOME} \\
+ENV DEBMIN_USERNAME=${__GIT_CLIENT_USERNAME} \\
+    DEBMIN_SHELL=${__GIT_CLIENT_SHELL} \\
+    DEBMIN_SHELL_PROFILE=${__GIT_CLIENT_SHELL_PROFILE} \\
+    DEBMIN_GUEST_HOME=${__GIT_CLIENT_GUEST_HOME} \\
     GITSERVER_REPOS_ROOT=${__GITSERVER_REPOS_ROOT} \\
     TZ_PATH=${__TZ_PATH} \\
     TZ_NAME=${__TZ_NAME}  \\
@@ -174,10 +174,10 @@ function fnUpdateOwnershipOfNonRootUserResources() {
   local lUsage='
       Usage: 
         fnUpdateOwnershipOfNonRootUserResources  \
-          ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+          ${__GIT_CLIENT_CONTAINER_NAME} \
           ${__GIT_USERNAME} \
           ${DEBMIN_GUEST_HOME}  \
-          ${__GIT_TEST_CLIENT_SHELL}  \
+          ${__GIT_CLIENT_SHELL}  \
           ${__GITSERVER_REPOS_ROOT}
       '
   [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
@@ -223,7 +223,7 @@ fn__SetEnvironmentVariables ## && STS=${__SUCCESS} || STS=${__FAILED} # let it f
 echo "_____ Set environment variables" 
 
 
-fn__Create_docker_entry_point_file ${__GIT_TEST_CLIENT_SHELL} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
+fn__Create_docker_entry_point_file ${__GIT_CLIENT_SHELL} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
 echo "_____ Created docker-entrypoint.sh" 
 
 
@@ -231,72 +231,72 @@ fn__CreateDockerfile && __REBUILD_IMAGE=${__YES} || __REBUILD_IMAGE=${__NO} # if
 echo "_____ Created Dockerfile: ${__DOCKERFILE_PATH}" 
 
 fn__ImageExists \
-  "${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}" &&
+  "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}" &&
     __IMAGE_EXISTS=${__YES} || 
     __IMAGE_EXISTS=${__NO}
 [[ ${STS} -eq ${__YES} ]]  \
-  && echo "_____ Image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} exists" \
+  && echo "_____ Image ${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} exists" \
   || {
-    echo "_____ Image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} does not exist"
+    echo "_____ Image ${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} does not exist"
     __REBUILD_IMAGE=${__YES}
   }
 
 if [[ ${__REBUILD_IMAGE} -eq ${__YES} ]]; then
   fn__BuildImage  \
     ${__REBUILD_IMAGE} \
-    ${__GIT_TEST_CLIENT_IMAGE_NAME} \
-    ${__GIT_TEST_CLIENT_IMAGE_VERSION} \
-    ${__DEBMIN_HOME_DOS}/Dockerfile.${__GIT_TEST_CLIENT_IMAGE_NAME} \
+    ${__GIT_CLIENT_IMAGE_NAME} \
+    ${__GIT_CLIENT_IMAGE_VERSION} \
+    ${__DEBMIN_HOME_DOS}/Dockerfile.${__GIT_CLIENT_IMAGE_NAME} \
     ${__DEVCICD_NET} ## && STS=${__SUCCESS} || STS=${__FAILED} # let it abort if failed
-  echo "_____ Image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} (re-)built"
+  echo "_____ Image ${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} (re-)built"
 fi
 
 
 fn__ContainerExists \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+  ${__GIT_CLIENT_CONTAINER_NAME} \
     && STS=${__YES} \
     || STS=${__NO}
 
 if [[ $STS -eq ${__YES} ]]; then
-  echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} exists - will stopp and remove"
+  echo "_____ Container ${__GIT_CLIENT_CONTAINER_NAME} exists - will stopp and remove"
   fn__StopAndRemoveContainer  \
-    ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+    ${__GIT_CLIENT_CONTAINER_NAME} \
       && STS=${__YES} \
       || STS=${__NO}
-  echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} stopped and removed"
+  echo "_____ Container ${__GIT_CLIENT_CONTAINER_NAME} stopped and removed"
 else
-  echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} does not exist"
+  echo "_____ Container ${__GIT_CLIENT_CONTAINER_NAME} does not exist"
 fi
 
 
 fn__RunContainerDetached \
-  ${__GIT_TEST_CLIENT_IMAGE_NAME} \
-  ${__GIT_TEST_CLIENT_IMAGE_VERSION} \
-  ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
-  ${__GIT_TEST_CLIENT_HOST_NAME} \
+  ${__GIT_CLIENT_IMAGE_NAME} \
+  ${__GIT_CLIENT_IMAGE_VERSION} \
+  ${__GIT_CLIENT_CONTAINER_NAME} \
+  ${__GIT_CLIENT_HOST_NAME} \
   ${__REMOVE_CONTAINER_ON_STOP} \
   ${__EMPTY} \
   ${__DEVCICD_NET} \
     && STS=${__DONE} || \
     STS=${__FAILED}
-echo "_____ Container ${__GIT_TEST_CLIENT_CONTAINER_NAME} started"
+echo "_____ Container ${__GIT_CLIENT_CONTAINER_NAME} started"
 
 if [[ $STS -eq ${__DONE} ]]; then
 
   fn__CommitChangesStopContainerAndSaveImage   \
-    "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
-    "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
-    "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
-  echo "_____ Commited changes to ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
+    "${__GIT_CLIENT_CONTAINER_NAME}" \
+    "${__GIT_CLIENT_IMAGE_NAME}" \
+    "${__GIT_CLIENT_IMAGE_VERSION}"
+  echo "_____ Commited changes to ${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
 
   if [[ ${__PUSH_TO_REMOTE_DOCKER_REPO} == ${__YES} ]]; then
     fn__PushImageToRemoteRepository   \
       "${__DOCKER_REPOSITORY_HOST}"  \
-      "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
-      "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
-    echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}" 
+      "${__GIT_CLIENT_IMAGE_NAME}" \
+      "${__GIT_CLIENT_IMAGE_VERSION}"
+    echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}" 
   else
-    echo "_____ On user request on user request image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
+    echo "_____ On user request on user request image ${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
   fi
 else
   ${__INDUCE_ERROR}
@@ -308,27 +308,27 @@ echo "Done..."
 # if [[ $STS -eq ${__DONE} ]]; then
 
 #   fnUpdateOwnershipOfNonRootUserResources  \
-#     ${__GIT_TEST_CLIENT_CONTAINER_NAME} \
+#     ${__GIT_CLIENT_CONTAINER_NAME} \
 #     ${__GIT_USERNAME} \
 #     ${DEBMIN_GUEST_HOME}  \
-#     ${__GIT_TEST_CLIENT_SHELL}  \
+#     ${__GIT_CLIENT_SHELL}  \
 #     ${__GITSERVER_REPOS_ROOT}
 #   echo "_____ Updated ownership of resources for user ${__GIT_USERNAME}"
 
 #   fn__CommitChangesStopContainerAndSaveImage   \
-#     "${__GIT_TEST_CLIENT_CONTAINER_NAME}" \
-#     "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
-#     "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
-#   echo "_____ Commited changes to ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
+#     "${__GIT_CLIENT_CONTAINER_NAME}" \
+#     "${__GIT_CLIENT_IMAGE_NAME}" \
+#     "${__GIT_CLIENT_IMAGE_VERSION}"
+#   echo "_____ Commited changes to ${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} and Stopped container ${__CONTAINER_NAME}"
 
 #   if [[ ${__PUSH_TO_REMOTE_DOCKER_REPO} == ${__YES} ]]; then
 #     fn__PushImageToRemoteRepository   \
 #       "${__DOCKER_REPOSITORY_HOST}"  \
-#       "${__GIT_TEST_CLIENT_IMAGE_NAME}" \
-#       "${__GIT_TEST_CLIENT_IMAGE_VERSION}"
-#     echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION}" 
+#       "${__GIT_CLIENT_IMAGE_NAME}" \
+#       "${__GIT_CLIENT_IMAGE_VERSION}"
+#     echo "_____ Image tagged and pushed to repository as ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}" 
 #   else
-#     echo "_____ On user request on user request image ${__GIT_TEST_CLIENT_IMAGE_NAME}:${__GIT_TEST_CLIENT_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
+#     echo "_____ On user request on user request image ${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} has NOT been pushed to Docker repository ${__DOCKER_REPOSITORY_HOST}" 
 #   fi
 
 # else
