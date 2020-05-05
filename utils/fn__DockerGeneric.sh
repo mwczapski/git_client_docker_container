@@ -1,7 +1,7 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 declare -u fn__DockerGeneric="SOURCED"
@@ -191,9 +191,6 @@ function fn__BuildImage() {
   local pNewImageVersion=${3?"Usage: ${0}:${FUNCNAME} requires New Image Version as 3rd argument"}
   local pDockerfileDosPath=${4?"Usage: ${0}:${FUNCNAME} requires full dos local  ath to the Dockerfile as 4th argument"}
   local pNetworkName=${5?"Usage: ${0}:${FUNCNAME} requires a valid network name as 5th argument"}
-
-  local pRebuildImage=$(tr '[a-z]' '[A-Z]' <<<${pRebuildImage:0:1})
-
 
   if [[ $pRebuildImage == ${__YES} ]]; then
       # ${DEBMIN_ADDHOSTS} \

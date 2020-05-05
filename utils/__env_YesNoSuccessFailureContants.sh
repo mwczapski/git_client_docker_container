@@ -2,7 +2,7 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 declare -u __env_YesNoSuccessFailureContants="SOURCED"
@@ -19,6 +19,8 @@ __FALSE=${__ONE__}
 __NO=${__ONE__}
 __FAILED=${__ONE__}
 __DIFFERENT=${__ONE__}
+
+__EXECUTION_ERROR=11
 
 __IGNORE_ERROR=true
 __INDUCE_ERROR=false
