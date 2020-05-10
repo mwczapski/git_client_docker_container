@@ -24,15 +24,44 @@ trap traperr ERR
 [[ ${fn__DockerGeneric} ]] || source ./utils/fn__DockerGeneric.sh
 [[ ${__env_devcicd_net} ]] || source ./utils/__env_devcicd_net.sh
 [[ ${__env_gitserverConstants} ]] || source ./utils/__env_gitserverConstants.sh
-[[ ${__env_gitTestClientConstants} ]] || source ./utils/__env_gitTestClientConstants.sh
+[[ ${__env_gitClientConstants} ]] || source ./utils/__env_gitClientConstants.sh
 
 [[ ${fn__WSLPathToDOSandWSDPaths} ]] || source ./utils/fn__WSLPathToDOSandWSDPaths.sh
 [[ ${fn__ConfirmYN} ]] || source ./utils/fn__ConfirmYN.sh
 [[ ${fn__FileSameButForDate} ]] || source ./utils/fn__FileSameButForDate.sh
+[[ ${fn__GitserverGeneric} ]] || source ./utils/fn__GitserverGeneric.sh
 
 [[ ${fn__CreateWindowsShortcut} ]] || source ./utils/fn__CreateWindowsShortcut.sh
 
 echo "______ Sourced common variables and functions"; 
+
+
+
+function fn__DeriveContainerName() {
+  [[ $# -lt  1 || "${0^^}" == "HELP" ]] && {
+    local lUsage='
+  Usage: 
+    lContainerName=$(fn__DeriveContainerName \
+      ${__DEBMIN_HOME})
+    '
+  }
+
+  # derive container name from the name of the parent of _commonUtils
+  #
+  local -r pWorkingDirectoryString=${1?"Current Working Directory is required\n${lUsage}"}
+  local lContainerName=${pWorkingDirectoryString%%/_commonUtils}
+  lContainerName=${lContainerName##*/} # strip directory hierarchy before parent of _commonUtils
+  lContainerName=${lContainerName//[ _^%@-]/}  # remove special characters, if any, from project name
+
+  # reduce project name to no more than __MaxNameLen__ characters
+  #
+  local -ri __MaxNameLen__=15
+  local -ri nameLen=${#lContainerName}
+  local startPos=$((${nameLen}-${__MaxNameLen__})) 
+  startPos=${startPos//-*/0} 
+  local -r lContainerName=${lContainerName:${startPos}}
+  echo ${lContainerName}
+}
 
 
 function fn__SetEnvironmentVariables() {
@@ -64,16 +93,12 @@ function fn__SetEnvironmentVariables() {
   pDebminHome=${pDebminHome%%/_commonUtils} # strip _commonUtils
   local -r lDebminHome_DOS=$(fn__WSLPathToRealDosPath ${pDebminHome})
 
-  local lContainerName=${__GIT_CLIENT_CONTAINER_NAME}
-  # local lContainerName=${pDebminHome##*/} # strip directory hierarchy before parent of _commonUtils
-  # lContainerName=${lContainerName//[ _^%@-]/}  # remove special characters, if any, from project name
+  local lContainerName=$(fn__DeriveContainerName ${__DEBMIN_HOME})
+  echo "______ lContainerName: ${lContainerName}"
 
-  # reduce project name to no more than __MaxNameLen__ characters
-  local -ri __MaxNameLen__=15
-  local -ri nameLen=${#lContainerName}
-  local startPos=$((${nameLen}-${__MaxNameLen__})) 
-  startPos=${startPos//-*/0} 
-  local -r lContainerName=${lContainerName:${startPos}}
+  __GIT_CLIENT_REMOTE_REPO_NAME=${lContainerName}
+  __GIT_CLIENT_CONTAINER_NAME=${lContainerName}
+  __GIT_CLIENT_HOST_NAME=${lContainerName}
 
   readonly __DEBMIN_SOURCE_IMAGE_NAME="${pDebminSourceImageName}"
 
@@ -419,7 +444,7 @@ function fn__TestLocalAndRemoteGitReposOperation() {
       ${__GITSERVER_HOST_NAME} \
       ${__GIT_USERNAME} \
       ${__GITSERVER_REPOS_ROOT} \
-      ${__GITSERVER_REM_TEST_REPO_NAME} \
+      ${__GIT_CLIENT_REMOTE_REPO_NAME} \
         && STS=${__DONE} \
         || STS=${__FAILED}
         '
@@ -512,13 +537,41 @@ fn__SetEnvironmentVariables \
 echo "______ Set local environment variables"; 
 
 
-fn__ConfirmYN "Create Windows Shortcuts?" && _CREATE_WINDOWS_SHORTCUTS_=${__YES} || _CREATE_WINDOWS_SHORTCUTS_=${__NO}
-
-
-fn__ConfirmYN "Artefact location will be ${__DEBMIN_HOME} - Is this correct?" && true || {
-  echo -e "_______ Aborting ...\n"
+fn__ConfirmYN "Artifact location will be ${__DEBMIN_HOME} - Is this correct?" && true || {
+  echo -e "______ Aborting ...\n"
   exit
 }
+echo "______ Setting artifact location to ${__DEBMIN_HOME}"
+
+
+
+#####
+# ask for container name, host name and repo name, offering derived defaults?
+# I think so
+#####
+
+
+
+fn__ConfirmYN "Create remote git repository ${__GIT_CLIENT_REMOTE_REPO_NAME} if it does not exist ?" && _CREATE_REMOTE_GIT_REPO_=${__YES} || _CREATE_REMOTE_GIT_REPO_=${__NO}
+echo "______ Will $([[ ${__GIT_CLIENT_REMOTE_REPO_NAME} == ${__NO} ]] && echo "NOT ")create remote git repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
+
+
+fn__ConfirmYN "Use ${__GIT_CLIENT_CONTAINER_NAME} as container name ?" && _USE_DERIVED_CONTAINER_NAME_=${__YES} || _USE_DERIVED_CONTAINER_NAME_=${__NO}
+[[ ${_USE_DERIVED_CONTAINER_NAME_} -eq ${__YES}]] \
+  || __GIT_CLIENT_CONTAINER_NAME="unknown"
+
+echo "______ Will use '${__GIT_CLIENT_CONTAINER_NAME}' as Client Container Name"
+fn__ConfirmYN "Proceed with ${__GIT_CLIENT_CONTAINER_NAME} as container name? ${__DEBMIN_HOME}" && true || {
+  echo -e "______ Aborting ...\n"
+  exit
+}
+echo "______ Using ${_USE_DERIVED_CONTAINER_NAME_} as Container Name and Host Name"
+
+  # __GIT_CLIENT_CONTAINER_NAME=${lContainerName}
+  # __GIT_CLIENT_HOST_NAME=${lContainerName}
+
+fn__ConfirmYN "Create Windows Shortcuts?" && _CREATE_WINDOWS_SHORTCUTS_=${__YES} || _CREATE_WINDOWS_SHORTCUTS_=${__NO}
+echo "______ Will $([[ ${_CREATE_WINDOWS_SHORTCUTS_} == ${__NO} ]] && echo "NOT ")create windows shortcuts"
 
 
 fn__CreateDockerComposeFile \
@@ -617,17 +670,66 @@ echo "STS:${STS}"
 echo "______ Added ${__GITSERVER_HOST_NAME} to ${__GIT_CLIENT_GUEST_HOME}'s \${HOME}/.ssh/known_hosts"; 
 
 
-fn__TestLocalAndRemoteGitReposOperation \
-  ${__GIT_CLIENT_CONTAINER_NAME} \
-  ${__GIT_CLIENT_USERNAME} \
-  ${__GIT_CLIENT_SHELL} \
-  ${__GIT_CLIENT_GUEST_HOME} \
-  ${__GITSERVER_HOST_NAME} \
+# client's public key must be in git server's authorised_keys file
+#
+fn__AddClientPublicKeyToServerAuthorisedKeysStore \
+  "${lClientIdRSAPub}"  \
+  ${__GITSERVER_CONTAINER_NAME} \
   ${__GIT_USERNAME} \
+  ${__GITSERVER_SHELL} \
+    && STS=${__DONE} \
+    || STS=${__FAILED}
+
+
+
+
+
+# if repo already exists we can't create a new one with the same name
+#
+fn__DoesRepoAlreadyExist \
+  ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
+  ${__GITSERVER_CONTAINER_NAME} \
+  ${__GIT_USERNAME} \
+  ${__GITSERVER_SHELL} \
+    && {
+      echo "______ Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - aborting"
+      exit
+    } \
+    || STS=$? # can be __NO or __EXECUTION_ERROR
+
+  [[ ${STS} -eq ${__EXECUTION_ERROR} ]] && {
+      echo "______ Failed to determine whether Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - aborting"
+      exit 
+  }
+
+fn__CreateNewClientGitRepositoryOnRemote \
+  ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
+  ${__GITSERVER_CONTAINER_NAME} \
+  ${__GIT_USERNAME} \
+  ${__GITSERVER_SHELL} \
   ${__GITSERVER_REPOS_ROOT} \
-  ${__GITSERVER_REM_TEST_REPO_NAME} \
-    && echo "______ Local and Remote Git repository test completed" \
-    || echo "______ Local and Remote Git repository test failed - investigate!!!"
+    && {
+      echo "______ Created remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
+    } \
+    || {
+      echo "______ Failed to create remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
+    }
+
+
+
+
+
+# fn__TestLocalAndRemoteGitReposOperation \
+#   ${__GIT_CLIENT_CONTAINER_NAME} \
+#   ${__GIT_CLIENT_USERNAME} \
+#   ${__GIT_CLIENT_SHELL} \
+#   ${__GIT_CLIENT_GUEST_HOME} \
+#   ${__GITSERVER_HOST_NAME} \
+#   ${__GIT_USERNAME} \
+#   ${__GITSERVER_REPOS_ROOT} \
+#   ${__GIT_CLIENT_REMOTE_REPO_NAME} \
+#     && echo "______ Local and Remote Git repository test completed" \
+#     || echo "______ Local and Remote Git repository test failed - investigate!!!"
 
 
 [[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {

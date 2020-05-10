@@ -26,3 +26,5 @@ __IGNORE_ERROR=true
 __INDUCE_ERROR=false
 
 __EMPTY="EMPTY"
+
+__INSUFFICIENT_ARGS="______ Insufficient number of arguments"

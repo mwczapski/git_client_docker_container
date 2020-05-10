@@ -395,7 +395,7 @@ The script accepts two optional arguments.
 <td>Optional.<br>The name of the new remote repository.<br>If the repository already exists the script will abort with a note to that effect.<br>
 If the repository does not exist it will be created as a "bare" repository.
 </td>
-<td style="vertical-align: top;">gittest</td>
+<td style="vertical-align: top;">gitclient</td>
 </tr>
 <tr>
 <td style="vertical-align: top;">&lt;Path To id_rsa.pub&gt;</td>
