@@ -8,7 +8,7 @@
 
 declare -u __env_devcicd_net="SOURCED"
 
-[[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 
 # change this if you want to create network with a different name
 #

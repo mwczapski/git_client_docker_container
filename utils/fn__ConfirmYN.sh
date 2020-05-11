@@ -7,7 +7,7 @@
 
 declare -u fn__ConfirmYN="SOURCED"
 
-[[ ${__env_YesNoSuccessFailureContants} ]] || source __env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source __env_GlobalConstants.sh
 
 _PROMPTS_TIMEOUT_SECS_=${_PROMPTS_TIMEOUT_SECS_:-5.5}
 

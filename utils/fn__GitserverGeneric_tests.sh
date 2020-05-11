@@ -9,7 +9,7 @@ declare -ur fn__GitserverGeneric_tests="SOURCED"
 
 # common environment variable values and utility functions
 #
-[[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 [[ ${fn__GitserverGeneric} ]] || source ./utils/fn__GitserverGeneric.sh
 
 echo "______ Sourced common variables and functions"; 

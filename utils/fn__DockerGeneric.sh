@@ -13,7 +13,7 @@ readonly __DOCKER_COMPOSE_EXE="docker-compose.exe"
 
 readonly __DOCKER_REPOSITORY_HOST="mcz11.czapski.id.au"
 
-[[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 
 :<<-'EXAMPLE----------------------------------------------------------'
       __CONTAINER_NAME="node13130"
@@ -249,28 +249,28 @@ function fn_GetDockerComposeDOSCommandLine() {
 } 
 
 
-:<<-'EXAMPLE----------------------------------------------------------'
-  # Y or P is __YES, anything else, including nothing if default of __NO
-  [[ fn__PushToRemoteDockerRepo ${1} ]] && __PUSH2REMOTEREPO=${__YES} || __PUSH2REMOTEREPO=${__NO} 
-EXAMPLE----------------------------------------------------------
-function fn__PushToRemoteDockerRepo() {
+# :<<-'EXAMPLE----------------------------------------------------------'
+#   # Y or P is __YES, anything else, including nothing if default of __NO
+#   [[ fn__PushToRemoteDockerRepo ${1} ]] && __PUSH2REMOTEREPO=${__YES} || __PUSH2REMOTEREPO=${__NO} 
+# EXAMPLE----------------------------------------------------------
+# function fn__PushToRemoteDockerRepo() {
 
-  local pPushToRepoBool=${__NO}
-  local pPushToRepoSt=${1:-NO}
-  if [[ $# -gt 0 ]]; then
-    pPushToRepoSt=${pPushToRepoSt^^}
-    pPushToRepoSt=${pPushToRepoSt:0:1}
-    case "${pPushToRepoSt}" in
-    Y|P) 
-      pPushToRepoBool=${__YES}
-      ;;
-    *) {
-      pPushToRepoBool=${__NO}
-    }
-    esac
-  fi
-  return ${pPushToRepoBool}
-}
+#   local pPushToRepoBool=${__NO}
+#   local pPushToRepoSt=${1:-NO}
+#   if [[ $# -gt 0 ]]; then
+#     pPushToRepoSt=${pPushToRepoSt^^}
+#     pPushToRepoSt=${pPushToRepoSt:0:1}
+#     case "${pPushToRepoSt}" in
+#     Y|P) 
+#       pPushToRepoBool=${__YES}
+#       ;;
+#     *) {
+#       pPushToRepoBool=${__NO}
+#     }
+#     esac
+#   fi
+#   return ${pPushToRepoBool}
+# }
 
 
 function fn__DockerNetworkExists() {

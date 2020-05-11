@@ -6,7 +6,18 @@
 
 declare -u fn__UtilityGeneric="SOURCED"
 
-[[ ${__env_YesNoSuccessFailureContants} ]] || source __env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source __env_GlobalConstants.sh
+
+
+_PROMPTS_TIMEOUT_SECS_=${_PROMPTS_TIMEOUT_SECS_:-15.5}
+
+function fn__ConfirmYN() {
+  pPrompt=${1?"Usage: $0 requires the prompt string and will return 0 if response is Yes, and 1 if it is No"}
+  read -t ${_PROMPTS_TIMEOUT_SECS_} -p "______ ${pPrompt} (y/N) " -i 'No' -r RESP || echo
+  RESP=${RESP^^}; RESP=${RESP:0:1}
+  [[ $RESP == 'Y' ]] && return ${__YES} || return ${__NO}
+}
+
 
 function fn__FileSameButForDate() {
   local lUsage='
@@ -77,6 +88,14 @@ function fn__SanitizeInputAlphaNum() {
   [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
   local pInput="$@"
   local pOutput=$(fn__SanitizeInput "[a-zA-Z0-9]" ${pInput}) && STS=$?|| STS=$?
+  echo ${pOutput}
+  return ${STS}
+}
+
+function fn__SanitizeInputIdentifier() {
+  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
+  local pInput="$@"
+  local pOutput=$(fn__SanitizeInput "[a-zA-Z0-9_]" ${pInput}) && STS=$?|| STS=$?
   echo ${pOutput}
   return ${STS}
 }

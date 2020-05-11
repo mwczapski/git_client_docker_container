@@ -6,7 +6,7 @@
 
 declare -u fn__UtilityGeneric_tests="SOURCED"
 
-[[ ${__env_YesNoSuccessFailureContants} ]] || source __env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source __env_GlobalConstants.sh
 [[ ${fn__UtilityGeneric} ]] || source fn__UtilityGeneric.sh
 
 declare -i iSuccessResults=0

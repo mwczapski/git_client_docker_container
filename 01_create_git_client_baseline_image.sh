@@ -22,7 +22,7 @@ export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 # common environment variable values and utility functions
 #
-[[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 [[ ${fn__DockerGeneric} ]] || source ./utils/fn__DockerGeneric.sh
 [[ ${__env_devcicd_net} ]] || source ./utils/__env_devcicd_net.sh
 [[ ${__env_gitserverConstants} ]] || source ./utils/__env_gitserverConstants.sh
@@ -37,164 +37,6 @@ export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 [[ ${_01_create_git_client_baseline_image_utils} ]] || source ./01_create_git_client_baseline_image_utils.sh
 
 
-## #######################################################################################
-
-function fn__SetEnvironmentVariables() {
-
-  # set environment
-  #
-  mkdir -pv ${__DEBMIN_HOME}
-  cd ${__DEBMIN_HOME}
-
-  __DEBMIN_HOME=${__DEBMIN_HOME%%/_commonUtils} # strip _commonUtils
-  __DEBMIN_HOME_DOS=$(fn__WSLPathToRealDosPath ${__DEBMIN_HOME})
-  __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${__DEBMIN_HOME})
-  __DEBMIN_SOURCE_IMAGE_NAME="bitnami/minideb:jessie"
-  __TZ_PATH=Australia/Sydney
-  __TZ_NAME=Australia/Sydney
-  __ENV="${__GIT_CLIENT_SHELL_GLOBAL_PROFILE}"
-
-  __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${__GIT_CLIENT_IMAGE_NAME}
-
-  ## toggles 
-  __REMOVE_CONTAINER_ON_STOP=${__YES} # container started using this image is not supposed to be used for work
-  __NEEDS_REBUILDING=${__NO}  # set to ${__YES} if image does not exist or Dockerfile changed
-
-}
-
-
-# function fn__Create_docker_entry_point_file() {
-#   [[ $# -lt  2 || "${0^^}" == "HELP" ]] && {
-#     echo '
-#   Usage: 
-#       fn__Create_docker_entry_point_file \
-#         ${__DEBMIN_HOME}
-#         ${__GIT_CLIENT_SHELL}
-#       '
-#     return ${__FAILED}
-#   }
-#    local pTargetDirectory=${1?"Full path to the directory to which to write the file"}
-#    local pGuestShell=${2?"Full path to guest's shell binary, for example /bin/bash or /bin/ash or /bin/sh"}
-
-#   cat <<-EOF > ${__DEBMIN_HOME}/docker-entrypoint.sh
-# #!/bin/bash
-# set -e
-
-# # prevent container from exiting after successfull startup
-# # exec /bin/bash -c 'while true; do sleep 100000; done'
-# exec ${pGuestShell} \$@
-# EOF
-#   chmod +x ${pTargetDirectory}/docker-entrypoint.sh
-# }
-
-
-# function fn__CreateDockerfile() {
-
-#   # create Dockerfile
-#   local __NEEDS_REBUILDING=${__NO}
-#   local STS=${__SUCCESS}
-
-#   local TS=$(date '+%Y%m%d_%H%M%S')
-#   [[ -e ${__DOCKERFILE_PATH} ]] && cp ${__DOCKERFILE_PATH} ${__DOCKERFILE_PATH}_${TS}
-    
-#   cat <<-EOF > ${__DOCKERFILE_PATH}
-# FROM ${__DEBMIN_SOURCE_IMAGE_NAME}
-
-# ## Dockerfile Version: ${TS}
-# ##
-# # the environment variables below will be used in creating the image
-# # and will be available to the containers created from the image ...
-# #
-# ENV DEBMIN_USERNAME=${__GIT_CLIENT_USERNAME} \\
-#     DEBMIN_SHELL=${__GIT_CLIENT_SHELL} \\
-#     DEBMIN_SHELL_PROFILE=${__GIT_CLIENT_SHELL_PROFILE} \\
-#     DEBMIN_GUEST_HOME=${__GIT_CLIENT_GUEST_HOME} \\
-#     GITSERVER_REPOS_ROOT=${__GITSERVER_REPOS_ROOT} \\
-#     TZ_PATH=${__TZ_PATH} \\
-#     TZ_NAME=${__TZ_NAME}  \\
-#     ENV=${__ENV}  \\
-#     DEBIAN_FRONTEND=noninteractive
-
-# COPY ./docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-
-# # install necessary / usefull extra packages
-# # the following are needed to download, builld and install git from sources
-# # wget, unzip, build-essential, libssl-dev, libcurl4-openssl-dev, libexpat1-dev, gettex
-# #
-# RUN export DEBIAN_FRONTEND=noninteractive && \\
-#   apt-get update && \\
-#   apt-get upgrade -y && \\
-#   apt-get -y install apt-utils && \\
-#   apt-get -y install \\
-#     tzdata \\
-#     net-tools \\
-#     iputils-ping \\
-#     openssh-client \\
-#     nano \\
-#     less \\
-#     git && \\
-# \\
-#     git --version && \\
-# \\
-# # set timezone - I live in Sydney - change as you see fit in the env variables above
-#     cp -v /usr/share/zoneinfo/\${TZ_PATH} /etc/localtime && \\
-#     echo "\${TZ_NAME}" > /etc/timezone && \\
-#     echo \$(date) && \\
-# \\
-# # create non-root user 
-#     addgroup developers && \\
-#     useradd -G developers -m \${DEBMIN_USERNAME} -s \${DEBMIN_SHELL} -p \${DEBMIN_USERNAME} && \\
-# \\
-# # configure ssh client directory
-#     mkdir -pv \${DEBMIN_GUEST_HOME}/.ssh && \\
-#     chown -Rv \${DEBMIN_USERNAME}:\${DEBMIN_USERNAME} \${DEBMIN_GUEST_HOME}/.ssh
-# EOF
-
-#   if [[ -e ${__DOCKERFILE_PATH}_${TS} ]]; then
-
-#     fn__FileSameButForDate \
-#       ${__DOCKERFILE_PATH}  \
-#       ${__DOCKERFILE_PATH}_${TS} \
-#         && STS=${__THE_SAME} \
-#         || STS=${__DIFFERENT}
-
-#     if [[ ${STS} -eq ${__DIFFERENT} ]]; then
-#       __NEEDS_REBUILDING=${__YES}
-#     else 
-#       rm -f ${__DOCKERFILE_PATH}_${TS}
-#     fi
-#   fi
-#   return ${__NEEDS_REBUILDING}
-
-# }
-
-# function fnUpdateOwnershipOfNonRootUserResources() {
-#   local lUsage='
-#       Usage: 
-#         fnUpdateOwnershipOfNonRootUserResources  \
-#           ${__GIT_CLIENT_CONTAINER_NAME} \
-#           ${__GIT_USERNAME} \
-#           ${DEBMIN_GUEST_HOME}  \
-#           ${__GIT_CLIENT_SHELL}  \
-#           ${__GITSERVER_REPOS_ROOT}
-#       '
-#   [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
-#     echo ${lUsage}
-#     return ${__FAILED}
-#   }
-#   pContainerName=${1?"${lUsage}"}
-#   pGitUsername=${2?"${lUsage}"}
-#   pGuestHome=${3?"${lUsage}"}
-#   pContainerShell=${4?"${lUsage}"}
-#   pGitReposRoot=${5?"${lUsage}"}
-
-#   ${__DOCKER_EXE} container exec -itu root -w ${pGitReposRoot} ${pContainerName} ${pContainerShell} -lc "
-#   chown -R ${pGitUsername}:${pGitUsername} ${pGuestHome}
-#   chown -R ${pGitUsername}:${pGitUsername} ${pGitReposRoot}
-#   "
-#   echo "______ Updated ownership of ${pGitUsername} resources on ${pContainerName}"
-# }
-
 ## ##################################################################################
 ## ##################################################################################
 ## 
@@ -203,25 +45,43 @@ function fn__SetEnvironmentVariables() {
 
 # is there a command line argument that asks for the image to be uploaded ot the remote docker repository?
 
-# confirm working directory
+# confirm working directory and push image to remote repository
 #
-__DEBMIN_HOME=$(pwd | sed 's|/_commonUtils||')
+if [[ "$(echo $(basename $(pwd)))" != "_commonUtils" ]]
+then
+  echo "______ Script ${0} is expected to be located in, and run from the directory named '_commonUtils' "
+  echo "______ Aborting ..."
+  exit ${__FAILED}
+fi
 
+
+__DEBMIN_HOME=$(pwd | sed 's|/_commonUtils||')
+ 
 
 fn__ConfirmYN "Artifacts location will be ${__DEBMIN_HOME} - Is this correct?" && true || {
   echo "______ Aborting ..."
-  exit
+  exit ${__NO}
 }
 echo "______ Artifacts location confirmed as ${__DEBMIN_HOME}"
 
 
-fn__PushToRemoteDockerRepo ${1} && STS=${__YES} || STS=${__NO} 
-readonly __PUSH_TO_REMOTE_DOCKER_REPO=$STS
+fn__ConfirmYN "Push of the image to the remote Docker repository?" && STS=$? || STS=$?
+readonly __PUSH_TO_REMOTE_DOCKER_REPO=${STS}
 echo "______ Push of the image to the remote Docker repository has $([[ ${__PUSH_TO_REMOTE_DOCKER_REPO} -eq ${__NO} ]] && echo "NOT ")been requested."
 
 
-fn__SetEnvironmentVariables ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
+# 
+mkdir -pv ${__DEBMIN_HOME}
+cd ${__DEBMIN_HOME}
+
+
+fn__SetEnvironmentVariables \
+  ${__DEBMIN_HOME} \
+  "bitnami/minideb:jessie" \
+  ${__GIT_CLIENT_SHELL_GLOBAL_PROFILE} \
+  ${__GIT_CLIENT_IMAGE_NAME} 
 echo "______ Set environment variables" 
+
 
 
 fn__Create_docker_entry_point_file \
@@ -241,10 +101,9 @@ fn__CreateDockerfile \
   ${__GITSERVER_REPOS_ROOT} \
   ${__TZ_PATH} \
   ${__TZ_NAME} && __NEEDS_REBUILDING=$? || __NEEDS_REBUILDING=$?
-
 echo "______ Created Dockerfile: ${__DOCKERFILE_PATH}" 
 
-exit
+
 fn__ImageExists \
   "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}" && __IMAGE_EXISTS=${__YES} || __IMAGE_EXISTS=${__NO}
 [[ ${__IMAGE_EXISTS} -eq ${__YES} ]]  \
@@ -275,7 +134,7 @@ fn__ContainerExists \
 
 if [[ $STS -eq ${__YES} ]]; then
 
-  echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} exists - will stopp and remove"
+  echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} exists - will stop and remove"
 
   fn__StopAndRemoveContainer  \
     ${__GIT_CLIENT_CONTAINER_NAME} \
@@ -299,6 +158,7 @@ fn__RunContainerDetached \
     && STS=${__DONE} || \
     STS=${__FAILED}
    
+
 [[ $STS -eq ${__DONE} ]] && echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} started"
 
 if [[ $STS -eq ${__DONE} ]]; then
