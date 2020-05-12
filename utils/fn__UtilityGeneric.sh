@@ -13,9 +13,103 @@ _PROMPTS_TIMEOUT_SECS_=${_PROMPTS_TIMEOUT_SECS_:-15.5}
 
 function fn__ConfirmYN() {
   pPrompt=${1?"Usage: $0 requires the prompt string and will return 0 if response is Yes, and 1 if it is No"}
-  read -t ${_PROMPTS_TIMEOUT_SECS_} -p "______ ${pPrompt} (y/N) " -i 'No' -r RESP || echo
+  read -t ${_PROMPTS_TIMEOUT_SECS_} -p "_??___ ${pPrompt} (y/N) " -i 'No' -r RESP || echo
   RESP=${RESP^^}; RESP=${RESP:0:1}
   [[ $RESP == 'Y' ]] && return ${__YES} || return ${__NO}
+}
+
+
+function fn__GetValidIdentifierInput() {
+  local -r lUsage='
+  Usage: 
+    fn__GetValidIdentifierInput \
+      "inPromptString"  \
+      "inMaxLength"  \
+      "inTimeoutSecs" \
+      "outValidValue"
+    '
+  # this picks up missing arguments
+  #
+  [[ $# -lt 4 || "${0^^}" == "HELP" ]] && {
+    echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
+    return ${__FAILED}
+  }
+
+  # this picks up arguments which are empty strings
+  # 
+  [[ -n "${1}" ]] 2>/dev/null || { echo "1st Argument value, '${1}', is invalid"; return ${__FAILED} ; }
+  [[ -n "${2}" ]] 2>/dev/null || { echo "2nd Argument value, '${2}', is invalid"; return ${__FAILED} ; }
+  [[ -n "${3}" ]] 2>/dev/null || { echo "3rd Argument value, '${3}', is invalid"; return ${__FAILED} ; }
+  [[ -n "${4}" ]] 2>/dev/null || { echo "4th Argument value, '${4}', is invalid"; return ${__FAILED} ; }
+
+  # name reference variables
+  #
+  local -n lXinPromptString=$1
+  local -n lXinMaxLength=$2
+  local -n lXinTimeoutSecs=$3
+  local -n lXoutValidValue=$4
+
+  # read data - if value is pumped into the function, for example with:
+  # fn__GetValidIdentifierInput "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" <<<"${testValue}"
+  # then read will read it and not wait for input 
+  # this is great for testing
+  #
+  local lReaData="${lXoutValidValue}"
+  if [[ -n "${lReaData}" ]]
+  then
+    read -t ${lXinTimeoutSecs} -p "${lXinPromptString}" -n $((${lXinMaxLength}*2)) lReaData && STS=$? || STS=$?
+    if [[ ${STS} -ne ${__SUCCESS} ]]  # timeout - 142
+    then
+      lReaData="${lXoutValidValue}"
+    else 
+      if [[ ! -n "${lReaData}" ]]
+      then
+        lReaData="${lXoutValidValue}"
+      fi
+    fi
+  else
+    read -t ${lXinTimeoutSecs} -p "${lXinPromptString}" -n $((${lXinMaxLength}*2)) -e -i "${lXoutValidValue}" lReaData && STS=$? || STS=$?
+    if [[ ${STS} -ne ${__SUCCESS} ]]  # timeout - 142
+    then
+      lReaData="${lXoutValidValue}"
+    else 
+      if [[ ! -n "${lReaData}" ]]
+      then
+        lReaData="${lXoutValidValue}"
+      fi
+    fi
+  fi
+
+  # no data provided either via keyboard entry, pipe or in lXoutValidValue as default
+  #
+  [[ ${lReaData} ]] || {
+    lXoutValidValue=""
+    return ${__FAILED}
+  }
+
+  # remove all non-compliant characters from the string - see fn__SanitizeInputIdentifier for details
+  #
+  lReaData=$(fn__SanitizeInputIdentifier "${lReaData}") || {
+    lXoutValidValue=""
+    return ${__FAILED}
+  }
+
+  # make sure the string is cut down to length
+  #
+  lReaData=${lReaData:0:${lXinMaxLength}}
+
+  # set return value
+  #
+  lXoutValidValue="${lReaData}"
+
+  # resut is empty?
+  #
+  [[ ${lXoutValidValue} ]] || {
+    lXoutValidValue=""
+    return ${__FAILED}
+  }
+
+  return ${__SUCCESS}
 }
 
 
@@ -84,6 +178,7 @@ function fn__SanitizeInput() {
   return ${__SUCCESS}
 }
 
+
 function fn__SanitizeInputAlphaNum() {
   [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
   local pInput="$@"
@@ -91,6 +186,7 @@ function fn__SanitizeInputAlphaNum() {
   echo ${pOutput}
   return ${STS}
 }
+
 
 function fn__SanitizeInputIdentifier() {
   [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
@@ -100,6 +196,7 @@ function fn__SanitizeInputIdentifier() {
   return ${STS}
 }
 
+
 function fn__SanitizeInputAlpha() {
   [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
   local pInput="$@"
@@ -107,6 +204,7 @@ function fn__SanitizeInputAlpha() {
   echo ${pOutput}
   return ${STS}
 }
+
 
 function fn__SanitizeInputNumeric() {
   [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }

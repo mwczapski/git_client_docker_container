@@ -74,21 +74,7 @@ fn__ConfirmYN "Project Directory is ${__DEBMIN_HOME}, Project Name is '${lProjec
 cd ${__DEBMIN_HOME}
 
 
-## offer default container name first
-## if not accepted offer derived container name next
-## if not accepted request that name be entered explicitly
-##
-_PROMPTS_TIMEOUT_SECS_=30
-
-:<<-'COMMENT--fn__GetClientContainerName-----------------------------------------'
-  Usage
-    fn__GetClientContainerName
-      __DEBMIN_HOME in
-      __GIT_CLIENT_CONTAINER_NAME in/out
-  Returns:
-    __FAILED if there was an error or all options were exchusted without name selection
-    __SUCCESS and the chosen name in __GIT_CLIENT_CONTAINER_NAME
-COMMENT--fn__GetClientContainerName-----------------------------------------
+declare -i _PROMPTS_TIMEOUT_SECS_=30
 
 fn__GetClientContainerName  \
   "__DEBMIN_HOME" \
@@ -101,18 +87,42 @@ then
 fi
 echo "______ Using '${__GIT_CLIENT_CONTAINER_NAME}' as Container Name and Host Name"
 
+__GIT_CLIENT_HOST_NAME=${__GIT_CLIENT_CONTAINER_NAME}
+
+
+
+## ask if user wants to create a repo
+## if yes, ask for name offering default and an opportunity to change
+## if not - set the flag to no do it
+#
+fn__ConfirmYN "Create remote git repository if it does not exist? " && _CREATE_REMOTE_GIT_REPO_=${__YES} || _CREATE_REMOTE_GIT_REPO_=${__NO}
+# echo "______ Will $([[ ${_CREATE_REMOTE_GIT_REPO_} == ${__NO} ]] && echo "NOT ")create remote git repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
+# ${__GIT_CLIENT_REMOTE_REPO_NAME} 
+# echo "_CREATE_REMOTE_GIT_REPO_: ${_CREATE_REMOTE_GIT_REPO_}"
+
+# fn__GetGitRepoName  \
+#   "__DEBMIN_HOME" \
+#   "__GIT_CLIENT_CONTAINER_NAME" && STS=$? || STS=$?
+# if [[ ${STS} -ne ${__SUCCESS} ]]
+# then
+#   echo "______ Failed to choose container name."
+#   echo "______ Aborting ..."
+#   exit ${__FAILED}
+# fi
+# echo "______ Using '${__GIT_CLIENT_CONTAINER_NAME}' as Container Name and Host Name"
+
+# __GIT_CLIENT_HOST_NAME=${__GIT_CLIENT_CONTAINER_NAME}
 
 
 
 
 exit
 
-fn__ConfirmYN "Create remote git repository ${__GIT_CLIENT_REMOTE_REPO_NAME} if it does not exist? " && _CREATE_REMOTE_GIT_REPO_=${__YES} || _CREATE_REMOTE_GIT_REPO_=${__NO}
-echo "______ Will $([[ ${__GIT_CLIENT_REMOTE_REPO_NAME} == ${__NO} ]] && echo "NOT ")create remote git repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
 
 
-  # __GIT_CLIENT_CONTAINER_NAME=${lContainerName}
-  # __GIT_CLIENT_HOST_NAME=${lContainerName}
+
+
+
 
 fn__ConfirmYN "Create Windows Shortcuts?" && _CREATE_WINDOWS_SHORTCUTS_=${__YES} || _CREATE_WINDOWS_SHORTCUTS_=${__NO}
 echo "______ Will $([[ ${_CREATE_WINDOWS_SHORTCUTS_} == ${__NO} ]] && echo "NOT ")create windows shortcuts"
