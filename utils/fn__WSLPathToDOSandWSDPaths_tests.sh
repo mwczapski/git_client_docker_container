@@ -6,8 +6,8 @@
 
 declare -u fn__WSLPathToDOSandWSDPaths_tests="SOURCED"
 
-[[ ${__env_GlobalConstants} ]] || source __env_GlobalConstants.sh
-[[ ${fn__WSLPathToDOSandWSDPaths} ]] || source fn__WSLPathToDOSandWSDPaths.sh
+[[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
+[[ ${fn__WSLPathToDOSandWSDPaths} ]] || source ./utils/fn__WSLPathToDOSandWSDPaths.sh
 
 declare -i iSuccessResults=0
 declare -i iFailureResults=0

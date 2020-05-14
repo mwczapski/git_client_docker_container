@@ -127,7 +127,7 @@ then
     expectedStatusResult=${__FAILED}
 
     ${functionName} "${pClientContainerName}" "${pClientUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \

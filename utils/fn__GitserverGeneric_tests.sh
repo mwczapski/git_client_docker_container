@@ -37,6 +37,7 @@ else
   expectedStringResult="gitserver"
   expectedStatusResult=0
   actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+  # echo "xxxxxx ${0}:${LINENO}: actualStringResult: ${actualStringResult}"
   [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
       echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
       ((iSuccessResults++)); true
@@ -57,10 +58,11 @@ else
       ((iFailureResults++)); true
     }
 
-  functionInputs="gitserver gitserverXX git /bin/bash"
+  functionInputs="'gitserver' 'gitserverXX' 'git' '/bin/bash'"
   expectedStringResult=""
   expectedStatusResult=1
   actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+  # echo "xxxxxx ${0}:${LINENO}: actualStringResult: ${actualStringResult}"
   [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
       echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
       ((iSuccessResults++)); true
@@ -69,34 +71,35 @@ else
       ((iFailureResults++)); true
     }
 
-  functionInputs="gitserver XXgitserverXX git /bin/bash"
-  expectedStringResult="gitserver"
-  expectedStatusResult=0
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-      ((iSuccessResults++)); true
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
-    }
-
-  functionInputs="gitserver gitserver XXgit /bin/bashXX"
-  expectedStringResult="gitserver"
-  expectedStatusResult=0
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-      ((iSuccessResults++)); true
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
-    }
-
-  functionInputs="gitserverXX gitserver git "
+  functionInputs="'gitserver' 'XXgitserverXX' 'git' '/bin/bash'"
   expectedStringResult=""
+  expectedStatusResult=${__NO}
+  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+      echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
+      ((iSuccessResults++)); true
+    } || {
+      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
+      ((iFailureResults++)); true
+    }
+
+  functionInputs="'gitserver' 'gitserver' 'XXgit' '/bin/bashXX'"
+  expectedStringResult=""
+  expectedStatusResult=${__NO}
+  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+      echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
+      ((iSuccessResults++)); true
+    } || {
+      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
+      ((iFailureResults++)); true
+    }
+
+  functionInputs="'gitserverXX' 'gitserver' 'git'"
+  expectedStringResult="______ Insufficient number of arguments"
   expectedStatusResult=11
   actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+  actualStringResult=${actualStringResult:0:${#expectedStringResult}}
   [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
       echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
       ((iSuccessResults++)); true
@@ -105,10 +108,11 @@ else
       ((iFailureResults++)); true
     }
 
-  functionInputs="gitserver gitserver"
-  expectedStringResult=""
+  functionInputs="'gitserver' 'gitserver'"
+  expectedStringResult="______ Insufficient number of arguments"
   expectedStatusResult=11
   actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+  actualStringResult=${actualStringResult:0:${#expectedStringResult}}
   [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
       echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
       ((iSuccessResults++)); true

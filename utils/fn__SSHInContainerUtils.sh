@@ -234,8 +234,8 @@ function fn__GenerateSSHKeyPairInWSLHost() {
   TS=$(date +%F_%T)
   mv -f ${HOME}/.ssh/id_rsa.pub ${HOME}/.ssh/id_rsa.pub_${TS} || true
   mv -f ${HOME}/.ssh/id_rsa ${HOME}/.ssh/id_rsa_${TS} || true
-  ssh-keygen -f ${HOME}/.ssh/id_rsa -t rsa -b 4096 -q -N "" >/dev/null
-  pNameOfOutputVarFromCaller=$(cat ${HOME}/.ssh/id_rsa.pub)
+  ssh-keygen -f ${HOME}/.ssh/id_rsa -t rsa -b 4096 -q -N "" >/dev/null && STS=$? || STS=$?
+  pNameOfOutputVarFromCaller=$(cat ${HOME}/.ssh/id_rsa.pub) && STS=$? || STS=$?
 
   return ${STS}
 }

@@ -153,8 +153,9 @@ function fn__DoesRepoAlreadyExist() {
       echo "______ Failed to execute ${lCommand} - Status: $? - aborting"
       exit
     }
-
-  grep "^${pClientRemoteGitRepoName}$" >/dev/null <<<"${lCommandOutput}" \
+# echo "xxxxxx ${lCommandOutput}"
+  # grep "^${pClientRemoteGitRepoName}$" >/dev/null <<<"${lCommandOutput}" \
+  grep "^${pClientRemoteGitRepoName}$" <<<"${lCommandOutput}" \
     && STS=${__YES} \
     || STS=${__NO}
 

@@ -1,13 +1,13 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 declare -u fn__UtilityGeneric_tests="SOURCED"
 
-[[ ${__env_GlobalConstants} ]] || source __env_GlobalConstants.sh
-[[ ${fn__UtilityGeneric} ]] || source fn__UtilityGeneric.sh
+[[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
+[[ ${fn__UtilityGeneric} ]] || source ./utils/fn__UtilityGeneric.sh
 
 declare -i iSuccessResults=0
 declare -i iFailureResults=0
@@ -381,7 +381,7 @@ else
   functionInputs="/tmp/tmp_first_file"
   expectedResult=1
   lMsg=$(${functionName} ${functionInputs}) && actualResult=$? || actualResult=$? 
-  [[ ${lMsg} ]] && echo "________ ${LINENO}: ${functionName}: ${lMsg}" 
+  # [[ ${lMsg} ]] && echo "________ ${LINENO}: ${functionName}: ${lMsg}" 
   [[ "${actualResult}" == "${expectedResult}" ]] && {
       echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedResult} == ${actualResult}" 
       ((iSuccessResults++)); true
@@ -394,7 +394,7 @@ else
   functionInputs=" "
   expectedResult=1
   lMsg=$(${functionName} ${functionInputs}) && actualResult=$? || actualResult=$? 
-  [[ ${lMsg} ]] && echo "________ ${LINENO}: ${functionName}: ${lMsg}" 
+  # [[ ${lMsg} ]] && echo "________ ${LINENO}: ${functionName}: ${lMsg}" 
   [[ "${actualResult}" == "${expectedResult}" ]] && {
       echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedResult} == ${actualResult}" 
       ((iSuccessResults++)); true
