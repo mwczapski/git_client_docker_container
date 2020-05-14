@@ -2,7 +2,7 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 declare -u __env_gitClientConstants="SOURCED"
@@ -17,6 +17,7 @@ readonly __GIT_CLIENT_SHELL_GLOBAL_PROFILE="/etc/profile"
 readonly __GIT_CLIENT_SHELL_PROFILE=".bash_profile"
 readonly __GIT_CLIENT_IMAGE_NAME="gitclient"
 readonly __GIT_CLIENT_IMAGE_VERSION="1.0.0"
-declare __GIT_CLIENT_HOST_NAME="gitclient"
-declare __GIT_CLIENT_CONTAINER_NAME="gitclient"
+declare  __GIT_CLIENT_HOST_NAME="gitclient"
+declare  __GIT_CLIENT_CONTAINER_NAME="gitclient"
 readonly __GIT_CLIENT_GUEST_HOME="/home/${__GIT_CLIENT_USERNAME}"
+declare  __GIT_CLIENT_REMOTE_REPO_NAME="gitclient"

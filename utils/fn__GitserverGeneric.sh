@@ -20,6 +20,44 @@ echo "______ Sourced common variables and functions";
 ##
 ## local functions
 ##
+function fn__AddGITServerToLocalKnown_hostsAndTestSshAccess() {
+  # introduce server to client
+  #
+    local -r lUsage='
+  Usage: 
+    fn__AddGITServerToLocalKnown_hostsAndTestSshAccess \
+      ${__GIT_CLIENT_CONTAINER_NAME} \
+      ${__GIT_CLIENT_USERNAME} \
+      ${__GIT_CLIENT_SHELL} \
+        && STS=${__DONE} \
+        || STS=${__FAILED}
+        '
+  [[ $# -lt 3 || "${0^^}" == "HELP" ]] && {
+    echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
+    return ${__FAILED}
+  }
+ 
+  local -r pClientContainerName=${1?"${lUsage}"}
+  local -r pClientUsername=${2?"${lUsage}"}
+  local -r pShellInContainer=${3?"${lUsage}"}
+
+  local -r _CMD_="
+    ssh-keyscan -H ${__GITSERVER_HOST_NAME} >> ~/.ssh/known_hosts &&
+    ssh git@${__GITSERVER_HOST_NAME} list && echo 'Can connect to the remote git repo' || echo 'Cannot connect to the remote git repo'
+    "
+
+  _CMD_OUTPUT_=""
+  fn__ExecCommandInContainerGetOutput \
+    ${pClientContainerName} \
+    ${pClientUsername} \
+    ${pShellInContainer} \
+    "${_CMD_}" \
+    "_CMD_OUTPUT_" \
+      && return ${__DONE} \
+      || return ${__FAILED}
+}
+
+
 function fn__AddClientPublicKeyToServerAuthorisedKeysStore() {
 
   # introduce client's id_rsa public key to gitserver, which needs it to allow git test client access over ssh
@@ -218,6 +256,7 @@ function fn__CreateNewClientGitRepositoryOnRemote() {
       || STS=${__FAILED}
 
 }
+
 
 function fn__DeleteEmptyRemoteRepository() {
     local -r lUsage='

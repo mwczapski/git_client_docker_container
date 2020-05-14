@@ -30,7 +30,7 @@ declare -r _IGNORE_OUTPUT_='1>&2 2>/dev/null'
 ## need to work through this some more
 ##
 functionName="fn__DoesRepoAlreadyExist"
-if [[ true -eq true ]]; then
+if [[ !true -eq true ]]; then
   echo "Not running test for ${functionName}"
 else 
   functionInputs="gitserver gitserver git /bin/bash"
@@ -253,7 +253,7 @@ fi
 
 
 functionName="fn__IsSSHToRemoteServerAuthorised"
-if [[ !true -eq true ]]; then
+if [[ true -eq true ]]; then
   echo "Not running test for ${functionName}"
 else 
   functionInputs="gitserver git 50022"
@@ -293,6 +293,7 @@ else
     }
 
 fi
+
 
 echo "______ Executed $((iSuccessResults+iFailureResults)) tests"
 echo "______ ${iSuccessResults} tests were successful"

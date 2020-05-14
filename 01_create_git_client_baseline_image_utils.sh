@@ -127,7 +127,7 @@ function fn__CreateDockerfile() {
   local __NEEDS_REBUILDING=${__NO}
   local STS=${__SUCCESS}
 
-  local -r TS=$(date '+%Y%m%d_%H%M%S')
+  local -r TS=$(date '+%F_%T')
 
   [[ -e ${pDckerfilePath} ]] && cp ${pDckerfilePath} ${pDckerfilePath}_${TS}
     
