@@ -225,42 +225,44 @@ echo "______ Added '${__GIT_CLIENT_CONTAINER_NAME}' to '${__GIT_CLIENT_GUEST_HOM
 
 # if repo already exists we can't create a new one with the same name
 #
-set -x
 fn__DoesRepoAlreadyExist \
   ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
   ${__GITSERVER_CONTAINER_NAME} \
   ${__GIT_USERNAME} \
-  ${__GITSERVER_SHELL} \
-    && {
-      echo "______ Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - aborting"
-      exit ${__FAILED}
-    } \
-    || STS=$? # can be __NO or __EXECUTION_ERROR
+  ${__GITSERVER_SHELL} && STS=$? || STS=$?
 
-  [[ ${STS} -eq ${__EXECUTION_ERROR} ]] && {
-      echo "______ Failed to determine whether Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - aborting"
-      exit ${__FAILED}
-  }
-echo "STS:${STS}"
-set -x
+  if [[ ${STS} -eq ${__YES} ]]
+  then
+    echo "______ Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - will skip creation steps"
+  elif [[ ${STS} -eq ${__EXECUTION_ERROR} ]]
+  then
+    echo "______ Failed to determine whether Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - will skip creation steps"
+  else
+    fn__CreateNewClientGitRepositoryOnRemote \
+      ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
+      ${__GITSERVER_CONTAINER_NAME} \
+      ${__GIT_USERNAME} \
+      ${__GITSERVER_SHELL} \
+      ${__GITSERVER_REPOS_ROOT} && STS=$? || STS=$?
 
+    if [[ ${STS} -eq ${__DONE} ]]
+    then
+      fn__DoesRepoAlreadyExist \
+        ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
+        ${__GITSERVER_CONTAINER_NAME} \
+        ${__GIT_USERNAME} \
+        ${__GITSERVER_SHELL} && STS=$? || STS=$?
 
-fn__CreateNewClientGitRepositoryOnRemote \
-  ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
-  ${__GITSERVER_CONTAINER_NAME} \
-  ${__GIT_USERNAME} \
-  ${__GITSERVER_SHELL} \
-  ${__GITSERVER_REPOS_ROOT} \
-    && {
-      echo "______ Created remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
-    } \
-    || {
+      if [[ ${STS} -eq ${__YES} ]]
+      then
+        echo "______ Created remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
+      else
+        echo "______ Failed to create remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME} - investigate"
+      fi
+    else
       echo "______ Failed to create remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
-    }
-
-
-
-
+    fi
+  fi
 
 # fn__TestLocalAndRemoteGitReposOperation \
 #   ${__GIT_CLIENT_CONTAINER_NAME} \

@@ -107,7 +107,6 @@ function fn__GetSSHIdRsaPubKeyFromClientContainer() {
 }
 
 
-
 function fn__IntroduceRemoteClientToServerWithPublicKey() {
 
   # introduce client's id_rsa public key to gitserver, which needs it to allow git test client access over ssh
@@ -188,6 +187,7 @@ function fn__IntroduceRemoteClientToServerWithPublicKey() {
 }
 
 
+
 function fn__GetSSHIdRsaPubKeyFromLocalWSLHost() {
   local -r lUsage='
   Usage: 
@@ -232,14 +232,13 @@ function fn__GenerateSSHKeyPairInWSLHost() {
   # generate id_rsa keypair
   #
   TS=$(date +%F_%T)
-  mv -fv ${HOME}/.ssh/id_rsa.pub ${HOME}/.ssh/id_rsa.pub_${TS} || true
-  mv -fv ${HOME}/.ssh/id_rsa ${HOME}/.ssh/id_rsa_${TS} || true
+  mv -f ${HOME}/.ssh/id_rsa.pub ${HOME}/.ssh/id_rsa.pub_${TS} || true
+  mv -f ${HOME}/.ssh/id_rsa ${HOME}/.ssh/id_rsa_${TS} || true
   ssh-keygen -f ${HOME}/.ssh/id_rsa -t rsa -b 4096 -q -N "" >/dev/null
   pNameOfOutputVarFromCaller=$(cat ${HOME}/.ssh/id_rsa.pub)
 
   return ${STS}
 }
-
 
 
 function fn__IntroduceLocalWSLClientToServerWithPublicKey() {

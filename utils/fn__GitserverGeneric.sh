@@ -362,3 +362,82 @@ function fnUpdateOwnershipOfNonRootUserResources() {
   "
   echo "______ Updated ownership of ${pGitUsername} resources on ${pContainerName}"
 }
+
+
+
+
+:<<-'COMMENT--fn__GetRemoteGitRepoName-----------------------------------------'
+  Usage:
+    fn__GetRemoteGitRepoName
+      ${__GIT_CLIENT_REMOTE_REPO_NAME}
+      "__GIT_CLIENT_REMOTE_REPO_NAME" out
+  Returns:
+    __SUCCESS and the chosen name in __GIT_CLIENT_CONTAINER_NAME ref variable
+    __FAILED if there were insufficient arguments, all opportunities to choose a name were exhausted or other unrecoverable errors occured
+
+COMMENT--fn__GetRemoteGitRepoName-----------------------------------------
+
+function fn__GetRemoteGitRepoName() {
+  local -r lUsage='
+  Usage: 
+    fn__GetRemoteGitRepoName \
+      ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
+      "__GIT_CLIENT_REMOTE_REPO_NAME" # out
+    '
+  # this picks up missing arguments
+  #
+  [[ $# -lt 2 || "${0^^}" == "HELP" ]] && {
+    echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
+    return ${__FAILED}
+  }
+
+  # name reference variables
+  #
+  local -r lDefaultGitRemoteRepoName="${1}"
+  local -n out__GIT_CLIENT_REMOTE_REPO_NAME=${2} 2>/dev/null
+
+  # this picks up arguments which are empty strings
+  # 
+  [[ -n lDefaultGitRemoteRepoName ]] 2>/dev/null || { echo "1st Argument value, '${1}', is invalid"; return ${__FAILED} ; }
+  [[ -n "${2}" ]] 2>/dev/null || { echo "2nd Argument value, '${2}', is invalid"; return ${__FAILED} ; }
+
+  fn__ConfirmYN "Use default name '${lDefaultGitRemoteRepoName}' as Remote Git Repository name? " && STS=${__YES} || STS=${__NO}
+  if [[ ${STS} -eq ${__YES} ]] 
+  then
+    out__GIT_CLIENT_REMOTE_REPO_NAME=${lDefaultGitRemoteRepoName}
+    return ${__YES}
+  fi
+
+  inPromptString="_????_ Please enter a valid identifier for Git Repository name (Defaut: '${lDefaultGitRemoteRepoName}'): "
+  inMaxLength=${__MAX_CONTAIMER_NAME_LENGTH}
+  inTimeoutSecs=${_PROMPTS_TIMEOUT_SECS_}
+  outValidValue="${lDefaultGitRemoteRepoName}"
+
+  # read -t 10 resp
+  # echo "${FUNCNAME}:${LINENO}: resp: ${resp}"
+
+  fn__GetValidIdentifierInput \
+    "inPromptString" \
+    "inMaxLength" \
+    "inTimeoutSecs" \
+    "outValidValue" \
+        && STS=$? \
+        || STS=$?
+
+  if [[ ${STS} -eq ${__FAILED} ]]
+  then
+    echo "______ Provided input did not result in a valid identifier - identifier based on input was '${outValidValue}'"
+    return ${__FAILED}
+  fi
+  echo "______ Sanitized Git Repository name will be '${outValidValue}'"
+
+  fn__ConfirmYN "Confirm '${outValidValue}' as Git Repository name? " && STS=$? || STS=$?
+  if [[ ${STS} -eq ${__NO} ]]
+  then
+    out__GIT_CLIENT_REMOTE_REPO_NAME=""
+    return ${__NO}
+  fi
+
+  out__GIT_CLIENT_REMOTE_REPO_NAME="${outValidValue}"
+  return ${__YES}
+}

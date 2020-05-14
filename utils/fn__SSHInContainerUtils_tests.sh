@@ -66,7 +66,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE, insufficient number of arguments and Usage message"
   function fn__GenerateSSHKeyPairInClientContainer_test_001 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pClientUsername="gitclient"
     local -r pShellInContainer="/bin/bash"
     local outValue=""
@@ -91,7 +91,7 @@ then
 
   testIntent="${functionName} function will return __SUCCESS and the content of the generated ~/.ssh/id_rsa.pub"
   function fn__GenerateSSHKeyPairInClientContainer_test_002 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pClientUsername="gitclient"
     local -r pShellInContainer="/bin/bash"
     local outValue=""
@@ -118,7 +118,7 @@ then
 
   testIntent="${functionName} function will return __FAILED - unable to find user xxxxx: no matching entries in passwd file"
   function fn__GenerateSSHKeyPairInClientContainer_test_003 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pClientUsername="gitclientXXX"
     local -r pShellInContainer="/bin/bash"
     local outValue=""
@@ -145,8 +145,6 @@ else
 fi
 
 
-
-
 functionName="fn__GetSSHIdRsaPubKeyFromClientContainer"
 :<<-'------------Function_Usage_Note-------------------------------'
   Usage: 
@@ -168,7 +166,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE, insufficient number of arguments and Usage message"
   function fn__GetSSHIdRsaPubKeyFromClientContainer_test_001 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pClientUsername="gitclient"
     local -r pShellInContainer="/bin/bash"
     local outValue=""
@@ -193,7 +191,7 @@ then
 
   testIntent="${functionName} function will return __SUCCESS and the content of the ~/.ssh/id_rsa.pub"
   function fn__GetSSHIdRsaPubKeyFromClientContainer_test_002 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pClientUsername="gitclient"
     local -r pShellInContainer="/bin/bash"
     local outValue=""
@@ -220,7 +218,7 @@ then
 
   testIntent="${functionName} function will return __FAILED - unable to find user xxxxx: no matching entries in passwd file"
   function fn__GetSSHIdRsaPubKeyFromClientContainer_test_003 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pClientUsername="gitclientXXX"
     local -r pShellInContainer="/bin/bash"
     local outValue=""
@@ -247,8 +245,6 @@ else
 fi
 
 
-
-
 functionName="fn__IntroduceRemoteClientToServerWithPublicKey"
 :<<-'------------Function_Usage_Note-------------------------------'
   Usage:
@@ -270,7 +266,7 @@ _RUN_TEST_SET_=${__NO}
 if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
 then
 
-  declare -r lClientContainerName="gittestclient"
+  declare -r lClientContainerName="gitclient"
   declare -r lClientUsername="gitclient"
   declare -r lShellInContainer="/bin/bash"
   declare __GIT_CLIENT_ID_RSA_PUB_=""
@@ -291,7 +287,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE, insufficient number of arguments and Usage message"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_001 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="git"
@@ -318,7 +314,7 @@ then
 
   testIntent="${functionName} function will return __FAILED trying to add empty public key to git server's ~/.ssh/authorized_keys"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_002 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="git"
@@ -353,7 +349,7 @@ then
 
   testIntent="${functionName} function will return __SUCCESS after adding client's id_rsa.pub public key to git server's ~/.ssh/authorized_keys"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_003 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="git"
@@ -376,7 +372,7 @@ then
       "${testIntent}" \
       "${expectedStringResult}" \
       ${expectedStatusResult} \
-      "${pGitClientIdRsaPub}" \
+      "" \
       ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__IntroduceRemoteClientToServerWithPublicKey_test_003
@@ -384,7 +380,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE - invalid rsa public key or username mismatch"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_004 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="git"
@@ -416,7 +412,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE - trying inappropriate container name"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_005 {
-    local -r pClientContainerName="gittestclientXXX"
+    local -r pClientContainerName="gitclientXXX"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="git"
@@ -450,7 +446,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE - client username does not match username in id_rsa.pub"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_006 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclientXXX"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="git"
@@ -484,7 +480,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE - unknown server container name"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_009 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserverXXX"
     local -r pGitServerGitUsername="git"
@@ -518,7 +514,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE - unknown server username"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_007 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="gitXXX"
@@ -552,7 +548,7 @@ then
 
   testIntent="${functionName} function will return __FAILURE - unknown server shell binary"
   function fn__IntroduceRemoteClientToServerWithPublicKey_test_008 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pGitClientUsername="gitclient"
     local -r pServerContainerName="gitserver"
     local -r pGitServerGitUsername="git"
@@ -689,9 +685,6 @@ then
 else 
   echo "     . Not running test for ${functionName}"
 fi
-
-
-
 
 
 functionName="fn__GenerateSSHKeyPairInWSLHost"
@@ -856,7 +849,7 @@ then
 
   testIntent="${functionName} function will return __FAILED - unable to find user xxxxx: no matching entries in passwd file"
   function fn__GetSSHIdRsaPubKeyFromLocalWSLHost_test_003 {
-    local -r pClientContainerName="gittestclient"
+    local -r pClientContainerName="gitclient"
     local -r pClientUsername="gitclientXXX"
     local -r pShellInContainer="/bin/bash"
     local outValue=""
@@ -899,7 +892,7 @@ functionName="fn__IntroduceLocalWSLClientToServerWithPublicKey"
       Constants from __env_GlobalConstants
 ------------Function_Usage_Note-------------------------------
 
-_RUN_TEST_SET_=${__YES}
+_RUN_TEST_SET_=${__NO}
 if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
 then
 
@@ -915,20 +908,7 @@ then
     exit ${__FAILED}
   fi
 
-  # echo "${LINENO}: __GIT_CLIENT_ID_RSA_PUB_: ${__GIT_CLIENT_ID_RSA_PUB_}"
-  declare sshPubKeyOnGitserver=""
-  fn__GetWSLClientsPublicKeyFromServer \
-    "gitserver" \
-    "git" \
-    "/bin/bash" \
-    "sshPubKeyOnGitserver" && STS=$? || STS=$?
-
-  # echo "~~~C~ "
-  # echo "~~~C~ ${__GIT_CLIENT_ID_RSA_PUB_}"
-  # echo "~~~S~ "
-  # echo "~~~S~ ${sshPubKeyOnGitserver}"
-  # echo "~~~~~ "
-  
+ 
   testIntent="${functionName} function will return __FAILURE, insufficient number of arguments and Usage message"
   function fn__IntroduceLocalWSLClientToServerWithPublicKey_test_001 {
     local -r pServerContainerName="gitserver"
@@ -995,6 +975,7 @@ then
 
     expectedStringResult=""
     expectedStatusResult=${__SUCCESS}
+    actualStringResult=""
 
     ${functionName} \
       "${__GIT_CLIENT_ID_RSA_PUB_}" \
@@ -1002,14 +983,39 @@ then
       "${pGitServerGitUsername}" \
       "${pShellInServerContainer}" && actualStatusResult=$? || actualStatusResult=$?
 
+    # echo "${LINENO}: __GIT_CLIENT_ID_RSA_PUB_: ${__GIT_CLIENT_ID_RSA_PUB_}"
+    declare sshPubKeyOnGitserver=""
+    fn__GetWSLClientsPublicKeyFromServer \
+      "${pServerContainerName}" \
+      "${pGitServerGitUsername}" \
+      "${pShellInServerContainer}" \
+      "sshPubKeyOnGitserver" && STS=$? || STS=$?
+
+    if [[ ${STS} -eq ${__SUCCESS} ]]
+    then
+      if [[ "${__GIT_CLIENT_ID_RSA_PUB_}" != "${sshPubKeyOnGitserver}" ]]
+      then
+        expectedStatusResult=${__FAILED}
+        actualStringResult="Submitted public key and retrieved publick key are different - investigate"
+      fi
+    fi
+
     assessReturnStatusAndStdOut \
       "${functionName}" \
       ${LINENO} \
       "${testIntent}" \
       "${expectedStringResult}" \
       ${expectedStatusResult} \
-      "${pGitClientIdRsaPub}" \
+      "${actualStringResult}" \
       ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
+    # echo "~~~C~ "
+    # echo "~~~C~ ${__GIT_CLIENT_ID_RSA_PUB_}"
+    # echo "~~~S~ "
+    # echo "~~~S~ ${sshPubKeyOnGitserver}"
+    # echo "~~~~~ "
+
+
   }
   fn__IntroduceLocalWSLClientToServerWithPublicKey_test_003
 
