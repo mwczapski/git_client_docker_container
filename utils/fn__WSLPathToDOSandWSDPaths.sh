@@ -25,12 +25,16 @@ function fn__WSLPathToRealDosPath() {
     return ${__FAILED}
   }
  
-  local -r pWSLPath=${1}
+  local -r pWSLPath="${1}"
   [[ -n ${pWSLPath} ]] || { echo -e "____ WSL Path to transform must not be empty\n${lUsage}"; return ${__FAILED} ; }
+
+  local -r lrHasMntWillBeEmpty=${pWSLPath%%/mnt/[a-z]/*}
+  [[ ! -n ${lrHasMntWillBeEmpty} ]] || { echo "'${pWSLPath}' is not a valid WSL path" ; return ${__FAILED} ; }
 
   echo ${pWSLPath} | sed 's|/mnt/\(.\)|\1:|;s|/|\\|g'; 
   return ${__DONE}
 }
+
 
 
 function fn__WSLPathToWSDPath() { 
@@ -46,9 +50,14 @@ function fn__WSLPathToWSDPath() {
     echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
     return ${__FAILED}
   }
- 
-  local -r pWSLPath=${1}
+
+  local -r pWSLPath="${1}"
   [[ -n ${pWSLPath} ]] || { echo -e "____ WSL Path to transform must not be empty\n${lUsage}"; return ${__FAILED} ; }
 
+  local -r lrHasMntWillBeEmpty=${pWSLPath%%/mnt/[a-z]/*}
+  [[ ! -n ${lrHasMntWillBeEmpty} ]] || { echo "'${pWSLPath}' is not a valid WSL path" ; return ${__FAILED} ; }
+
   echo ${pWSLPath} | sed 's|/mnt/\(.\)|\1:|'; 
+
+  return ${_SUCCESS}
 }
