@@ -2,7 +2,7 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 declare -ur fn__SSHInContainerUtils="SOURCED"
@@ -13,8 +13,6 @@ declare -ur fn__SSHInContainerUtils="SOURCED"
 [[ ${fn__DockerGeneric} ]] || source ./utils/fn__DockerGeneric.sh
 # [[ ${__env_devcicd_net} ]] || source ./utils/__env_devcicd_net.sh
 # [[ ${__env_gitserverConstants} ]] || source ./utils/__env_gitserverConstants.sh
-
-echo "______ Sourced common variables and functions"; 
 
 
 ##
@@ -188,6 +186,8 @@ function fn__IntroduceRemoteClientToServerWithPublicKey() {
 
 
 
+
+
 function fn__GetSSHIdRsaPubKeyFromLocalWSLHost() {
   local -r lUsage='
   Usage: 
@@ -209,6 +209,8 @@ function fn__GetSSHIdRsaPubKeyFromLocalWSLHost() {
 
   return ${STS}
 }
+
+
 
 
 function fn__GenerateSSHKeyPairInWSLHost() {
@@ -259,7 +261,7 @@ function fn__IntroduceLocalWSLClientToServerWithPublicKey() {
     echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
     return ${__FAILED}
   }
- 
+
   local -r pClient_id_rsa_pub=${1?"${lUsage}"}
   local -r pServerHostName=${2?"${lUsage}"}
   local -r pServerUsername=${3?"${lUsage}"}
@@ -321,9 +323,9 @@ function fn__IntroduceLocalWSLClientToServerWithPublicKey() {
 
   if [[ "${pClient_id_rsa_pub}" != "${_CMD_OUTPUT_2}" ]]
   then
-    echo "~~~~~~ ${FUNCNO}:${LINENO}: STS: ${STS}"
-    echo "~~~~~~ ${FUNCNO}:${LINENO}: pClient_id_rsa_pub: ${pClient_id_rsa_pub}"
-    echo "~~~~~~ ${FUNCNO}:${LINENO}: _CMD_OUTPUT_2: ${_CMD_OUTPUT_2}"
+    # echo "~~~~~~ ${FUNCNO}:${LINENO}: STS: ${STS}"
+    # echo "~~~~~~ ${FUNCNO}:${LINENO}: pClient_id_rsa_pub: ${pClient_id_rsa_pub}"
+    # echo "~~~~~~ ${FUNCNO}:${LINENO}: _CMD_OUTPUT_2: ${_CMD_OUTPUT_2}"
     echo "Failed to add/update Client Public Key in Server's ~/.ssh/authorized_hosts"
     return ${__FAILED}
   fi
