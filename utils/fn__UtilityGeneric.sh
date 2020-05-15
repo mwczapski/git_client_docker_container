@@ -19,98 +19,100 @@ function fn__ConfirmYN() {
 }
 
 
-function fn__GetValidIdentifierInput() {
-  local -r lUsage='
-  Usage: 
-    fn__GetValidIdentifierInput \
-      "inPromptString"  \
-      "inMaxLength"  \
-      "inTimeoutSecs" \
-      "outValidValue"
-    '
-  # this picks up missing arguments
-  #
-  [[ $# -lt 4 || "${0^^}" == "HELP" ]] && {
-    echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
-    return ${__FAILED}
-  }
+# function fn__GetValidIdentifierInput() {
+#   local -r lUsage='
+#   Usage: 
+#     fn__GetValidIdentifierInput \
+#       "inPromptString"  \
+#       "inMaxLength"  \
+#       "inTimeoutSecs" \
+#       "outValidValue"
+#     '
+#   # this picks up missing arguments
+#   #
+#   [[ $# -lt 4 || "${0^^}" == "HELP" ]] && {
+#     echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
+#     return ${__FAILED}
+#   }
 
-  # this picks up arguments which are empty strings
-  # 
-  [[ -n "${1}" ]] 2>/dev/null || { echo "1st Argument value, '${1}', is invalid"; return ${__FAILED} ; }
-  [[ -n "${2}" ]] 2>/dev/null || { echo "2nd Argument value, '${2}', is invalid"; return ${__FAILED} ; }
-  [[ -n "${3}" ]] 2>/dev/null || { echo "3rd Argument value, '${3}', is invalid"; return ${__FAILED} ; }
-  [[ -n "${4}" ]] 2>/dev/null || { echo "4th Argument value, '${4}', is invalid"; return ${__FAILED} ; }
+#   # this picks up arguments which are empty strings
+#   #
+#   [[ -n "${1}" ]] 2>/dev/null || { echo "1st Argument value, '${1}', is invalid"; return ${__FAILED} ; }
+#   [[ -n "${2}" ]] 2>/dev/null || { echo "2nd Argument value, '${2}', is invalid"; return ${__FAILED} ; }
+#   [[ -n "${3}" ]] 2>/dev/null || { echo "3rd Argument value, '${3}', is invalid"; return ${__FAILED} ; }
+#   # [[ -n "${4}" ]] 2>/dev/null || { echo "4th Argument value, '${4}', is invalid"; return ${__FAILED} ; }
 
-  # name reference variables
-  #
-  local -n lXinPromptString=$1
-  local -n lXinMaxLength=$2
-  local -n lXinTimeoutSecs=$3
-  local -n lXoutValidValue=$4
+#   # name reference variables
+#   #
+#   local -n lXinPromptString="${1}"
+#   local -n lXinMaxLength=${2}
+#   local -n lXinTimeoutSecs=${3}
+#   local -n lXoutValidValue="${4}"
 
-  # read data - if value is pumped into the function, for example with:
-  # fn__GetValidIdentifierInput "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" <<<"${testValue}"
-  # then read will read it and not wait for input 
-  # this is great for testing
-  #
-  local lReaData="${lXoutValidValue}"
-  if [[ -n "${lReaData}" ]]
-  then
-    read -t ${lXinTimeoutSecs} -p "${lXinPromptString}" -n $((${lXinMaxLength}*2)) lReaData && STS=$? || STS=$?
-    if [[ ${STS} -ne ${__SUCCESS} ]]  # timeout - 142
-    then
-      lReaData="${lXoutValidValue}"
-    else 
-      if [[ ! -n "${lReaData}" ]]
-      then
-        lReaData="${lXoutValidValue}"
-      fi
-    fi
-  else
-    read -t ${lXinTimeoutSecs} -p "${lXinPromptString}" -n $((${lXinMaxLength}*2)) -e -i "${lXoutValidValue}" lReaData && STS=$? || STS=$?
-    if [[ ${STS} -ne ${__SUCCESS} ]]  # timeout - 142
-    then
-      lReaData="${lXoutValidValue}"
-    else 
-      if [[ ! -n "${lReaData}" ]]
-      then
-        lReaData="${lXoutValidValue}"
-      fi
-    fi
-  fi
+#   # read data - if value is pumped into the function, for example with:
+#   # fn__GetValidIdentifierInput "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" <<<"${testValue}"
+#   # then read will read it and not wait for input 
+#   # this is great for testing
+#   #
+#   local lReaData="${lXoutValidValue}"
+#   if [[ ! -n "${lReaData}" ]]
+#   then
+#     read -t ${lXinTimeoutSecs} -p "${lXinPromptString}" -n $((lXinMaxLength*2)) lReaData && STS=$? || STS=$?
+#     if [[ ${STS} -ne ${__SUCCESS} ]]  # timeout - 142
+#     then
+#       lReaData="${lXoutValidValue}"
+#     else 
+#       if [[ ! -n "${lReaData}" ]]
+#       then
+#         lReaData="${lXoutValidValue}"
+#       fi
+#     fi
+#   else
+#     read -t ${lXinTimeoutSecs} -p "${lXinPromptString}" -n $((lXinMaxLength*2)) -e -i "${lXoutValidValue}" lReaData && STS=$? || STS=$?
+#     if [[ ${STS} -ne ${__SUCCESS} ]]  # timeout - 142
+#     then
+#       lReaData="${lXoutValidValue}"
+#     else 
+#       if [[ ! -n "${lReaData}" ]]
+#       then
+#         lReaData="${lXoutValidValue}"
+#       fi
+#     fi
+#   fi
 
-  # no data provided either via keyboard entry, pipe or in lXoutValidValue as default
-  #
-  [[ ${lReaData} ]] || {
-    lXoutValidValue=""
-    return ${__FAILED}
-  }
+#   # no data provided either via keyboard entry, pipe or in lXoutValidValue as default
+#   #
+#   [[ ${lReaData} ]] || {
+#     lXoutValidValue=""
+#     return ${__FAILED}
+#   }
 
-  # remove all non-compliant characters from the string - see fn__SanitizeInputIdentifier for details
-  #
-  lReaData=$(fn__SanitizeInputIdentifier "${lReaData}") || {
-    lXoutValidValue=""
-    return ${__FAILED}
-  }
+#   # remove all non-compliant characters from the string - see fn__SanitizeInputIdentifier for details
+#   #
+#   lReaData=$(fn__SanitizeInputIdentifier "${lReaData}") || {
+#     lXoutValidValue=""
+#     return ${__FAILED}
+#   }
 
-  # make sure the string is cut down to length
-  #
-  lReaData=${lReaData:0:${lXinMaxLength}}
+#   # make sure the string is cut down to length
+#   #
+#   lReaData=${lReaData:0:${lXinMaxLength}}
 
-  # set return value
-  #
-  lXoutValidValue="${lReaData}"
+#   # resut is empty?
+#   #
+#   [[ -n lReaData ]] || {
+#     lXoutValidValue=""
+#     return ${__FAILED}
+#   }
 
-  # resut is empty?
-  #
-  [[ ${lXoutValidValue} ]] || {
-    lXoutValidValue=""
-    return ${__FAILED}
-  }
+#   # set return value
+#   #
+#   lXoutValidValue="${lReaData}"
 
-  return ${__SUCCESS}
-}
+# echo "${FUNCNO}:${LINENO}: lXoutValidValue: ${lXoutValidValue}" >&2
+
+#   return ${__SUCCESS}
+# }
 
 
 function fn__FileSameButForDate() {
@@ -121,7 +123,7 @@ function fn__FileSameButForDate() {
           ${__SECOND_FILE_PATH}
       '
   [[ $# -lt  2 || ${0^^} == "HELP" ]] && {
-    echo ${lUsage}
+    echo -e "${__INSUFFICIENT_ARGS}${lUsage}"
     return ${__FAILED}
   }
 
@@ -136,6 +138,17 @@ function fn__FileSameButForDate() {
       || return ${__DIFFERENT}
 }
 
+
+:<<-'------------Function_Usage_Note-------------------------------'
+  Usage:
+    fn__IsValidRegEx \
+      ${ShellRegEx} \
+  Returns:
+    ${__SUCCESS}
+    ${__FAILED}
+  Expects in environment:
+    Constants from __env_GlobalConstants
+------------Function_Usage_Note-------------------------------
 
 function fn__IsValidRegEx() {
   [[ $# -lt 1 ]] && {
@@ -159,8 +172,8 @@ function fn__IsValidRegEx() {
 
 
 function fn__SanitizeInput() {
-  [[ $# -lt 1 ]] && { echo "______ Requires shell regex to use to determine valid characters and eliminate all that do not match"; exit ; }
-  [[ $# -lt 2 ]] && { echo "______ Require string to sanitize"; exit ; }
+  [[ $# -lt 1 ]] && { echo "______ Requires shell regex to use to determine valid characters and eliminate all that do not match"; return ${__FAILED} ; }
+  [[ $# -lt 2 ]] && { echo "______ Require string to sanitize"; return ${__FAILED} ; }
   local pRegEx="${@}"
   pRegEx="${pRegEx%%]*}]"
   local lMsg=$(fn__IsValidRegEx "${pRegEx}")
@@ -180,16 +193,16 @@ function fn__SanitizeInput() {
 
 
 function fn__SanitizeInputAlphaNum() {
-  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
+  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; return ${__FAILED} ; }
   local pInput="$@"
-  local pOutput=$(fn__SanitizeInput "[a-zA-Z0-9]" ${pInput}) && STS=$?|| STS=$?
+  local pOutput=$(fn__SanitizeInput "[a-zA-Z0-9]" ${pInput}) && STS=${__SUCCESS}|| STS=${__FAILED}
   echo ${pOutput}
   return ${STS}
 }
 
 
 function fn__SanitizeInputIdentifier() {
-  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
+  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; return ${__FAILED} ; }
   local pInput="$@"
   local pOutput=$(fn__SanitizeInput "[a-zA-Z0-9_]" ${pInput}) && STS=$?|| STS=$?
   echo ${pOutput}
@@ -198,7 +211,7 @@ function fn__SanitizeInputIdentifier() {
 
 
 function fn__SanitizeInputAlpha() {
-  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
+  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; return ${__FAILED} ; }
   local pInput="$@"
   local pOutput=$(fn__SanitizeInput "[a-zA-Z]" ${pInput}) && STS=$?|| STS=$?
   echo ${pOutput}
@@ -207,7 +220,7 @@ function fn__SanitizeInputAlpha() {
 
 
 function fn__SanitizeInputNumeric() {
-  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; exit ; }
+  [[ $# -lt 1 ]] && { echo "______ Require string which to sanitize"; return ${__FAILED} ; }
   local pInput="$@"
   local pOutput=$(fn__SanitizeInput "[0-9]" ${pInput}) && STS=$?|| STS=$?
   echo ${pOutput}

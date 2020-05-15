@@ -31,3 +31,5 @@ readonly __INSUFFICIENT_ARGS="______ Insufficient number of arguments"
 
 readonly __SCRIPTS_DIRECTORY_NAME='_commonUtils'
 readonly __MAX_CONTAIMER_NAME_LENGTH=40
+
+readonly __IDENTIFIER_MAX_LEN=40
