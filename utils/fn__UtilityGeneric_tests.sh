@@ -1141,10 +1141,153 @@ fi
 
 
 
+functionName="fn__ConfirmYN"
+:<<-'------------Function_Usage_Note-------------------------------'
+  Usage: 
+    fn__ConfirmYN \
+      "${Prompt}"
+  Returns:
+    ${__YES}
+    ${__NO}
+  Expects in environment:
+    Constants from __env_GlobalConstants
+  Default: 
+    ${__NO}
+------------Function_Usage_Note-------------------------------
+_RUN_TEST_SET_=${__YES}
+if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
+then
 
-## ############################################
-## TODO - tests for fn__ConfirmYN
-## ############################################
+  testIntent="${functionName} function will return __FAILURE status when prompt argument is not provided"
+  function fn__ConfirmYN_test_001 {
+    expectedStringResult="______ Insufficient number of arguments"
+    expectedStatusResult=${__FAILED}
+
+    actualStringResult=$( ${functionName} && actualStatusResult=$? ) || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__ConfirmYN_test_001
+
+
+  testIntent="${functionName} function will return default \${__NO} if no input is provided"
+  function fn__ConfirmYN_test_002 {
+    local pPrompt="Please enter Y or N"
+    local -r expectedStringResult=""
+    local -r expectedStatusResult=${__NO}
+
+    echo "" | ${functionName} "${pPrompt}" && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__ConfirmYN_test_002
+
+
+  testIntent="${functionName} function will return \${__NO} if input is a string starting with anything other than Y or y"
+  function fn__ConfirmYN_test_002 {
+    local pPrompt="Please enter Y or N"
+    local -r expectedStringResult=""
+    local -r expectedStatusResult=${__NO}
+
+    echo "N" | ${functionName} "${pPrompt}" && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__ConfirmYN_test_002
+
+
+  testIntent="${functionName} function will return \${__NO} if input is a string starting with anything other than Y or y"
+  function fn__ConfirmYN_test_003 {
+    local pPrompt="Please enter Y or N"
+    local -r expectedStringResult=""
+    local -r expectedStatusResult=${__NO}
+
+    echo "Noooooo" | ${functionName} "${pPrompt}" && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__ConfirmYN_test_003
+
+
+  testIntent="${functionName} function will return \${__YES} if input is a string starting with Y or y"
+  function fn__ConfirmYN_test_003 {
+    local pPrompt="Please enter Y or N"
+    local -r expectedStringResult=""
+    local -r expectedStatusResult=${__YES}
+
+    echo "Yes" | ${functionName} "${pPrompt}" && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__ConfirmYN_test_003
+
+
+  testIntent="${functionName} function will return \${__YES} if input is a string starting with Y or y"
+  function fn__ConfirmYN_test_004 {
+    local pPrompt="Please enter Y or N"
+    local -r expectedStringResult=""
+    local -r expectedStatusResult=${__YES}
+
+    echo "y" | ${functionName} "${pPrompt}" && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__ConfirmYN_test_004
+
+else 
+  echo "     . Not running test for ${functionName}"
+fi
+
+
+
 
 
 # clean up

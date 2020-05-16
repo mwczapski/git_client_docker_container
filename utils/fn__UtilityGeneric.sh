@@ -12,8 +12,33 @@ declare -u fn__UtilityGeneric="SOURCED"
 _PROMPTS_TIMEOUT_SECS_=${_PROMPTS_TIMEOUT_SECS_:-15.5}
 
 
+:<<-'------------Function_Usage_Note-------------------------------'
+  Usage: 
+    fn__ConfirmYN \
+      "${prompt}"
+  Returns:
+    ${__YES}
+    ${__NO}
+  Expects in environment:
+    Constants from __env_GlobalConstants
+------------Function_Usage_Note-------------------------------
 function fn__ConfirmYN() {
-  pPrompt=${1?"Usage: $0 requires the prompt string and will return 0 if response is Yes, and 1 if it is No"}
+  local -r lUsage='
+  Usage: 
+    fn__ConfirmYN \
+      "${prompt}"
+  Returns:
+    ${__YES}
+    ${__NO}
+  '
+  # this picks up missing arguments
+  #
+  [[ $# -lt 1 || "${0^^}" == "HELP" ]] && {
+    echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
+    return ${__FAILED}
+  }
+
+  pPrompt=${1?"No prmpt"}
   read -t ${_PROMPTS_TIMEOUT_SECS_} -p "_??___ ${pPrompt} (y/N) " -i 'No' -r RESP || echo
   RESP=${RESP^^}; RESP=${RESP:0:1}
   [[ $RESP == 'Y' ]] && return ${__YES} || return ${__NO}
