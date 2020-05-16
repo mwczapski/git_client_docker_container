@@ -616,195 +616,195 @@ else
 fi
 
 
-functionName="fn__GetValidIdentifierInput"
-:<<-'------------Function_Usage_Note-------------------------------'
-  Usage:
-    fn__GetValidIdentifierInput \
-      "inPromptString"  \
-      "inMaxLength"  \
-      "inTimeoutSecs" \
-      "outValidValue"
-  Returns 
-    ${__SUCCESS} and the vaid value in the output argument
-    ${__FAILED} if insufficient number of arguments are provided
-------------Function_Usage_Note-------------------------------
-_RUN_TEST_SET_=${__NO}
-if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
-then
+# functionName="fn__GetValidIdentifierInput"
+# :<<-'------------Function_Usage_Note-------------------------------'
+#   Usage:
+#     fn__GetValidIdentifierInput \
+#       "inPromptString"  \
+#       "inMaxLength"  \
+#       "inTimeoutSecs" \
+#       "outValidValue"
+#   Returns 
+#     ${__SUCCESS} and the vaid value in the output argument
+#     ${__FAILED} if insufficient number of arguments are provided
+# ------------Function_Usage_Note-------------------------------
+# _RUN_TEST_SET_=${__NO}
+# if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
+# then
 
-  testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
-  function fn__GetValidIdentifierInput_test_001 {
-      local -r linPromptString="Please enter a valid identifier"
-      local -r linMaxLength=${__IDENTIFIER_MAX_LEN}
-      local -r linTimeoutSecs=20
-      local outValidValue=""
+#   testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
+#   function fn__GetValidIdentifierInput_test_001 {
+#       local -r linPromptString="Please enter a valid identifier"
+#       local -r linMaxLength=${__IDENTIFIER_MAX_LEN}
+#       local -r linTimeoutSecs=20
+#       local outValidValue=""
 
-    expectedStringResult=${__INSUFFICIENT_ARGS}
-    expectedStatusResult=${__FAILED}
-    actualStringResult=$( ${functionName} "linPromptString" "linMaxLength" "linTimeoutSecs" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetValidIdentifierInput_test_001
+#     expectedStringResult=${__INSUFFICIENT_ARGS}
+#     expectedStatusResult=${__FAILED}
+#     actualStringResult=$( ${functionName} "linPromptString" "linMaxLength" "linTimeoutSecs" ) && actualStatusResult=$? || actualStatusResult=$?
+#     # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+#     actualStringResult=${actualStringResult:0:${#expectedStringResult}}
+#     [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+#         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
+#         echo "PASS ${LINENO}: ${testIntent}" 
+#         ((iSuccessResults++)); true
+#       } || {
+#         echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
+#         ((iFailureResults++)); true
+#       }
+#   }
+#   fn__GetValidIdentifierInput_test_001
   
 
-  testIntent="${functionName} function will return __FAILURE status when 3rd argument is an empty strings"
-  function fn__GetValidIdentifierInput_test_002 {
-      local -r inPromptString="Please enter a valid identifier"
-      local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
-      local -r inTimeoutSecs=20
-      local -u outValidValue="test"
+#   testIntent="${functionName} function will return __FAILURE status when 3rd argument is an empty strings"
+#   function fn__GetValidIdentifierInput_test_002 {
+#       local -r inPromptString="Please enter a valid identifier"
+#       local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
+#       local -r inTimeoutSecs=20
+#       local -u outValidValue="test"
 
-    expectedStringResult="3rd Argument value, '', is invalid"
-    expectedStatusResult=${__FAILED}
-    actualStringResult=$( ${functionName} "linPromptString" "linMaxLength" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetValidIdentifierInput_test_002
+#     expectedStringResult="3rd Argument value, '', is invalid"
+#     expectedStatusResult=${__FAILED}
+#     actualStringResult=$( ${functionName} "linPromptString" "linMaxLength" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
+#     # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+#     # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
+#     [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+#         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
+#         echo "PASS ${LINENO}: ${testIntent}" 
+#         ((iSuccessResults++)); true
+#       } || {
+#         echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
+#         ((iFailureResults++)); true
+#       }
+#   }
+#   fn__GetValidIdentifierInput_test_002
   
 
-  testIntent="${functionName} function will return __FAILURE status when 4th argument is an empty strings"
-  function fn__GetValidIdentifierInput_test_003 {
-      local -r inPromptString="Please enter a valid identifier"
-      local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
-      local -r inTimeoutSecs=20
-      local -u outValidValue="test"
+#   testIntent="${functionName} function will return __FAILURE status when 4th argument is an empty strings"
+#   function fn__GetValidIdentifierInput_test_003 {
+#       local -r inPromptString="Please enter a valid identifier"
+#       local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
+#       local -r inTimeoutSecs=20
+#       local -u outValidValue="test"
 
-    expectedStringResult="4th Argument value, '', is invalid"
-    expectedStatusResult=${__FAILED}
-    actualStringResult=$( ${functionName} "linPromptString" "linMaxLength" "inTimeoutSecs" "" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetValidIdentifierInput_test_003
+#     expectedStringResult="4th Argument value, '', is invalid"
+#     expectedStatusResult=${__FAILED}
+#     actualStringResult=$( ${functionName} "linPromptString" "linMaxLength" "inTimeoutSecs" "" ) && actualStatusResult=$? || actualStatusResult=$?
+#     # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+#     # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
+#     [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+#         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
+#         echo "PASS ${LINENO}: ${testIntent}" 
+#         ((iSuccessResults++)); true
+#       } || {
+#         echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
+#         ((iFailureResults++)); true
+#       }
+#   }
+#   fn__GetValidIdentifierInput_test_003
   
 
-  testIntent="${functionName} function will return __SUCCESS and the sanitised version of the input, not excceeding given length"
-  function fn__GetValidIdentifierInput_test_004 {
-    local -r inPromptString="Please enter a valid identifier"
-    local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
-    local -r inTimeoutSecs=5
-    declare outValidValue="aa"
+#   testIntent="${functionName} function will return __SUCCESS and the sanitised version of the input, not excceeding given length"
+#   function fn__GetValidIdentifierInput_test_004 {
+#     local -r inPromptString="Please enter a valid identifier"
+#     local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
+#     local -r inTimeoutSecs=5
+#     declare outValidValue="aa"
 
-    local -r testValue='This Is A_Test$%@ 0123456789'
-    expectedStringResult="ThisIsA_Test0123456789"
-    expectedStatusResult=${__SUCCESS}
+#     local -r testValue='This Is A_Test$%@ 0123456789'
+#     expectedStringResult="ThisIsA_Test0123456789"
+#     expectedStatusResult=${__SUCCESS}
 
-    ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" <<<"${testValue}" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
-    [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetValidIdentifierInput_test_004
+#     ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" <<<"${testValue}" && actualStatusResult=$? || actualStatusResult=$?
+#     # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
+#     [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+#         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
+#         echo "PASS ${LINENO}: ${testIntent}" 
+#         ((iSuccessResults++)); true
+#       } || {
+#         echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
+#         ((iFailureResults++)); true
+#       }
+#   }
+#   fn__GetValidIdentifierInput_test_004
   
 
-  testIntent="${functionName} function will return __FAILURE because test string contains only characters which are not valid in an identifier"
-  function fn__GetValidIdentifierInput_test_005 {
-    local -r inPromptString="Please enter a valid identifier"
-    local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
-    local -r inTimeoutSecs=5
-    declare outValidValue=""
+#   testIntent="${functionName} function will return __FAILURE because test string contains only characters which are not valid in an identifier"
+#   function fn__GetValidIdentifierInput_test_005 {
+#     local -r inPromptString="Please enter a valid identifier"
+#     local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
+#     local -r inTimeoutSecs=5
+#     declare outValidValue=""
 
-    local -r testValue='%#@$!&*^%$#@#$%@&^&%$&&*&(*(***&&^^%&&*'
-    expectedStringResult=""
-    expectedStatusResult=${__FAILED}
+#     local -r testValue='%#@$!&*^%$#@#$%@&^&%$&&*&(*(***&&^^%&&*'
+#     expectedStringResult=""
+#     expectedStatusResult=${__FAILED}
 
-    ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" <<<"${testValue}" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
-    [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetValidIdentifierInput_test_005
-
-
-  testIntent="${functionName} function will return __SUCCESS and the value provided to it in the outValidValue argument"
-  function fn__GetValidIdentifierInput_test_006 {
-    local -r inPromptString="Please enter a valid identifier: "
-    local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
-    local -r inTimeoutSecs=0.1
-    declare outValidValue="gitclient" # provide default
-
-    expectedStringResult="gitclient"
-    expectedStatusResult=${__SUCCESS}
-
-    ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" 1>&2 2>/dev/null && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
-    [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetValidIdentifierInput_test_006
+#     ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" <<<"${testValue}" && actualStatusResult=$? || actualStatusResult=$?
+#     # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
+#     [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+#         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
+#         echo "PASS ${LINENO}: ${testIntent}" 
+#         ((iSuccessResults++)); true
+#       } || {
+#         echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
+#         ((iFailureResults++)); true
+#       }
+#   }
+#   fn__GetValidIdentifierInput_test_005
 
 
-  testIntent="${functionName} function will return __SUCCESS and the value provided to it in the outValidValue argument"
-  function fn__GetValidIdentifierInput_test_007 {
-    local -r inPromptString="Please enter a valid identifier: "
-    local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
-    local -r inTimeoutSecs=0.1
-    declare outValidValue=""
+#   testIntent="${functionName} function will return __SUCCESS and the value provided to it in the outValidValue argument"
+#   function fn__GetValidIdentifierInput_test_006 {
+#     local -r inPromptString="Please enter a valid identifier: "
+#     local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
+#     local -r inTimeoutSecs=0.1
+#     declare outValidValue="gitclient" # provide default
 
-    expectedStringResult=""
-    expectedStatusResult=${__FAILED}
+#     expectedStringResult="gitclient"
+#     expectedStatusResult=${__SUCCESS}
 
-    ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" 1>&2 2>/dev/null && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
-    [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetValidIdentifierInput_test_007
+#     ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" 1>&2 2>/dev/null && actualStatusResult=$? || actualStatusResult=$?
+#     # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
+#     [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+#         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
+#         echo "PASS ${LINENO}: ${testIntent}" 
+#         ((iSuccessResults++)); true
+#       } || {
+#         echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
+#         ((iFailureResults++)); true
+#       }
+#   }
+#   fn__GetValidIdentifierInput_test_006
 
 
-else 
-  echo "Not running test for ${functionName}"
-fi
+#   testIntent="${functionName} function will return __SUCCESS and the value provided to it in the outValidValue argument"
+#   function fn__GetValidIdentifierInput_test_007 {
+#     local -r inPromptString="Please enter a valid identifier: "
+#     local -r inMaxLength=${__IDENTIFIER_MAX_LEN}
+#     local -r inTimeoutSecs=0.1
+#     declare outValidValue=""
+
+#     expectedStringResult=""
+#     expectedStatusResult=${__FAILED}
+
+#     ${functionName} "inPromptString" "inMaxLength" "inTimeoutSecs" "outValidValue" 1>&2 2>/dev/null && actualStatusResult=$? || actualStatusResult=$?
+#     # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
+#     [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+#         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${outValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
+#         echo "PASS ${LINENO}: ${testIntent}" 
+#         ((iSuccessResults++)); true
+#       } || {
+#         echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
+#         ((iFailureResults++)); true
+#       }
+#   }
+#   fn__GetValidIdentifierInput_test_007
+
+
+# else 
+#   echo "Not running test for ${functionName}"
+# fi
 
 
 functionName="fn__GetProjectName"
