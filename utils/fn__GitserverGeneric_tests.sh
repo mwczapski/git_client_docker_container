@@ -260,7 +260,7 @@ functionName="fn__IsSSHToRemoteServerAuthorised"
 if [[ true -eq true ]]; then
   echo "Not running test for ${functionName}"
 else 
-  functionInputs="gitserver git 50022"
+  functionInputs="gitserver git ${__GIT_HOST_PORT}"
   expectedStringResult=""
   expectedStatusResult=${__SUCCESS}
   actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
@@ -272,7 +272,7 @@ else
       ((iFailureResults++)); true
     }
 
-  functionInputs="gitserver gixt 50022"
+  functionInputs="gitserver gixt ${__GIT_HOST_PORT}"
   expectedStringResult=""
   expectedStatusResult=255
   actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 

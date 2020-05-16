@@ -19,7 +19,7 @@ trap traperr ERR
 
 # common environment variable values and utility functions
 #
-# [[ ${__env_YesNoSuccessFailureContants} ]] || source ./utils/__env_YesNoSuccessFailureContants.sh
+[[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 [[ ${fn__DockerGeneric} ]] || source ./utils/fn__DockerGeneric.sh
 [[ ${__env_devcicd_net} ]] || source ./utils/__env_devcicd_net.sh
 [[ ${__env_gitserverConstants} ]] || source ./utils/__env_gitserverConstants.sh
