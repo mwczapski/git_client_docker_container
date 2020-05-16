@@ -78,48 +78,47 @@ The following depicts the directory hierarchy and artifacts involved. The name <
 
 <!-- tree -L 3 ../../gitclient/ | sed 's/?/\+/g; s/?/-/g; s/?/\\/g; s/?/|/' > _tree.txt -->
 <code>
-./gitclient/<br>
-+-- backups<br>
-+-- _commonUtils<br>
-|   +-- 01_create_git_client_baseline_image.sh<br>
-|   +-- 01_create_git_client_baseline_image_tests.sh<br>
-|   +-- 01_create_git_client_baseline_image_utils.sh<br>
-|   +-- 02_create_git_client_container.sh<br>
-|   +-- 02_create_git_client_container_tests.sh<br>
-|   +-- 02_create_git_client_container_utils.sh<br>
-|   +-- 03_create_named_repo_in_private_gitserver.sh<br>
-|   +-- 04_DeleteRemoteRepoIfEmpty.sh<br>
-|   +-- 05_AddWSLClientSSHKeyToGitserver_authorized_keys.sh<br>
-|   +-- bash_test_utils<br>
-|   ?   \-- bash_test_utils.sh<br>
-|   +-- LICENSE<br>
-|   +-- README.md<br>
-|   \-- utils<br>
-|       +-- __env_devcicd_net.sh<br>
-|       +-- __env_gitClientConstants.sh<br>
-|       +-- __env_gitserverConstants.sh<br>
-|       +-- __env_GlobalConstants.sh<br>
-|       +-- fn__CreateWindowsShortcut.sh<br>
-|       +-- fn__DockerGeneric.sh<br>
-|       +-- fn__GitserverGeneric.sh<br>
-|       +-- fn__GitserverGeneric_tests.sh<br>
-|       +-- fn__SSHInContainerUtils.sh<br>
-|       +-- fn__SSHInContainerUtils_tests.sh<br>
-|       +-- fn__UtilityGeneric.sh<br>
-|       +-- fn__UtilityGeneric_tests.sh<br>
-|       +-- fn__WSLPathToDOSandWSDPaths.sh<br>
-|       \-- fn__WSLPathToDOSandWSDPaths_tests.sh<br>
-+-- dcc exec -itu gitclient gitclient.lnk<br>
-+-- dcc exec -itu root gitclient.lnk<br>
-+-- dco gitclient ps.lnk<br>
-+-- dco gitclient rm -s -v.lnk<br>
-+-- dco gitclient stop.lnk<br>
-+-- dco gitclient up --detach.lnk<br>
-+-- docker-compose.yml_gitclient<br>
-+-- Dockerfile.gitclient<br>
-+-- gitclient<br>
-    \-- backups<br>
-</code><br>
+./gitclient/</code><br><code>
++-- backups</code><br><code>
++-- _commonUtils</code><br><code>
+|   +-- 01_create_git_client_baseline_image.sh</code><br><code>
+|   +-- 01_create_git_client_baseline_image_tests.sh</code><br><code>
+|   +-- 01_create_git_client_baseline_image_utils.sh</code><br><code>
+|   +-- 02_create_git_client_container.sh</code><br><code>
+|   +-- 02_create_git_client_container_tests.sh</code><br><code>
+|   +-- 02_create_git_client_container_utils.sh</code><br><code>
+|   +-- 03_create_named_repo_in_private_gitserver.sh</code><br><code>
+|   +-- 04_DeleteRemoteRepoIfEmpty.sh</code><br><code>
+|   +-- 05_AddWSLClientSSHKeyToGitserver_authorized_keys.sh</code><br><code>
+|   +-- bash_test_utils</code><br><code>
+|   ?   \-- bash_test_utils.sh</code><br><code>
+|   +-- LICENSE</code><br><code>
+|   +-- README.md</code><br><code>
+|   \-- utils</code><br><code>
+|       +-- __env_devcicd_net.sh</code><br><code>
+|       +-- __env_gitClientConstants.sh</code><br><code>
+|       +-- __env_gitserverConstants.sh</code><br><code>
+|       +-- __env_GlobalConstants.sh</code><br><code>
+|       +-- fn__CreateWindowsShortcut.sh</code><br><code>
+|       +-- fn__DockerGeneric.sh</code><br><code>
+|       +-- fn__GitserverGeneric.sh</code><br><code>
+|       +-- fn__GitserverGeneric_tests.sh</code><br><code>
+|       +-- fn__SSHInContainerUtils.sh</code><br><code>
+|       +-- fn__SSHInContainerUtils_tests.sh</code><br><code>
+|       +-- fn__UtilityGeneric.sh</code><br><code>
+|       +-- fn__UtilityGeneric_tests.sh</code><br><code>
+|       +-- fn__WSLPathToDOSandWSDPaths.sh</code><br><code>
+|       \-- fn__WSLPathToDOSandWSDPaths_tests.sh</code><br><code>
++-- dcc exec -itu gitclient gitclient.lnk</code><br><code>
++-- dcc exec -itu root gitclient.lnk</code><br><code>
++-- dco gitclient ps.lnk</code><br><code>
++-- dco gitclient rm -s -v.lnk</code><br><code>
++-- dco gitclient stop.lnk</code><br><code>
++-- dco gitclient up --detach.lnk</code><br><code>
++-- docker-compose.yml_gitclient</code><br><code>
++-- Dockerfile.gitclient</code><br><code>
++-- gitclient</code><br><code>
+|   \-- backups</code>
 
 [Top](#Git-Client-Docker-Container)
 
@@ -301,7 +300,7 @@ will tar up the nominated remote git repository and will deposit the archive in 
 </tr>
 <tr>
 <td style="vertical-align: top;">ssh git@gitserver backup &lt;git repo name&gt;</td>
-<td style="vertical-align: top;">Will validate &lt;git repo name&gt;, to ensure the repo exists, and will create a timestamped zip archive of the rpository in the diectory "backups" shared with the host</td>
+<td style="vertical-align: top;">Will validate &lt;git repo name&gt;, to ensure the repo exists, and will create a timestamped zip archive of the rpository in the directory "backups" shared with the host</td>
 </tr>
 <!-- <tr>
 <td></td>
