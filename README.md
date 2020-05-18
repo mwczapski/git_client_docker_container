@@ -449,7 +449,7 @@ The script accepts no arguments and expects the `~/.ssh/id_rsa.pub` to exist.
 
 ## Unit Tests
 
-Unit tests are provided for some modules alomngside the module sources to which they pertain.
+Unit tests are provided for some modules alongside the module sources to which they pertain.
 
 This is still work in progress/.
 
