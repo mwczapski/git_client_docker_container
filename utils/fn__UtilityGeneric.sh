@@ -14,6 +14,23 @@ _PROMPTS_TIMEOUT_SECS_=${_PROMPTS_TIMEOUT_SECS_:-15.5}
 
 :<<-'------------Function_Usage_Note-------------------------------'
   Usage: 
+    fn__RefVariableExists \
+      "outerScopeVariableName"
+  Returns:
+    ${__YES}
+    ${__NO}
+  Expects in environment:
+    Constants from __env_GlobalConstants
+------------Function_Usage_Note-------------------------------
+fn__RefVariableExists() {
+  local -r p1=${1}
+  local -n p2=${p1} 2>/dev/null && return ${__YES} || return ${__NO}
+}
+
+
+
+:<<-'------------Function_Usage_Note-------------------------------'
+  Usage: 
     fn__ConfirmYN \
       "${prompt}"
   Returns:
@@ -171,7 +188,7 @@ function fn__FileSameButForDate() {
   local pFile1=${1?"${lUsage}"}
   local pFile2=${2?"${lUsage}"}
 
-  diff -s --ignore-matching-lines='202[0-9][0-1][0-9][0-3][0-9]' \
+  diff -sw --ignore-matching-lines='202[0-9][0-1][0-9][0-3][0-9]' \
     ${pFile1} \
     ${pFile2} \
     >/dev/null \

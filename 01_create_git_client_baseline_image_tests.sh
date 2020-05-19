@@ -5,10 +5,10 @@
 # Copyright © 2020 Michael Czapski
 # #############################################
 
+[[ ${bash_test_utils} ]] || source ./bash_test_utils/bash_test_utils.sh
 
 [[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 [[ ${fn__UtilityGeneric} ]] || source ./utils/fn__UtilityGeneric.sh
-
 
 [[ ${_01_create_git_client_baseline_image_utils} ]] || source ./01_create_git_client_baseline_image_utils.sh
 
@@ -54,7 +54,7 @@ declare -r _DOCKERFILE_EXPECTED_=${_TEMP_DIR_}/Dockerfile.expected
 cat <<-'EOF' > ${_DOCKERFILE_EXPECTED_}
 FROM bitnami/minideb:jessie
 
-## Dockerfile Version: 20200507_184625
+## Dockerfile Version: 20200510_105549
 ##
 # the environment variables below will be used in creating the image
 # and will be available to the containers created from the image ...
@@ -109,6 +109,7 @@ EOF
 ## define tests
 ## ############################################################################
 
+
 functionName="fn__Create_docker_entry_point_file"
 :<<-'------------Function_Usage_Note-------------------------------'
   Usage: 
@@ -120,74 +121,103 @@ functionName="fn__Create_docker_entry_point_file"
     __FAILED
 ------------Function_Usage_Note-------------------------------
 _RUN_TEST_SET_=${__NO}
-if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]; then
+if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
+then
 
-  testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
-  functionInputs=""
-  expectedStringResult="${__INSUFFICIENT_ARGS}"
-  expectedStatusResult=${__FAILED}
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  # [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
-  actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-      ((iSuccessResults++)); true
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
+  function fn__Create_docker_entry_point_file_test_001() {
+    testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
+    functionInputs=""
+    expectedStringResult="${__INSUFFICIENT_ARGS}"
+    expectedStatusResult=${__FAILED}
+    actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+    # [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__Create_docker_entry_point_file_test_001
+
+
+  function fn__Create_docker_entry_point_file_test_002() {
+    testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
+    functionInputs="${_TEMP_DIR_}"
+    expectedStringResult="${__INSUFFICIENT_ARGS}"
+    expectedStatusResult=${__FAILED}
+    actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+    # [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__Create_docker_entry_point_file_test_002
+
+
+  function fn__Create_docker_entry_point_file_test_003() {
+
+    function fn__TestFunctionExecution() {
+      testIntent="${functionName} function will return __SUCCESS status and will write docker-entrypoint.sh in the designated directory whose content is identical to the expected content"
+      functionInputs="${_TEMP_DIR_} /bin/bash"
+      expectedStringResult=""
+      expectedStatusResult=${__SUCCESS}
+      expectedContentSameResult=${__NO}
+      actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+      [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
+      actualStringResult=${actualStringResult:0:${#expectedStringResult}}
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
     }
+    fn__TestFunctionExecution
 
 
-  testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
-  functionInputs="${_TEMP_DIR_}"
-  expectedStringResult="${__INSUFFICIENT_ARGS}"
-  expectedStatusResult=${__FAILED}
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  # [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
-  actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-      ((iSuccessResults++)); true
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
+    testIntent="${functionName}/fn__TestFunctionOutput will return __SUCCESS completion code"
+    function fn__TestFunctionOutput() {
+      expectedStringResult=""
+      expectedStatusResult=${__THE_SAME}
+
+      local -r lExpectedFileName=${_DOCKER_ENTRYPOINT_EXPECTED_}
+      local -r lActualFileName=${_DOCKER_ENTRYPOINT_ACTUAL_}
+
+      fn__FileSameButForDate ${lExpectedFileName} ${lActualFileName} && actualStatusResult=$? || actualStatusResult=$?
+      actualStringResult=""
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
     }
+    fn__TestFunctionOutput
 
-
-  testIntent="${functionName} function will return __SUCCESS status and will write docker-entrypoint.sh in the designated directory whose content is identical to the expected content"
-  functionInputs="${_TEMP_DIR_} /bin/bash"
-  expectedStringResult=""
-  expectedStatusResult=${__SUCCESS}
-  expectedContentSameResult=${__NO}
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
-  actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      cat ${_DOCKER_ENTRYPOINT_EXPECTED_} | sed 's|[0-9]\{8\}_[0-9]\{6\}|DDDDDDDD_TTTTTT|g' > ${_DOCKER_ENTRYPOINT_EXPECTED_}.masked
-      cat ${_DOCKER_ENTRYPOINT_ACTUAL_} | sed 's|[0-9]\{8\}_[0-9]\{6\}|DDDDDDDD_TTTTTT|g' > ${_DOCKER_ENTRYPOINT_ACTUAL_}.masked
-      diff -swq ${_DOCKER_ENTRYPOINT_EXPECTED_}.masked ${_DOCKER_ENTRYPOINT_ACTUAL_}.masked 1>/dev/null 2>&1 && STS=$? || STS=$?
-      if [[ $STS -ne ${__THE_SAME} ]]
-      then
-        if [[ expectedContentSameResult -eq ${__YES} ]]
-        then
-          echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult}) - Different file content" 
-          ((iFailureResults++)); true
-        else
-          echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult}) - Different file content" 
-          ((iSuccessResults++)); true
-        fi
-      else 
-        echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        ((iSuccessResults++)); true
-      fi
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
-    }
+  }
+  fn__Create_docker_entry_point_file_test_003
 
 else 
   echo "Not running test for ${functionName}"
 fi
+
 
 
 functionName="fn__CreateDockerfile"
@@ -207,87 +237,101 @@ functionName="fn__CreateDockerfile"
     returns ${__FAILED} OR ${__NEEDS_REBUILDING} => ${__YES}/${__NO}
 ------------Function_Usage_Note-------------------------------
 _RUN_TEST_SET_=${__NO}
-if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]; then
+if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
+then
+
   testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
-  functionInputs=""
-  expectedStringResult="${__INSUFFICIENT_ARGS}"
-  expectedStatusResult=${__FAILED}
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-  # [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-      ((iSuccessResults++)); true
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
+  function fn__CreateDockerfile_test_001() {
+    functionInputs=""
+    expectedStringResult="${__INSUFFICIENT_ARGS}"
+    expectedStatusResult=${__FAILED}
+    actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
+    # [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__CreateDockerfile_test_001
+
+
+  function fn__CreateDockerfile_test_002() {
+
+    testIntent="${functionName}/fn__TestFunctionExecution function will return __FAILURE status"
+    function fn__TestFunctionExecution() {
+      functionInputs="${_DOCKERFILE_ACTUAL_} img:1.0.0 gitx /bin/bashx .bashx_profile profilex /tmpx /opt/gitreposx Canada/Sydney Canada/Sydney"
+      expectedStringResult=""
+      expectedStatusResult=${__FAILED}
+      expectedContentSameResult=${__NO}
+      actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
     }
+    fn__TestFunctionExecution
+  }
+  fn__CreateDockerfile_test_002
 
 
-  testIntent="${functionName} function will return __FAILURE status, and a filure to match expected content"
-  functionInputs="${_DOCKERFILE_ACTUAL_} img:1.0.0 gitx /bin/bashx .bashx_profile profilex /tmpx /opt/gitreposx Canada/Sydney Canada/Sydney"
-  expectedStringResult=""
-  expectedStatusResult=${__FAILED}
-  expectedContentSameResult=${__NO}
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-  [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      cat ${_DOCKERFILE_EXPECTED_} | sed 's|[0-9]\{8\}_[0-9]\{6\}|DDDDDDDD_TTTTTT|g' > ${_DOCKERFILE_EXPECTED_}.masked
-      cat ${_DOCKERFILE_ACTUAL_} | sed 's|[0-9]\{8\}_[0-9]\{6\}|DDDDDDDD_TTTTTT|g' > ${_DOCKERFILE_ACTUAL_}.masked
-      diff -swq ${_DOCKERFILE_EXPECTED_}.masked ${_DOCKERFILE_ACTUAL_}.masked 1>/dev/null 2>&1 && STS=$? || STS=$?
-      if [[ $STS -ne ${__THE_SAME} ]]
-      then
-        if [[ expectedContentSameResult -eq ${__YES} ]]
-        then
-          echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult}) - Different file content" 
-          ((iFailureResults++)); true
-        else
-          echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult}) - Different file content" 
-          ((iSuccessResults++)); true
-        fi
-      else 
-        echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        ((iSuccessResults++)); true
-      fi
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
+  function fn__CreateDockerfile_test_003() {
+
+    testIntent="${functionName}/fn__TestFunctionExecution will return status of 1, file was created and image may need rebuilding"
+    function fn__TestFunctionExecution() {
+      functionInputs="${_DOCKERFILE_ACTUAL_} 'bitnami/minideb:jessie' 'gitclient' '/bin/bash' '.bash_profile' '/etc/profile' '/home/gitclient' '/opt/gitrepos' 'Australia/Sydney' 'Australia/Sydney'"
+      expectedStringResult=""
+      expectedStatusResult=${__NO}
+      expectedContentSameResult=${__YES}
+      actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
     }
+    fn__TestFunctionExecution
 
 
-  testIntent="${functionName} function will return __FAILURE status, and a filure to match expected content"
-  functionInputs="${_DOCKERFILE_ACTUAL_} bitnami/minideb:jessie gitclient /bin/bash .bash_profile /etc/profile /home/gitclient /opt/gitrepos Australia/Sydney Australia/Sydney"
-  expectedStringResult=""
-  expectedStatusResult=${__SUCCESS}
-  expectedContentSameResult=${__YES}
-  actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-  # echo "actualStringResult:${actualStringResult}"
-  # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-  # echo "actualStringResult:${actualStringResult}"
-  [[ ${actualStringResult} ]] && echo "________ ${LINENO}: ${functionName}: ${actualStringResult}" 
-  [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-      cat ${_DOCKERFILE_EXPECTED_} | sed 's|[0-9]\{8\}_[0-9]\{6\}|DDDDDDDD_TTTTTT|g' > ${_DOCKERFILE_EXPECTED_}.masked
-      cat ${_DOCKERFILE_ACTUAL_} | sed 's|[0-9]\{8\}_[0-9]\{6\}|DDDDDDDD_TTTTTT|g' > ${_DOCKERFILE_ACTUAL_}.masked
-      diff -swq ${_DOCKERFILE_EXPECTED_}.masked ${_DOCKERFILE_ACTUAL_}.masked 1>/dev/null 2>&1 && STS=$? || STS=$?
-      if [[ $STS -ne ${__THE_SAME} ]]
-      then
-        if [[ expectedContentSameResult -eq ${__YES} ]]
-        then
-          echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult}) - Different file content" 
-          ((iFailureResults++)); true
-        else
-          echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult}) - Different file content" 
-          ((iSuccessResults++)); true
-        fi
-      else 
-        echo "SUCCESS  ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        ((iSuccessResults++)); true
-      fi
-    } || {
-      echo "FAILURE ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
+    testIntent="${functionName}/fn__TestFunctionOutput __THE_SAME status, and a filure to match expected content"
+    function fn__TestFunctionOutput() {
+      expectedStringResult=""
+      expectedStatusResult=${__THE_SAME}
+
+      local -r lExpectedFileName=${_DOCKERFILE_EXPECTED_}
+      local -r lActualFileName=${_DOCKERFILE_ACTUAL_}
+
+      fn__FileSameButForDate ${lExpectedFileName} ${lActualFileName} && actualStatusResult=$? || actualStatusResult=$?
+      actualStringResult=""
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
     }
+    fn__TestFunctionOutput
+  }
+  fn__CreateDockerfile_test_003
+
 
 else 
   echo "Not running test for ${functionName}"
@@ -296,6 +340,405 @@ fi
 
 functionName="fn__SetEnvironmentVariables"
 :<<-'------------Function_Usage_Note-------------------------------'
+  Usage: 
+    fn__SetEnvironmentVariables \
+      "${__SCRIPTS_DIRECTORY_NAME}" \
+      "${__GITSERVER_IMAGE_NAME}"  \
+      "${__GITSERVER_SHELL_GLOBAL_PROFILE}"  \
+      "__DEBMIN_HOME"  \
+      "__DEBMIN_HOME_DOS"  \
+      "__DEBMIN_HOME_WSD" \
+      "__DEBMIN_SOURCE_IMAGE_NAME"  \
+      "__TZ_PATH"  \
+      "__TZ_NAME"  \
+      "__ENV"  \
+      "__DOCKERFILE_PATH"  \
+      "__REMOVE_CONTAINER_ON_STOP"  \
+      "__NEEDS_REBUILDING"  \
+  Returns:
+    ${__SUCCESS}
+    ${__FAILED} and error string on stdout
+  Expects in environment:
+    Constants from __env_GlobalConstants
+------------Function_Usage_Note-------------------------------
+
+_RUN_TEST_SET_=${__YES}
+if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
+then
+
+  testIntent="${functionName} will return __FAILED and '______ Insufficient number of arguments'"
+  function fn__SetEnvironmentVariables_test_001 {
+
+    expectedStringResult="______ Insufficient number of arguments"
+    expectedStatusResult=${__FAILED}
+
+    actualStringResult=$( ${functionName} "" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__SetEnvironmentVariables_test_001
+
+
+  testIntent="${functionName} will return __FAILED and '1st Argument value, '', is invalid'"
+  function fn__SetEnvironmentVariables_test_002 {
+    local -r lrScriptDirectoryName=${__SCRIPTS_DIRECTORY_NAME}
+    local -r lrGotserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    
+
+    expectedStringResult="1st Argument value, '', is invalid"
+    expectedStatusResult=${__FAILED}
+
+    actualStringResult=$( ${functionName} "" "" "" "" "" "" "" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__SetEnvironmentVariables_test_002
+
+
+  testIntent="${functionName} will return __FAILED and 2nd Argument value, '', is invalid"
+  function fn__SetEnvironmentVariables_test_003 {
+    local -r lrScriptDirectoryName="${__SCRIPTS_DIRECTORY_NAME}"
+    local -r lrGotserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    
+
+    expectedStringResult="2nd Argument value, '', is invalid"
+    expectedStatusResult=${__FAILED}
+
+    actualStringResult=$( ${functionName} "${lrScriptDirectoryName}" "" "" "" "" "" "" "" "") && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__SetEnvironmentVariables_test_003
+
+
+  testIntent="${functionName} will return __FAILED and 3rd Argument value, '', is invalid"
+  function fn__SetEnvironmentVariables_test_004 {
+    local -r lrScriptDirectoryName="${__SCRIPTS_DIRECTORY_NAME}"
+    local -r lrGitserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    
+
+    expectedStringResult="3rd Argument value, '', is invalid"
+    expectedStatusResult=${__FAILED}
+
+    actualStringResult=$( ${functionName} "${lrScriptDirectoryName}" "${lrGitserverImageName}" "" "" "" "" "" "" "" "" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__SetEnvironmentVariables_test_004
+
+
+  testIntent="${functionName} will return __FAILED and '4th Argument, 'lDebminHome', is not declared'"
+  function fn__SetEnvironmentVariables_test_005 {
+    local -r lrScriptDirectoryName="${__SCRIPTS_DIRECTORY_NAME}"
+    local -r lrGitserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    # local lDebminHome="/mnt/d/gitserver/gitserver/_commonUtils"
+    # local lDebminHome=""
+    local lDebminHomeDOS=""
+    local lDebminHomeWSD=""
+    local lDockerfilePath=""
+    local lRemoveContainerOnStop=""
+    local lNeedsRebuilding=""
+    
+
+    expectedStringResult="4th Argument, 'lDebminHome', must have a valid value"
+    expectedStatusResult=${__FAILED}
+
+    actualStringResult=$( ${functionName} \
+                              "${lrScriptDirectoryName}" \
+                              "${lrGitserverImageName}" \
+                              "${lrGitserverShellGlobalProfile}" \
+                              "lDebminHome" \
+                              "lDebminHomeDOS" \
+                              "lDebminHomeWSD" \
+                              "lDockerfilePath" \
+                              "lRemoveContainerOnStop" \
+                              "lNeedsRebuilding" ) && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__SetEnvironmentVariables_test_005
+
+
+  testIntent="${functionName} will return __FAILED and '4th Argument, 'lDebminHome', must have a valid value'"
+  function fn__SetEnvironmentVariables_test_006 {
+    local -r lrScriptDirectoryName="${__SCRIPTS_DIRECTORY_NAME}"
+    local -r lrGitserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    # local lDebminHome="/mnt/d/gitserver/gitserver/_commonUtils"
+    local lDebminHome=""
+    local lDebminHomeDOS=""
+    local lDebminHomeWSD=""
+    local lDockerfilePath=""
+    local lRemoveContainerOnStop=""
+    local lNeedsRebuilding=""
+    
+
+    expectedStringResult="4th Argument, 'lDebminHome', must have a valid value"
+    expectedStatusResult=${__FAILED}
+
+    actualStringResult=$( ${functionName} \
+                              "${lrScriptDirectoryName}" \
+                              "${lrGitserverImageName}" \
+                              "${lrGitserverShellGlobalProfile}" \
+                              "lDebminHome" \
+                              "lDebminHomeDOS" \
+                              "lDebminHomeWSD" \
+                              "lDockerfilePath" \
+                              "lRemoveContainerOnStop" \
+                              "lNeedsRebuilding" ) && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__SetEnvironmentVariables_test_006
+
+
+  function fn__SetEnvironmentVariables_test_007 {
+    local -r lrScriptDirectoryName="${__SCRIPTS_DIRECTORY_NAME}"
+    local -r lrGitserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    local lDebminHome="/mnt/d/gitserver/gitserver/_commonUtils"
+    local lDebminHomeDOS=""
+    local lDebminHomeWSD=""
+    local lDockerfilePath=""
+    local lRemoveContainerOnStop=""
+    local lNeedsRebuilding=""
+    
+    testIntent="${functionName} will return __SUCCESS and set the values of the reference variables"
+    fn__testInputAndExecution() {
+      expectedStringResult=""
+      expectedStatusResult=${__SUCCESS}
+
+      ${functionName} \
+        "${lrScriptDirectoryName}" \
+        "${lrGitserverImageName}" \
+        "${lrGitserverShellGlobalProfile}" \
+        "lDebminHome" \
+        "lDebminHomeDOS" \
+        "lDebminHomeWSD" \
+        "lDockerfilePath" \
+        "lRemoveContainerOnStop" \
+        "lNeedsRebuilding" && actualStatusResult=$? || actualStatusResult=$?
+      # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testInputAndExecution
+
+    testIntent="${functionName} will return __SUCCESS and match expected values of all reference variables"
+    fn__testOutput() {
+      expectedStringResult=""
+      expectedStatusResult=${__SUCCESS}
+
+      local lMismatches=0
+
+      [[ "${lDebminHome}" != "/mnt/d/gitserver/gitserver" ]] && (( lMismatches++ ))
+      [[ "${lDebminHomeDOS}" != "d:\gitserver\gitserver" ]] && (( lMismatches++ ))
+      [[ "${lDebminHomeWSD}" != "d:/gitserver/gitserver" ]] && (( lMismatches++ ))
+      [[ "${lDockerfilePath}" != "/mnt/d/gitserver/gitserver/Dockerfile.gitserver" ]] && (( lMismatches++ ))
+      [[ "${lRemoveContainerOnStop}" != "0" ]] && (( lMismatches++ ))
+      [[ "${lNeedsRebuilding}" != "1" ]] && (( lMismatches++ ))
+
+      actualStringResult=""
+      actualStatusResult=${lMismatches}
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testOutput
+    
+  }
+  fn__SetEnvironmentVariables_test_007
+
+
+  testIntent="${functionName} will return __FAILED and error changing directory to the non-existent directory"
+  function fn__SetEnvironmentVariables_test_008 {
+    local -r lrScriptDirectoryName="${__SCRIPTS_DIRECTORY_NAME}"
+    local -r lrGitserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    local lDebminHome="/mnt/d/gitserver/gitserver/_commonUtils/areNotRight"
+    local lDebminHomeDOS=""
+    local lDebminHomeWSD=""
+    local lDockerfilePath=""
+    local lRemoveContainerOnStop=""
+    local lNeedsRebuilding=""
+    
+    fn__testInputAndExecution() {
+      expectedStringResult="cd: /mnt/d/gitserver/gitserver/_commonUtils/areNotRight: No such file or directory"
+      expectedStatusResult=${__FAILED}
+
+      actualStringResult=$( ${functionName} \
+        "${lrScriptDirectoryName}" \
+        "${lrGitserverImageName}" \
+        "${lrGitserverShellGlobalProfile}" \
+        "lDebminHome" \
+        "lDebminHomeDOS" \
+        "lDebminHomeWSD" \
+        "lDockerfilePath" \
+        "lRemoveContainerOnStop" \
+        "lNeedsRebuilding" ) && actualStatusResult=$? || actualStatusResult=$?
+      # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testInputAndExecution
+  }
+  fn__SetEnvironmentVariables_test_008
+
+
+  function fn__SetEnvironmentVariables_test_009 {
+    local -r lrScriptDirectoryName="${__SCRIPTS_DIRECTORY_NAME}"
+    local -r lrGitserverImageName="${__GITSERVER_IMAGE_NAME}"
+    local -r lrGitserverShellGlobalProfile="${__GITSERVER_SHELL_GLOBAL_PROFILE}"
+    local lDebminHome="/mnt/d/gitserver/gitserver/backups"
+    local lDebminHomeDOS=""
+    local lDebminHomeWSD=""
+    local lDockerfilePath=""
+    local lRemoveContainerOnStop=""
+    local lNeedsRebuilding=""
+    
+    testIntent="${functionName} will return __SUCCESS and set values of all reference variables"
+    fn__testInputAndExecution() {
+      expectedStringResult=""
+      expectedStatusResult=${__SUCCESS}
+
+      ${functionName} \
+        "${lrScriptDirectoryName}" \
+        "${lrGitserverImageName}" \
+        "${lrGitserverShellGlobalProfile}" \
+        "lDebminHome" \
+        "lDebminHomeDOS" \
+        "lDebminHomeWSD" \
+        "lDockerfilePath" \
+        "lRemoveContainerOnStop" \
+        "lNeedsRebuilding" && actualStatusResult=$? || actualStatusResult=$?
+      # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+      actualStringResult=""
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testInputAndExecution
+
+    testIntent="${functionName} will return __FAILED and fail to match 4 variables"
+    fn__testOutput() {
+      expectedStringResult=""
+      expectedStatusResult=4
+
+      local lMismatches=0
+      [[ "${lDebminHome}" != "/mnt/d/gitserver/gitserver" ]] && (( lMismatches++ ))
+      [[ "${lDebminHomeDOS}" != "d:\gitserver\gitserver" ]] && (( lMismatches++ ))
+      [[ "${lDebminHomeWSD}" != "d:/gitserver/gitserver" ]] && (( lMismatches++ ))
+      [[ "${lDockerfilePath}" != "/mnt/d/gitserver/gitserver/Dockerfile.gitserver" ]] && (( lMismatches++ ))
+      [[ "${lRemoveContainerOnStop}" != "0" ]] && (( lMismatches++ ))
+      [[ "${lNeedsRebuilding}" != "1" ]] && (( lMismatches++ ))
+
+      actualStringResult="Failed to match ${lMismatches} variable assignments"
+      actualStatusResult=${lMismatches}
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testOutput
+    
+  }
+  fn__SetEnvironmentVariables_test_009
+
+else 
+  echo "     . Not running test for ${functionName}"
+fi
+
+
+
+
+
+
+
+functionName="fn__SetEnvironmentVariablesXXX"
+:<<-'------------Function_Usage_Note-------------------------------'
   Usage:
     fn__SetEnvironmentVariables \
       ${__DEBMIN_HOME} \
@@ -303,20 +746,20 @@ functionName="fn__SetEnvironmentVariables"
       ${__GIT_CLIENT_SHELL_GLOBAL_PROFILE} \
       ${__GIT_CLIENT_IMAGE_NAME} 
         returns ${__SUCCESS} or ${__FAILED} if insufficient number of arguments are provided
-sets globally:
-  __DEBMIN_HOME=${pDebminHome%%/_commonUtils} # strip _commonUtils
-  __DEBMIN_HOME_DOS=$(fn__WSLPathToRealDosPath ${__DEBMIN_HOME})
-  __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${__DEBMIN_HOME})
-  __DEBMIN_SOURCE_IMAGE_NAME=${pDebminSourceImageName}
-  __TZ_PATH=Australia/Sydney
-  __TZ_NAME=Australia/Sydney
-  __ENV="${pGitClientShellGlobalProfile}"
-  __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${pGitClientImageName}
-  __REMOVE_CONTAINER_ON_STOP=${__YES}
-  __NEEDS_REBUILDING=${__NO}
+  sets globally:
+    __DEBMIN_HOME=${pDebminHome%%/_commonUtils} # strip _commonUtils
+    __DEBMIN_HOME_DOS=$(fn__WSLPathToRealDosPath ${__DEBMIN_HOME})
+    __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${__DEBMIN_HOME})
+    __DEBMIN_SOURCE_IMAGE_NAME=${pDebminSourceImageName}
+    __TZ_PATH=Australia/Sydney
+    __TZ_NAME=Australia/Sydney
+    __ENV="${pGitClientShellGlobalProfile}"
+    __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${pGitClientImageName}
+    __REMOVE_CONTAINER_ON_STOP=${__YES}
+    __NEEDS_REBUILDING=${__NO}
 
 ------------Function_Usage_Note-------------------------------
-_RUN_TEST_SET_=${__YES}
+_RUN_TEST_SET_=${__NO}
 if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
 then
 
@@ -343,6 +786,7 @@ then
   fn__SetEnvironmentVariables_test_001
 
 
+
   testIntent="${functionName} function will return __SUCCESS status, having established that all variables were set to the expected values"
   function fn__SetEnvironmentVariables_test_002 {
     local -r lDebminHome="/mnt/d/tmp/testapp"
@@ -361,16 +805,16 @@ then
     local -r EXPECTED__REMOVE_CONTAINER_ON_STOP=0
     local -r EXPECTED__NEEDS_REBUILDING=1
 
-# echo "__DEBMIN_HOME: ${__DEBMIN_HOME}"
-# echo "__DEBMIN_HOME_DOS: ${__DEBMIN_HOME_DOS}"
-# echo "__DEBMIN_HOME_WSD: ${__DEBMIN_HOME_WSD}"
-# echo "__DEBMIN_SOURCE_IMAGE_NAME: ${__DEBMIN_SOURCE_IMAGE_NAME}"
-# echo "__TZ_PATH: ${__TZ_PATH}"
-# echo "__TZ_NAME: ${__TZ_NAME}"
-# echo "__ENV: ${__ENV}"
-# echo "__DOCKERFILE_PATH: ${__DOCKERFILE_PATH}"
-# echo "__REMOVE_CONTAINER_ON_STOP: ${__REMOVE_CONTAINER_ON_STOP}"
-# echo "__NEEDS_REBUILDING: ${__NEEDS_REBUILDING}"
+  # echo "__DEBMIN_HOME: ${__DEBMIN_HOME}"
+  # echo "__DEBMIN_HOME_DOS: ${__DEBMIN_HOME_DOS}"
+  # echo "__DEBMIN_HOME_WSD: ${__DEBMIN_HOME_WSD}"
+  # echo "__DEBMIN_SOURCE_IMAGE_NAME: ${__DEBMIN_SOURCE_IMAGE_NAME}"
+  # echo "__TZ_PATH: ${__TZ_PATH}"
+  # echo "__TZ_NAME: ${__TZ_NAME}"
+  # echo "__ENV: ${__ENV}"
+  # echo "__DOCKERFILE_PATH: ${__DOCKERFILE_PATH}"
+  # echo "__REMOVE_CONTAINER_ON_STOP: ${__REMOVE_CONTAINER_ON_STOP}"
+  # echo "__NEEDS_REBUILDING: ${__NEEDS_REBUILDING}"
 
 
     expectedStringResult=""
@@ -449,16 +893,16 @@ then
     local -r EXPECTED__REMOVE_CONTAINER_ON_STOP=0
     local -r EXPECTED__NEEDS_REBUILDING=1
 
-# echo "__DEBMIN_HOME: ${__DEBMIN_HOME}"
-# echo "__DEBMIN_HOME_DOS: ${__DEBMIN_HOME_DOS}"
-# echo "__DEBMIN_HOME_WSD: ${__DEBMIN_HOME_WSD}"
-# echo "__DEBMIN_SOURCE_IMAGE_NAME: ${__DEBMIN_SOURCE_IMAGE_NAME}"
-# echo "__TZ_PATH: ${__TZ_PATH}"
-# echo "__TZ_NAME: ${__TZ_NAME}"
-# echo "__ENV: ${__ENV}"
-# echo "__DOCKERFILE_PATH: ${__DOCKERFILE_PATH}"
-# echo "__REMOVE_CONTAINER_ON_STOP: ${__REMOVE_CONTAINER_ON_STOP}"
-# echo "__NEEDS_REBUILDING: ${__NEEDS_REBUILDING}"
+  # echo "__DEBMIN_HOME: ${__DEBMIN_HOME}"
+  # echo "__DEBMIN_HOME_DOS: ${__DEBMIN_HOME_DOS}"
+  # echo "__DEBMIN_HOME_WSD: ${__DEBMIN_HOME_WSD}"
+  # echo "__DEBMIN_SOURCE_IMAGE_NAME: ${__DEBMIN_SOURCE_IMAGE_NAME}"
+  # echo "__TZ_PATH: ${__TZ_PATH}"
+  # echo "__TZ_NAME: ${__TZ_NAME}"
+  # echo "__ENV: ${__ENV}"
+  # echo "__DOCKERFILE_PATH: ${__DOCKERFILE_PATH}"
+  # echo "__REMOVE_CONTAINER_ON_STOP: ${__REMOVE_CONTAINER_ON_STOP}"
+  # echo "__NEEDS_REBUILDING: ${__NEEDS_REBUILDING}"
 
 
     expectedStringResult=""

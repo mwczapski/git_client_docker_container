@@ -958,7 +958,6 @@ else
 fi
 
 
-
 functionName="fn__GetValidIdentifierInput"
 :<<-'------------Function_Usage_Note-------------------------------'
   Usage: 
@@ -1139,8 +1138,6 @@ else
   echo "     . Not running test for ${functionName}"
 fi
 
-
-
 functionName="fn__ConfirmYN"
 :<<-'------------Function_Usage_Note-------------------------------'
   Usage: 
@@ -1154,7 +1151,7 @@ functionName="fn__ConfirmYN"
   Default: 
     ${__NO}
 ------------Function_Usage_Note-------------------------------
-_RUN_TEST_SET_=${__YES}
+_RUN_TEST_SET_=${__NO}
 if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
 then
 
@@ -1200,7 +1197,7 @@ then
 
 
   testIntent="${functionName} function will return \${__NO} if input is a string starting with anything other than Y or y"
-  function fn__ConfirmYN_test_002 {
+  function fn__ConfirmYN_test_003 {
     local pPrompt="Please enter Y or N"
     local -r expectedStringResult=""
     local -r expectedStatusResult=${__NO}
@@ -1217,11 +1214,11 @@ then
       "${actualStringResult}" \
       ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
-  fn__ConfirmYN_test_002
+  fn__ConfirmYN_test_003
 
 
   testIntent="${functionName} function will return \${__NO} if input is a string starting with anything other than Y or y"
-  function fn__ConfirmYN_test_003 {
+  function fn__ConfirmYN_test_004 {
     local pPrompt="Please enter Y or N"
     local -r expectedStringResult=""
     local -r expectedStatusResult=${__NO}
@@ -1238,11 +1235,11 @@ then
       "${actualStringResult}" \
       ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
-  fn__ConfirmYN_test_003
+  fn__ConfirmYN_test_004
 
 
   testIntent="${functionName} function will return \${__YES} if input is a string starting with Y or y"
-  function fn__ConfirmYN_test_003 {
+  function fn__ConfirmYN_test_005 {
     local pPrompt="Please enter Y or N"
     local -r expectedStringResult=""
     local -r expectedStatusResult=${__YES}
@@ -1259,11 +1256,11 @@ then
       "${actualStringResult}" \
       ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
-  fn__ConfirmYN_test_003
+  fn__ConfirmYN_test_005
 
 
   testIntent="${functionName} function will return \${__YES} if input is a string starting with Y or y"
-  function fn__ConfirmYN_test_004 {
+  function fn__ConfirmYN_test_006 {
     local pPrompt="Please enter Y or N"
     local -r expectedStringResult=""
     local -r expectedStatusResult=${__YES}
@@ -1280,12 +1277,144 @@ then
       "${actualStringResult}" \
       ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
-  fn__ConfirmYN_test_004
+  fn__ConfirmYN_test_006
 
 else 
   echo "     . Not running test for ${functionName}"
 fi
 
+
+echo "----------------------------------------------"
+functionName="fn__RefVariableExists"
+:<<-'------------Function_Usage_Note-------------------------------'
+  Usage: 
+    fn__RefVariableExists \
+      "outerScopeVariableName"
+  Returns:
+    ${__YES}
+    ${__NO}
+  Expects in environment:
+    Constants from __env_GlobalConstants
+------------Function_Usage_Note-------------------------------
+_RUN_TEST_SET_=${__YES}
+if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
+then
+
+  testIntent="${functionName} function will return __NO status when argument is not provided"
+  function fn__RefVariableExists_test_001 {
+    expectedStringResult=""
+    expectedStatusResult=${__NO}
+
+    ${functionName} && actualStatusResult=$? || actualStatusResult=$?
+    actualStringResult=""
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__RefVariableExists_test_001
+
+
+  testIntent="${functionName} function will return __NO status when empty argument is provided"
+  function fn__RefVariableExists_test_002 {
+
+    expectedStringResult=""
+    expectedStatusResult=${__NO}
+
+    ${functionName} "" && actualStatusResult=$? || actualStatusResult=$?
+    actualStringResult=""
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__RefVariableExists_test_002
+
+
+  testIntent="${functionName} function will return __YES status when variable name is provided, whether this variable exists in the outer scope or not"
+  function fn__RefVariableExists_test_003 {
+    local lRefVar
+    expectedStringResult=""
+    expectedStatusResult=${__YES}
+
+    ${functionName} "lRefVar" && actualStatusResult=$? || actualStatusResult=$?
+    actualStringResult=""
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__RefVariableExists_test_003
+  
+
+  testIntent="${functionName} function will return __YES status when variable name is provided, whether this variable exists in the outer scope or not"
+  function fn__RefVariableExists_test_004 {
+    local lRefVar=""
+    expectedStringResult=""
+    expectedStatusResult=${__YES}
+
+    ${functionName} "lRefVar" && actualStatusResult=$? || actualStatusResult=$?
+    actualStringResult=""
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__RefVariableExists_test_004
+
+
+  testIntent="${functionName} function will return __YES status when variable name is provided, whether this variable exists in the outer scope or not"
+  function fn__RefVariableExists_test_005 {
+    local lRefVar="Hello"
+    expectedStringResult=""
+    expectedStatusResult=${__YES}
+
+    ${functionName} "lRefVar" && actualStatusResult=$? || actualStatusResult=$?
+    actualStringResult=""
+    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+  }
+  fn__RefVariableExists_test_005
+
+
+
+
+
+else 
+  echo "     . Not running test for ${functionName}"
+fi
 
 
 

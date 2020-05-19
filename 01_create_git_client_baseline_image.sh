@@ -70,18 +70,27 @@ readonly __PUSH_TO_REMOTE_DOCKER_REPO=${STS}
 echo "______ Push of the image to the remote Docker repository has $([[ ${__PUSH_TO_REMOTE_DOCKER_REPO} -eq ${__NO} ]] && echo "NOT ")been requested."
 
 
-# 
-mkdir -pv ${__DEBMIN_HOME}
-cd ${__DEBMIN_HOME}
-
+# fn__SetEnvironmentVariables \
+#   ${__DEBMIN_HOME} \
+#   "bitnami/minideb:jessie" \
+#   ${__GIT_CLIENT_SHELL_GLOBAL_PROFILE} \
+#   ${__GIT_CLIENT_IMAGE_NAME} 
+# echo "______ Set environment variables" 
 
 fn__SetEnvironmentVariables \
-  ${__DEBMIN_HOME} \
-  "bitnami/minideb:jessie" \
-  ${__GIT_CLIENT_SHELL_GLOBAL_PROFILE} \
-  ${__GIT_CLIENT_IMAGE_NAME} 
-echo "______ Set environment variables" 
+  "${__SCRIPTS_DIRECTORY_NAME}" \
+  "${__GIT_CLIENT_IMAGE_NAME}"  \
+  "${__GITSERVER_SHELL_GLOBAL_PROFILE}"  \
+  "__DEBMIN_HOME"  \
+  "__DEBMIN_HOME_DOS"  \
+  "__DEBMIN_HOME_WSD" \
+  "__DOCKERFILE_PATH"  \
+  "__REMOVE_CONTAINER_ON_STOP"  \
+  "__NEEDS_REBUILDING" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it abort if failed and investigate
+echo "_____ Set environment variables" 
 
+# 
+cd ${__DEBMIN_HOME}
 
 
 fn__Create_docker_entry_point_file \
