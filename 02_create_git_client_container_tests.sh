@@ -368,7 +368,7 @@ then
 
 
   function fn__CreateDockerComposeFile_test_002 {
-    local -r TS=$(date +%F%T)
+    local -r TS=$(date '+%Y%m%d_%H%M%S')
 
     local -r lGitClientContainerName="testapp"
     local -r lGitClientHostName="${lGitClientContainerName}"
@@ -403,7 +403,7 @@ then
 
 
   function fn__CreateDockerComposeFile_test_003 {
-    local -r TS=$(date +%F%T)
+    local -r TS=$(date '+%Y%m%d_%H%M%S')
 
     local -r lGitClientContainerName="testapp"
     local -r lGitClientHostName="${lGitClientContainerName}"
@@ -454,7 +454,7 @@ then
 
 
   function fn__CreateDockerComposeFile_test_004 {
-    local -r TS=$(date +%F%T)
+    local -r TS=TS=$(date '+%Y%m%d_%H%M%S')
 
     local -r lGitClientContainerName="testappXXX"
     local -r lGitClientHostName="${lGitClientContainerName}"

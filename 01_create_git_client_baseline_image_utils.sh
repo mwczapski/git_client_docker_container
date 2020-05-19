@@ -2,7 +2,7 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 declare -ur _01_create_git_client_baseline_image_utils
@@ -119,45 +119,6 @@ function fn__SetEnvironmentVariables() {
 }
 
 
-function fn__SetEnvironmentVariablesXXXX() {
-  local -r lUsage='
-  Usage:
-    fn__SetEnvironmentVariables \
-      ${__DEBMIN_HOME} \
-      ${__DEBMIN_SOURCE_IMAGE_NAME} \
-      ${__GIT_CLIENT_SHELL_GLOBAL_PROFILE} \
-      ${__GIT_CLIENT_IMAGE_NAME} \ 
-  '
-  [[ $# -lt  4 || "${0^^}" == "HELP" ]] && {
-    echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
-    return ${__FAILED}
-  }
-
-  local -r pDebminHome=${1?"${lUsage}"}
-  local -r pDebminSourceImageName=${2?"${lUsage}"}
-  local -r pGitClientShellGlobalProfile=${3?"${lUsage}"}
-  local -r pGitClientImageName=${4?"${lUsage}"}
-
-  # set environment
-  #
-  __DEBMIN_HOME=${pDebminHome%%/_commonUtils} # strip _commonUtils
-  declare -g __DEBMIN_HOME_DOS=$(fn__WSLPathToRealDosPath ${__DEBMIN_HOME})
-  declare -g __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${__DEBMIN_HOME})
-  declare -g __DEBMIN_SOURCE_IMAGE_NAME=${pDebminSourceImageName}
-  declare -g __TZ_PATH=Australia/Sydney
-  declare -g __TZ_NAME=Australia/Sydney
-  declare -g __ENV="${pGitClientShellGlobalProfile}"
-
-  declare -g __DOCKERFILE_PATH=${__DEBMIN_HOME}/Dockerfile.${pGitClientImageName}
-
-  ## toggles 
-  declare -g __REMOVE_CONTAINER_ON_STOP=${__YES} # container started using this image is not supposed to be used for work
-  declare -g __NEEDS_REBUILDING=${__NO}  # set to ${__YES} if image does not exist or Dockerfile changed
-
-  return ${__SUCCESS}
-}
-
-
 function fn__Create_docker_entry_point_file() {
     declare lUsage='
   Usage: 
@@ -225,7 +186,7 @@ function fn__CreateDockerfile() {
   local __NEEDS_REBUILDING=${__NO}
   local STS=${__SUCCESS}
 
-  local -r TS=$(date '+%F_%T')
+  local -r TS=$(date '+%Y%m%d_%H%M%S')
 
   [[ -e ${pDckerfilePath} ]] && cp ${pDckerfilePath} ${pDckerfilePath}_${TS}
     
