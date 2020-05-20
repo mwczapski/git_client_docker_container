@@ -5,10 +5,14 @@
 # Copyright © 2020 Michael Czapski
 # #############################################
 
+declare -u _02_create_git_client_container_tests="SOURCED"
+echo "INFO 02_create_git_client_container_tests"
+
+[[ ${bash_test_utils} ]] || source ./bash_test_utils/bash_test_utils.sh
+
 [[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 [[ ${__env_gitClientConstants} ]] || source ./utils/__env_gitClientConstants.sh
 [[ ${fn__UtilityGeneric} ]] || source ./utils/fn__UtilityGeneric.sh
-
 
 [[ ${_02_create_git_client_container_utils} ]] || source ./02_create_git_client_container_utils.sh
 
@@ -37,6 +41,9 @@ declare -i _RUN_TEST_SET_=${__NO}
 #
 #_FORCE_RUNNING_ALL_TESTS_=""
 
+# echo "------------------------------------ F ---------------"
+# declare -F 
+# echo "------------------------------------ F ---------------"
 
 ## ################################################################
 ## create expected files 
@@ -79,239 +86,350 @@ EOF
 functionName="fn__SetEnvironmentVariables"
 :<<-'------------Function_Usage_Note-------------------------------'
   Usage:
-          fn__SetEnvironmentVariables \
-            "${__DEBMIN_HOME}" \
-            "${__GIT_CLIENT_USERNAME}" \
-            "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
-        returns ${__SUCCESS} or ${__FAILED} if insufficient number of arguments are provided
-sets/updates globally:
-  __DEBMIN_HOME
-  __DEBMIN_HOME_DOS
-  __DEBMIN_HOME_WSD
-  __DEBMIN_SOURCE_IMAGE_NAME
-  __GIT_CLIENT_REMOTE_REPO_NAME
-  __GIT_CLIENT_CONTAINER_NAME
-  __GIT_CLIENT_HOST_NAME
-  __DOCKER_COMPOSE_FILE_WLS
-  __DOCKER_COMPOSE_FILE_DOS
-
+    fn__SetEnvironmentVariables
+      "${__DEBMIN_HOME}" \
+      "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
+      "__DEBMIN_HOME" \
+      "__DEBMIN_HOME_WSD" \
+      "__DEBMIN_HOME_DOS" \
+      "__DOCKER_COMPOSE_FILE_WLS" \
+      "__DOCKER_COMPOSE_FILE_DOS" \
+      "__CONTAINER_SOURCE_IMAGE_NAME" \
+      "__GIT_CLIENT_CONTAINER_NAME" \
+      "__GIT_CLIENT_HOST_NAME" \
+      "__GIT_CLIENT_REMOTE_REPO_NAME" \
+  Returns:
+    ${__SUCCESS}
+    ${__INSUFFICIENT_ARGS_STS}
+    ${__EMPTY_ARGUMENT_NOT_ALLOWED}
+    ${__INVALID_VALUE}
+    ${__NO_SUCH_DIRECTORY}
+    ${__FAILED}   # presumed container name is not a valid identifier
 ------------Function_Usage_Note-------------------------------
 _RUN_TEST_SET_=${__NO}
 if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
 then
 
-  testIntent="${functionName} function will return __FAILURE status, insufficient number of arguments and Usage message"
+  testIntent="${functionName} will return __INSUFFICIENT_ARGS_STS status"
   function fn__SetEnvironmentVariables_test_001 {
     local -r lDebminHome="/mnt/d/tmp/testapp/_commonUtils"
     local -r pGitclientUsername="testapp"
     local -r pDebminSourceImageName="gitclient:1.0.0"
 
-    expectedStringResult=${__INSUFFICIENT_ARGS}
-    expectedStatusResult=${__FAILED}
+    expectedStringResult=""
+    expectedStatusResult=${__INSUFFICIENT_ARGS_STS}
     actualStringResult=$( ${functionName} ${lDebminHome} ${pGitclientUsername} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__SetEnvironmentVariables_test_001
 
 
-  testIntent="${functionName} function will return __SUCCESS status, having established that all variables were set to the expected values"
   function fn__SetEnvironmentVariables_test_002 {
-    local -r lDebminHome="/mnt/d/tmp/testapp/_commonUtils"
-    local -r pGitclientUsername="testapp"
-    local -r pDebminSourceImageName="gitclient:1.0.0"
+    local -r lrDebminHomeIn="/mnt/d/tmp/testapp$(date +%s)/_commonUtils"
+    local -r lrGitserverImageNameAndVersion="gitclient:1.0.0"
+    local lOutDebminHomeOut=""
+    local lOutDebminHomeOutWSD=""
+    local lOutDebminHomeOutDOS=""
+    local lOutDockerComposeFileWSL=""
+    local lOutDockerComposeFileDOS=""
+    local lOutContainerSourceImage=""
+    local lOutGitClientContainerName=""
+    local lOutGitClientHostName=""
+    local lOutGitClientRemoteRepoName=""
 
-    local -r EXPECTED__DEBMIN_HOME='/mnt/d/tmp/testapp'
-    local -r EXPECTED__DEBMIN_HOME_DOS='d:\tmp\testapp'
-    local -r EXPECTED__DEBMIN_HOME_WSD='d:/tmp/testapp'
-    local -r EXPECTED__DEBMIN_SOURCE_IMAGE_NAME='gitclient:1.0.0'
-    local -r EXPECTED__GIT_CLIENT_REMOTE_REPO_NAME='testapp'
-    local -r EXPECTED__GIT_CLIENT_CONTAINER_NAME='testapp'
-    local -r EXPECTED__GIT_CLIENT_HOST_NAME='testapp'
-    local -r EXPECTED__DOCKER_COMPOSE_FILE_WLS='/mnt/d/tmp/testapp/docker-compose.yml_testapp'
-    local -r EXPECTED__DOCKER_COMPOSE_FILE_DOS='d:\tmp\testapp\docker-compose.yml_testapp'
+    testIntent="${functionName} function will return __NO_SUCH_DIRECTORY"
+    fn__testInputAndExecution() {
+      expectedStringResult=""
+      expectedStatusResult=${__NO_SUCH_DIRECTORY}
 
-    expectedStringResult=""
-    expectedStatusResult=${__SUCCESS}
-    # can't run in a subprocess - environment variabkles do not get propagated to the parent
-    ${functionName} ${lDebminHome} ${pGitclientUsername} ${pDebminSourceImageName} && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    actualStringResult=""
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+      ${functionName} \
+        "${lrDebminHomeIn}" \
+        "${lrGitserverImageNameAndVersion}" \
+        "lOutDebminHomeOut" \
+        "lOutDebminHomeOutWSD" \
+        "lOutDebminHomeOutDOS" \
+        "lOutDockerComposeFileWSL" \
+        "lOutDockerComposeFileDOS" \
+        "lOutContainerSourceImage" \
+        "lOutGitClientContainerName" \
+        "lOutGitClientHostName" \
+        "lOutGitClientRemoteRepoName" && actualStatusResult=$? || actualStatusResult=$?
 
-      {
-        test 1=1
-        # echo "__DEBMIN_HOME: ${__DEBMIN_HOME}"
-        # echo "__DEBMIN_HOME_DOS: ${__DEBMIN_HOME_DOS}"
-        # echo "__DEBMIN_HOME_WSD: ${__DEBMIN_HOME_WSD}"
-        # echo "__DEBMIN_SOURCE_IMAGE_NAME: ${__DEBMIN_SOURCE_IMAGE_NAME}"
-        # echo "__GIT_CLIENT_REMOTE_REPO_NAME: ${__GIT_CLIENT_REMOTE_REPO_NAME}"
-        # echo "__GIT_CLIENT_CONTAINER_NAME: ${__GIT_CLIENT_CONTAINER_NAME}"
-        # echo "__GIT_CLIENT_HOST_NAME: ${__GIT_CLIENT_HOST_NAME}"
-        # echo "__DOCKER_COMPOSE_FILE_WLS: ${__DOCKER_COMPOSE_FILE_WLS}"
-        # echo "__DOCKER_COMPOSE_FILE_DOS: ${__DOCKER_COMPOSE_FILE_DOS}"
-      }
-      # test that the variables were set
-      #
-      local -i missingVariables=0
-      [[ ${__DEBMIN_HOME} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_HOME}" ; }
-      [[ ${__DEBMIN_HOME_DOS} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_HOME_DOS}" ; }
-      [[ ${__DEBMIN_HOME_WSD} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_HOME_WSD}" ; }
-      [[ ${__DEBMIN_SOURCE_IMAGE_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_SOURCE_IMAGE_NAME}" ; }
-      [[ ${__GIT_CLIENT_REMOTE_REPO_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__GIT_CLIENT_REMOTE_REPO_NAME}" ; }
-      [[ ${__GIT_CLIENT_CONTAINER_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__GIT_CLIENT_CONTAINER_NAME}" ; }
-      [[ ${__GIT_CLIENT_HOST_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__GIT_CLIENT_HOST_NAME}" ; }
-      [[ ${__DOCKER_COMPOSE_FILE_WLS} ]] || { ((missingVariables++)) ; echo "Missing ${__DOCKER_COMPOSE_FILE_WLS}" ; }
-      [[ ${__DOCKER_COMPOSE_FILE_DOS} ]] || { ((missingVariables++)) ; echo "Missing ${__DOCKER_COMPOSE_FILE_DOS}" ; }
-      if [[ ${missingVariables} -gt 0 ]]
-      then
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      else 
-
-        # test that the variables were set to the expected values
-        #
-        local -i lIncorrectContent=0
-        [[ ${EXPECTED__DEBMIN_HOME} != ${__DEBMIN_HOME} ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_HOME Incorrect value ${__DEBMIN_HOME}" ; }
-        [[ "${EXPECTED__DEBMIN_HOME_DOS}" != "${__DEBMIN_HOME_DOS}" ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_HOME_DOS Incorrect value ${__DEBMIN_HOME_DOS}" ; }
-        [[ "${EXPECTED__DEBMIN_HOME_WSD}" != "${__DEBMIN_HOME_WSD}" ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_HOME_WSD Incorrect value ${__DEBMIN_HOME_WSD}" ; }
-        [[ "${EXPECTED__DEBMIN_SOURCE_IMAGE_NAME}" != "${__DEBMIN_SOURCE_IMAGE_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_SOURCE_IMAGE_NAME Incorrect value ${__DEBMIN_SOURCE_IMAGE_NAME}" ; }
-        [[ "${EXPECTED__GIT_CLIENT_REMOTE_REPO_NAME}" != "${__GIT_CLIENT_REMOTE_REPO_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__GIT_CLIENT_REMOTE_REPO_NAME Incorrect value ${__GIT_CLIENT_REMOTE_REPO_NAME}" ; }
-        [[ "${EXPECTED__GIT_CLIENT_CONTAINER_NAME}" != "${__GIT_CLIENT_CONTAINER_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__GIT_CLIENT_CONTAINER_NAME Incorrect value ${__GIT_CLIENT_CONTAINER_NAME}" ; }
-        [[ "${EXPECTED__GIT_CLIENT_HOST_NAME}" != "${__GIT_CLIENT_HOST_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__GIT_CLIENT_HOST_NAME Incorrect value ${__GIT_CLIENT_HOST_NAME}" ; }
-        [[ "${EXPECTED__DOCKER_COMPOSE_FILE_WLS}" != "${__DOCKER_COMPOSE_FILE_WLS}" ]] && { ((lIncorrectContent++)) ; echo "__DOCKER_COMPOSE_FILE_WLS Incorrect value ${__DOCKER_COMPOSE_FILE_WLS}" ; }
-        [[ "${EXPECTED__DOCKER_COMPOSE_FILE_DOS}" != "${__DOCKER_COMPOSE_FILE_DOS}" ]] && { ((lIncorrectContent++)) ; echo "__DOCKER_COMPOSE_FILE_DOS Incorrect value ${__DOCKER_COMPOSE_FILE_DOS}" ; }
-        if [[ ${lIncorrectContent} -gt 0 ]]
-        then
-          echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-          ((iFailureResults++)); true
-        else 
-          # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-          echo "PASS ${LINENO}: ${testIntent}" 
-          ((iSuccessResults++)); true
-        fi
-      fi
-    } || {
-      echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
     }
+    fn__testInputAndExecution
+
   }
   fn__SetEnvironmentVariables_test_002
 
 
-  testIntent="${functionName} function will return __SUCCESS status, but some vaiables are not set to the expected values"
   function fn__SetEnvironmentVariables_test_003 {
-    local -r lDebminHome="/mnt/d/tmp/testapp"
-    local -r pGitclientUsername="testapp"
-    local -r pDebminSourceImageName="gitclient:1.0.0"
+    local -r lrDebminHomeIn="/mnt/d/gitserver/gitclient/_commonUtils"
+    local -r lrGitserverImageNameAndVersion="gitclient:1.0.0"
+    local lOutDebminHomeOut=""
+    local lOutDebminHomeOutWSD=""
+    local lOutDebminHomeOutDOS=""
+    local lOutDockerComposeFileWSL=""
+    local lOutDockerComposeFileDOS=""
+    local lOutContainerSourceImage=""
+    local lOutGitClientContainerName=""
+    local lOutGitClientHostName=""
+    local lOutGitClientRemoteRepoName=""
 
-    local -r EXPECTED__DEBMIN_HOME='/mnt/d/tmp/testapp'
-    local -r EXPECTED__DEBMIN_HOME_DOS='d:\tmp\testapp'
-    local -r EXPECTED__DEBMIN_HOME_WSD='d:/tmp/testapp'
-    local -r EXPECTED__DEBMIN_SOURCE_IMAGE_NAME='gitclient:1.0.0'
-    local -r EXPECTED__GIT_CLIENT_REMOTE_REPO_NAME='testappX'
-    local -r EXPECTED__GIT_CLIENT_CONTAINER_NAME='testappD'
-    local -r EXPECTED__GIT_CLIENT_HOST_NAME='testappR'
-    local -r EXPECTED__DOCKER_COMPOSE_FILE_WLS='/mnt/d/tmp/testapp/docker-compose.yml_testapp'
-    local -r EXPECTED__DOCKER_COMPOSE_FILE_DOS='d:\tmp\testapp\docker-compose.yml_testapp'
+    testIntent="${functionName} function will return __SUCCESS"
+    fn__testInputAndExecution() {
+      expectedStringResult=""
+      expectedStatusResult=${__SUCCESS}
 
-    expectedStringResult=""
-    expectedStatusResult=${__SUCCESS}
-    # can't run in a subprocess - environment variabkles do not get propagated to the parent
-    ${functionName} ${lDebminHome} ${pGitclientUsername} ${pDebminSourceImageName} && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    actualStringResult=""
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
+      ${functionName} \
+        "${lrDebminHomeIn}" \
+        "${lrGitserverImageNameAndVersion}" \
+        "lOutDebminHomeOut" \
+        "lOutDebminHomeOutWSD" \
+        "lOutDebminHomeOutDOS" \
+        "lOutDockerComposeFileWSL" \
+        "lOutDockerComposeFileDOS" \
+        "lOutContainerSourceImage" \
+        "lOutGitClientContainerName" \
+        "lOutGitClientHostName" \
+        "lOutGitClientRemoteRepoName" && actualStatusResult=$? || actualStatusResult=$?
 
-      {
-        test 1=1
-        # echo "__DEBMIN_HOME: ${__DEBMIN_HOME}"
-        # echo "__DEBMIN_HOME_DOS: ${__DEBMIN_HOME_DOS}"
-        # echo "__DEBMIN_HOME_WSD: ${__DEBMIN_HOME_WSD}"
-        # echo "__DEBMIN_SOURCE_IMAGE_NAME: ${__DEBMIN_SOURCE_IMAGE_NAME}"
-        # echo "__GIT_CLIENT_REMOTE_REPO_NAME: ${__GIT_CLIENT_REMOTE_REPO_NAME}"
-        # echo "__GIT_CLIENT_CONTAINER_NAME: ${__GIT_CLIENT_CONTAINER_NAME}"
-        # echo "__GIT_CLIENT_HOST_NAME: ${__GIT_CLIENT_HOST_NAME}"
-        # echo "__DOCKER_COMPOSE_FILE_WLS: ${__DOCKER_COMPOSE_FILE_WLS}"
-        # echo "__DOCKER_COMPOSE_FILE_DOS: ${__DOCKER_COMPOSE_FILE_DOS}"
-      }
-      # test that the variables were set
-      #
-      local -i missingVariables=0
-      # [[ ${__DEBMIN_HOME} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_HOME}" ; }
-      # [[ ${__DEBMIN_HOME_DOS} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_HOME_DOS}" ; }
-      # [[ ${__DEBMIN_HOME_WSD} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_HOME_WSD}" ; }
-      # [[ ${__DEBMIN_SOURCE_IMAGE_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__DEBMIN_SOURCE_IMAGE_NAME}" ; }
-      # [[ ${__GIT_CLIENT_REMOTE_REPO_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__GIT_CLIENT_REMOTE_REPO_NAME}" ; }
-      # [[ ${__GIT_CLIENT_CONTAINER_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__GIT_CLIENT_CONTAINER_NAME}" ; }
-      # [[ ${__GIT_CLIENT_HOST_NAME} ]] || { ((missingVariables++)) ; echo "Missing ${__GIT_CLIENT_HOST_NAME}" ; }
-      # [[ ${__DOCKER_COMPOSE_FILE_WLS} ]] || { ((missingVariables++)) ; echo "Missing ${__DOCKER_COMPOSE_FILE_WLS}" ; }
-      # [[ ${__DOCKER_COMPOSE_FILE_DOS} ]] || { ((missingVariables++)) ; echo "Missing ${__DOCKER_COMPOSE_FILE_DOS}" ; }
-      [[ ${__DEBMIN_HOME} ]] || ((missingVariables++))
-      [[ ${__DEBMIN_HOME_DOS} ]] || ((missingVariables++))
-      [[ ${__DEBMIN_HOME_WSD} ]] || ((missingVariables++))
-      [[ ${__DEBMIN_SOURCE_IMAGE_NAME} ]] || ((missingVariables++))
-      [[ ${__GIT_CLIENT_REMOTE_REPO_NAME} ]] || ((missingVariables++))
-      [[ ${__GIT_CLIENT_CONTAINER_NAME} ]] || ((missingVariables++))
-      [[ ${__GIT_CLIENT_HOST_NAME} ]] || ((missingVariables++))
-      [[ ${__DOCKER_COMPOSE_FILE_WLS} ]] || ((missingVariables++))
-      [[ ${__DOCKER_COMPOSE_FILE_DOS} ]] || ((missingVariables++))
-      if [[ ${missingVariables} -gt 0 ]]
-      then
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      else 
-
-        # test that the variables were set to the expected values
-        #
-        local -i lIncorrectContent=0
-        # [[ ${EXPECTED__DEBMIN_HOME} != ${__DEBMIN_HOME} ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_HOME Incorrect value ${__DEBMIN_HOME}" ; }
-        # [[ "${EXPECTED__DEBMIN_HOME_DOS}" != "${__DEBMIN_HOME_DOS}" ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_HOME_DOS Incorrect value ${__DEBMIN_HOME_DOS}" ; }
-        # [[ "${EXPECTED__DEBMIN_HOME_WSD}" != "${__DEBMIN_HOME_WSD}" ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_HOME_WSD Incorrect value ${__DEBMIN_HOME_WSD}" ; }
-        # [[ "${EXPECTED__DEBMIN_SOURCE_IMAGE_NAME}" != "${__DEBMIN_SOURCE_IMAGE_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__DEBMIN_SOURCE_IMAGE_NAME Incorrect value ${__DEBMIN_SOURCE_IMAGE_NAME}" ; }
-        # [[ "${EXPECTED__GIT_CLIENT_REMOTE_REPO_NAME}" != "${__GIT_CLIENT_REMOTE_REPO_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__GIT_CLIENT_REMOTE_REPO_NAME Incorrect value ${__GIT_CLIENT_REMOTE_REPO_NAME}" ; }
-        # [[ "${EXPECTED__GIT_CLIENT_CONTAINER_NAME}" != "${__GIT_CLIENT_CONTAINER_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__GIT_CLIENT_CONTAINER_NAME Incorrect value ${__GIT_CLIENT_CONTAINER_NAME}" ; }
-        # [[ "${EXPECTED__GIT_CLIENT_HOST_NAME}" != "${__GIT_CLIENT_HOST_NAME}" ]] && { ((lIncorrectContent++)) ; echo "__GIT_CLIENT_HOST_NAME Incorrect value ${__GIT_CLIENT_HOST_NAME}" ; }
-        # [[ "${EXPECTED__DOCKER_COMPOSE_FILE_WLS}" != "${__DOCKER_COMPOSE_FILE_WLS}" ]] && { ((lIncorrectContent++)) ; echo "__DOCKER_COMPOSE_FILE_WLS Incorrect value ${__DOCKER_COMPOSE_FILE_WLS}" ; }
-        # [[ "${EXPECTED__DOCKER_COMPOSE_FILE_DOS}" != "${__DOCKER_COMPOSE_FILE_DOS}" ]] && { ((lIncorrectContent++)) ; echo "__DOCKER_COMPOSE_FILE_DOS Incorrect value ${__DOCKER_COMPOSE_FILE_DOS}" ; }
-        [[ ${EXPECTED__DEBMIN_HOME} != ${__DEBMIN_HOME} ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__DEBMIN_HOME_DOS}" != "${__DEBMIN_HOME_DOS}" ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__DEBMIN_HOME_WSD}" != "${__DEBMIN_HOME_WSD}" ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__DEBMIN_SOURCE_IMAGE_NAME}" != "${__DEBMIN_SOURCE_IMAGE_NAME}" ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__GIT_CLIENT_REMOTE_REPO_NAME}" != "${__GIT_CLIENT_REMOTE_REPO_NAME}" ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__GIT_CLIENT_CONTAINER_NAME}" != "${__GIT_CLIENT_CONTAINER_NAME}" ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__GIT_CLIENT_HOST_NAME}" != "${__GIT_CLIENT_HOST_NAME}" ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__DOCKER_COMPOSE_FILE_WLS}" != "${__DOCKER_COMPOSE_FILE_WLS}" ]] && ((lIncorrectContent++))
-        [[ "${EXPECTED__DOCKER_COMPOSE_FILE_DOS}" != "${__DOCKER_COMPOSE_FILE_DOS}" ]] && ((lIncorrectContent++))
-        if [[ ${lIncorrectContent} -gt 0 ]]
-        then
-          # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-          ((iSuccessResults++)); true
-        else 
-          echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-          ((iFailureResults++)); true
-        fi
-      fi
-    } || {
-      echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-      ((iFailureResults++)); true
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
     }
+    fn__testInputAndExecution
+
+
+    testIntent="${functionName} will return __SUCCESS and match expected values of all reference variables"
+    fn__testOutput() {
+      expectedStringResult=""
+      expectedStatusResult=${__SUCCESS}
+
+      local lMismatches=0
+
+      [[ "${lOutDebminHomeOut}" != "/mnt/d/gitserver/gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDebminHomeOutWSD}" != "d:/gitserver/gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDebminHomeOutDOS}" != "d:\gitserver\gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDockerComposeFileWSL}" != "/mnt/d/gitserver/gitclient/docker-compose.yml_gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDockerComposeFileDOS}" != "d:\gitserver\gitclient\docker-compose.yml_gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutContainerSourceImage}" != "gitclient:1.0.0" ]] && (( lMismatches++ ))
+      [[ "${lOutGitClientContainerName}" != "gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutGitClientHostName}" != "gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutGitClientRemoteRepoName}" != "gitclient" ]] && (( lMismatches++ ))
+
+      actualStringResult=""
+      test ${lMismatches} -gt 0 && actualStatusResult=${__FAILED} || actualStatusResult=${__SUCCESS}
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testOutput
+
   }
   fn__SetEnvironmentVariables_test_003
 
+
+  function fn__SetEnvironmentVariables_test_004 {
+    # local -r lrDebminHomeIn="/mnt/d/gitserver/gitclient/_commonUtils"
+    local -r lrDebminHomeIn="/mnt/d/gitserver/gitclient"
+    local -r lrGitserverImageNameAndVersion="gitclient:1.0.0XX"
+    local lOutDebminHomeOut=""
+    local lOutDebminHomeOutWSD=""
+    local lOutDebminHomeOutDOS=""
+    local lOutDockerComposeFileWSL=""
+    local lOutDockerComposeFileDOS=""
+    local lOutContainerSourceImage=""
+    local lOutGitClientContainerName=""
+    local lOutGitClientHostName=""
+    local lOutGitClientRemoteRepoName=""
+
+    testIntent="${functionName} function will return __SUCCESS"
+    fn__testInputAndExecution() {
+      expectedStringResult=""
+      expectedStatusResult=${__SUCCESS}
+
+      ${functionName} \
+        "${lrDebminHomeIn}" \
+        "${lrGitserverImageNameAndVersion}" \
+        "lOutDebminHomeOut" \
+        "lOutDebminHomeOutWSD" \
+        "lOutDebminHomeOutDOS" \
+        "lOutDockerComposeFileWSL" \
+        "lOutDockerComposeFileDOS" \
+        "lOutContainerSourceImage" \
+        "lOutGitClientContainerName" \
+        "lOutGitClientHostName" \
+        "lOutGitClientRemoteRepoName" && actualStatusResult=$? || actualStatusResult=$?
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testInputAndExecution
+
+
+    testIntent="${functionName} will return __FAILED, some variable values will not match expected values of reference variables"
+    fn__testOutput() {
+      expectedStringResult=""
+      expectedStatusResult=${__FAILED}
+
+      local lMismatches=0
+
+      [[ "${lOutDebminHomeOut}" != "/mnt/d/gitserver/gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDebminHomeOutWSD}" != "d:/gitserver/gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDebminHomeOutDOS}" != "d:\gitserver\gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDockerComposeFileWSL}" != "/mnt/d/gitserver/gitclient/docker-compose.yml_gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutDockerComposeFileDOS}" != "d:\gitserver\gitclient\docker-compose.yml_gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutContainerSourceImage}" != "gitclient:1.0.0" ]] && (( lMismatches++ ))
+      [[ "${lOutGitClientContainerName}" != "gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutGitClientHostName}" != "gitclient" ]] && (( lMismatches++ ))
+      [[ "${lOutGitClientRemoteRepoName}" != "gitclient" ]] && (( lMismatches++ ))
+
+      actualStringResult=""
+      test ${lMismatches} -gt 0 && actualStatusResult=${__FAILED} || actualStatusResult=${__SUCCESS}
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testOutput
+
+  }
+  fn__SetEnvironmentVariables_test_004
+
+
+  function fn__SetEnvironmentVariables_test_005 {
+    local -r lrDebminHomeIn="/mnt/d/tmp/testapp$(date +%s)/_commonUtils"
+    local -r lrGitserverImageNameAndVersion="gitclient:1.0.0"
+    local lOutDebminHomeOut=""
+    local lOutDebminHomeOutWSD=""
+    local lOutDebminHomeOutDOS=""
+    local lOutDockerComposeFileWSL=""
+    local lOutDockerComposeFileDOS=""
+    local lOutContainerSourceImage=""
+    local lOutGitClientContainerName=""
+    local lOutGitClientHostName=""
+    local lOutGitClientRemoteRepoName=""
+
+    testIntent="${functionName} function will return __INSUFFICIENT_ARGS_STS - one of the expected output variables is missing"
+    fn__testInputAndExecution() {
+      expectedStringResult=""
+      expectedStatusResult=${__INSUFFICIENT_ARGS_STS}
+
+      ${functionName} \
+        "${lrDebminHomeIn}" \
+        "${lrGitserverImageNameAndVersion}" \
+        "lOutDebminHomeOut" \
+        "lOutDebminHomeOutWSD" \
+        "lOutDebminHomeOutDOS" \
+        "lOutDockerComposeFileWSL" \
+        "lOutDockerComposeFileDOS" \
+        "lOutContainerSourceImage" \
+        "lOutGitClientHostName" \
+        "lOutGitClientRemoteRepoName" && actualStatusResult=$? || actualStatusResult=$?
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testInputAndExecution
+
+  }
+  fn__SetEnvironmentVariables_test_005
+
+
+  function fn__SetEnvironmentVariables_test_006 {
+    local -r lrDebminHomeIn="/mnt/d/tmp/testapp$(date +%s)/_commonUtils"
+    local -r lrGitserverImageNameAndVersion="gitclient:1.0.0"
+    local lOutDebminHomeOut=""
+    local lOutDebminHomeOutWSD=""
+    local lOutDebminHomeOutDOS=""
+    local lOutDockerComposeFileWSL=""
+    local lOutDockerComposeFileDOS=""
+    local lOutContainerSourceImage=""
+    local lOutGitClientContainerName=""
+    local lOutGitClientHostName=""
+    local lOutGitClientRemoteRepoName=""
+
+    testIntent="${functionName} function will return __INVALID_VALUE - one of the expected output variables is empty"
+    fn__testInputAndExecution() {
+      expectedStringResult=""
+      expectedStatusResult=${__INVALID_VALUE}
+
+      ${functionName} \
+        "${lrDebminHomeIn}" \
+        "${lrGitserverImageNameAndVersion}" \
+        "lOutDebminHomeOut" \
+        "lOutDebminHomeOutWSD" \
+        "lOutDebminHomeOutDOS" \
+        "lOutDockerComposeFileWSL" \
+        "lOutDockerComposeFileDOS" \
+        "lOutContainerSourceImage" \
+        "" \
+        "lOutGitClientHostName" \
+        "lOutGitClientRemoteRepoName" && actualStatusResult=$? || actualStatusResult=$?
+
+      assessReturnStatusAndStdOut \
+        "${functionName}" \
+        ${LINENO} \
+        "${testIntent}" \
+        "${expectedStringResult}" \
+        ${expectedStatusResult} \
+        "${actualStringResult}" \
+        ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+    }
+    fn__testInputAndExecution
+
+  }
+  fn__SetEnvironmentVariables_test_006
+
+
 else 
-  echo "Not running test for ${functionName}"
+  echo "   . Not running test for ${functionName}"
 fi
 
 
@@ -353,7 +471,7 @@ then
     expectedStringResult="${__INSUFFICIENT_ARGS}"
     expectedStatusResult=${__FAILED}
     actualStringResult=$( ${functionName} ${functionInputs} ) && actualStatusResult=$? || actualStatusResult=$? 
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
     actualStringResult=${actualStringResult:0:${#expectedStringResult}}
     [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
         # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
@@ -376,28 +494,20 @@ then
     local -r lDebminSourceImageName="gitclient:1.0.0"
     local -r lDockerBoundVolumeSpec="d:/tmp/${lGitClientContainerName}/backups:/home/gitclient/backups"
     local -r lDockerComposeFileWSL="${_DOCKER_COMPOSE_ACTUAL_}${TS}"
-    # echo ${lDockerComposeFileWSL}
-    # echo "${__GIT_CLIENT_CONTAINER_NAME}"
-    # echo "${__GIT_CLIENT_HOST_NAME}"
-    # echo "${__DEVCICD_NET}"
-    # echo "${__DEBMIN_SOURCE_IMAGE_NAME}"
-    # echo "${__DEBMIN_HOME_WSD}/${__GIT_CLIENT_CONTAINER_NAME}/backups:${__GIT_CLIENT_GUEST_HOME}/backups"
-    # echo "${__DOCKER_COMPOSE_FILE_WLS}"
 
-    testIntent="${functionName} function will return __SUCCESS status and confirm that the file was created"
+    testIntent="${functionName} will return __SUCCESS status and confirm that the file was created"
     expectedStringResult=""
     expectedStatusResult=${__SUCCESS}
-    actualStringResult=$( ${functionName} ${lGitClientContainerName} ${lGitClientHostName} ${lDevCiCdNetDCInternal} ${lDebminSourceImageName} ${lDockerBoundVolumeSpec} ${lDockerComposeFileWSL} ) && actualStatusResult=$? || actualStatusResult=$? 
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ ${actualStatusResult} -eq ${expectedStatusResult} && -e ${lDockerComposeFileWSL} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    ${functionName} ${lGitClientContainerName} ${lGitClientHostName} ${lDevCiCdNetDCInternal} ${lDebminSourceImageName} ${lDockerBoundVolumeSpec} ${lDockerComposeFileWSL} && actualStatusResult=$? || actualStatusResult=$? 
+  
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__CreateDockerComposeFile_test_002
 
@@ -411,13 +521,6 @@ then
     local -r lDebminSourceImageName="gitclient:1.0.0"
     local -r lDockerBoundVolumeSpec="d:/tmp/${lGitClientContainerName}/backups:/home/gitclient/backups"
     local -r lDockerComposeFileWSL="${_DOCKER_COMPOSE_ACTUAL_}${TS}"
-    # echo ${lDockerComposeFileWSL}
-    # echo "${__GIT_CLIENT_CONTAINER_NAME}"
-    # echo "${__GIT_CLIENT_HOST_NAME}"
-    # echo "${__DEVCICD_NET}"
-    # echo "${__DEBMIN_SOURCE_IMAGE_NAME}"
-    # echo "${__DEBMIN_HOME_WSD}/${__GIT_CLIENT_CONTAINER_NAME}/backups:${__GIT_CLIENT_GUEST_HOME}/backups"
-    # echo "${__DOCKER_COMPOSE_FILE_WLS}"
 
     testIntent="${functionName} function will return __SUCCESS status and will write docker-compose.yml file in the designated directory whose content is identical to the expected content"
     expectedStringResult=""
@@ -425,7 +528,7 @@ then
     expectedContentSameResult=${__YES}
 
     actualStringResult=$( ${functionName} ${lGitClientContainerName} ${lGitClientHostName} ${lDevCiCdNetDCInternal} ${lDebminSourceImageName} ${lDockerBoundVolumeSpec} ${lDockerComposeFileWSL} ) && actualStatusResult=$? || actualStatusResult=$? 
-    [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
     actualStringResult=${actualStringResult:0:${#expectedStringResult}}
     [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
         diff -swq ${_DOCKER_COMPOSE_EXPECTED_} ${lDockerComposeFileWSL} >/dev/null && STS=$? || STS=$?
@@ -462,13 +565,6 @@ then
     local -r lDebminSourceImageName="gitclientZZZ:1.0.0"
     local -r lDockerBoundVolumeSpec="d:/tmp/${lGitClientContainerName}/backups:/home/gitclient/backups"
     local -r lDockerComposeFileWSL="${_DOCKER_COMPOSE_ACTUAL_}${TS}"
-    # echo ${lDockerComposeFileWSL}
-    # echo "${__GIT_CLIENT_CONTAINER_NAME}"
-    # echo "${__GIT_CLIENT_HOST_NAME}"
-    # echo "${__DEVCICD_NET}"
-    # echo "${__DEBMIN_SOURCE_IMAGE_NAME}"
-    # echo "${__DEBMIN_HOME_WSD}/${__GIT_CLIENT_CONTAINER_NAME}/backups:${__GIT_CLIENT_GUEST_HOME}/backups"
-    # echo "${__DOCKER_COMPOSE_FILE_WLS}"
 
     testIntent="${functionName} function will return __SUCCESS status and will write docker-compose.yml file in the designated directory whose content is DIFFERENT fromthe expected content"
     expectedStringResult=""
@@ -476,7 +572,7 @@ then
     expectedContentSameResult=${__NO}
 
     actualStringResult=$( ${functionName} ${lGitClientContainerName} ${lGitClientHostName} ${lDevCiCdNetDCInternal} ${lDebminSourceImageName} ${lDockerBoundVolumeSpec} ${lDockerComposeFileWSL} ) && actualStatusResult=$? || actualStatusResult=$? 
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
     actualStringResult=${actualStringResult:0:${#expectedStringResult}}
     [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
         # cat ${_DOCKER_COMPOSE_EXPECTED_} | sed 's|[0-9]\{8\}_[0-9]\{6\}|DDDDDDDD_TTTTTT|g' > ${_DOCKER_COMPOSE_EXPECTED_}.masked
@@ -508,7 +604,7 @@ then
 
 
 else 
-  echo "Not running test for ${functionName}"
+  echo "   . Not running test for ${functionName}"
 fi
 
 
@@ -529,17 +625,18 @@ then
 
     expectedStringResult=${__INSUFFICIENT_ARGS}
     expectedStatusResult=${__FAILED}
+
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__DeriveContainerName_test_001
 
@@ -552,38 +649,38 @@ then
     local -r expectedStatusResult=${__SUCCESS}
 
     local actualStringResult=$( ${functionName} ${lDebminHome}) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+  
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__DeriveContainerName_test_002
 
 
   testIntent="${functionName} function will return __SUCCESS status and incorrect container name"
   function fn__DeriveContainerName_test_003 {
-    local -r lDebminHome="/mnt/d/tmp/testapp"
+    local -r lDebminHome="/mnt/d/tmp/testappXX"
 
-    local -r expectedStringResult="testappXX"
+    local -r expectedStringResult="testapp"
     local -r expectedStatusResult=${__SUCCESS}
 
     actualStringResult=$( ${functionName} ${lDebminHome}) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" != "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+  
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__DeriveContainerName_test_003
 
@@ -596,23 +693,23 @@ then
     local -r expectedStatusResult=${__SUCCESS}
 
     actualStringResult=$( ${functionName} ${lDebminHome}) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    # actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+  
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__DeriveContainerName_test_004
 
 
 
 else 
-  echo "Not running test for ${functionName}"
+  echo "   . Not running test for ${functionName}"
 fi
 
 
@@ -642,38 +739,40 @@ then
 
     expectedStringResult=${__INSUFFICIENT_ARGS}
     expectedStatusResult=${__FAILED}
+
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetProjectName_test_001
   
 
-  testIntent="${functionName} function will return __FAILURE status and error message if the project directory structure is not as expected"
+  testIntent="${functionName} function will return __SUCCESS status"
   function fn__GetProjectName_test_002 {
     local lDebminHome_inout="${lProjectDirectory}"
 
     expectedStringResult="$(basename ${lProjectDirectory})"
     expectedStatusResult=${__SUCCESS}
     ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${lDebminHome_inout} ]] && echo "____ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
+    actualStringResult="${lDebminHome_inout}"
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetProjectName_test_002
   
@@ -685,39 +784,19 @@ then
     expectedStringResult="Directory hierarchy '${lDebminHome_inout}' does not exist"
     expectedStatusResult=${__FAILED}
     ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${lDebminHome_inout} ]] && echo "____ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
+    
+    actualStringResult="${lDebminHome_inout}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetProjectName_test_003
-
-
-  testIntent="${functionName} function will return __SUCCESS status if project structure is as expected, directory hierarchy exists but project name is not as expected"
-  function fn__GetProjectName_test_004 {
-    local lDebminHome_inout="${lProjectDirectory}/${__SCRIPTS_DIRECTORY_NAME}"
-
-    expectedStringResult="${lProjectName}XX"
-    expectedStatusResult=${__SUCCESS}
-    ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" != "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
-  }
-  fn__GetProjectName_test_004
 
 
   testIntent="${functionName} function will return __SUCCESS status if project structure is as expected and directory hierarchy exists"
@@ -727,16 +806,17 @@ then
     expectedStringResult="${lProjectName}"
     expectedStatusResult=${__SUCCESS}
     ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${lDebminHome_inout} ]] && echo "____ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
+    actualStringResult="${lDebminHome_inout}"
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetProjectName_test_005
 
@@ -748,21 +828,22 @@ then
     expectedStringResult="${lProjectName}"
     expectedStatusResult=${__SUCCESS}
     ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${lDebminHome_inout} ]] && echo "____ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
+
+    actualStringResult="${lDebminHome_inout}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetProjectName_test_006
 
 else 
-  echo "Not running test for ${functionName}"
+  echo "   . Not running test for ${functionName}"
 fi
 
 
@@ -792,16 +873,17 @@ then
     expectedStringResult=${__INSUFFICIENT_ARGS}
     expectedStatusResult=${__FAILED}
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetProjectDirectory_test_001
   
@@ -813,16 +895,18 @@ then
     expectedStringResult="Invalid project structure - basename of the directory hierarchy is not '${__SCRIPTS_DIRECTORY_NAME}'"
     expectedStatusResult=${__FAILED}
     ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    # lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${lDebminHome_inout} ]] && echo "____ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
+
+    actualStringResult="${lDebminHome_inout}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetProjectDirectory_test_002
   
@@ -834,16 +918,18 @@ then
     expectedStringResult="Directory hierarchy '${lDebminHome_inout}' does not exist"
     expectedStatusResult=${__FAILED}
     ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${lDebminHome_inout} ]] && echo "____ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
+
+    actualStringResult="${lDebminHome_inout}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetProjectDirectory_test_003
 
@@ -855,21 +941,23 @@ then
     expectedStringResult="${lProjectDirectory}"
     expectedStatusResult=${__SUCCESS}
     ${functionName} "lDebminHome_inout" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${lDebminHome_inout} ]] && echo "______ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
-    lDebminHome_inout=${lDebminHome_inout:0:${#expectedStringResult}}
-    [[ "${lDebminHome_inout}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${lDebminHome_inout} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${lDebminHome_inout} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${lDebminHome_inout} ]] && echo "____ ${LINENO}: ${functionName}: ${lDebminHome_inout}" 
+
+    actualStringResult="${lDebminHome_inout}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetProjectDirectory_test_004
 
 else 
-  echo "Not running test for ${functionName}"
+  echo "   . Not running test for ${functionName}"
 fi
 
 
@@ -884,13 +972,26 @@ functionName="fn__GetClientContainerName"
     __SUCCESS and the chosen name in populated __GIT_CLIENT_CONTAINER_NAME
     __FAILED if there were insufficient arguments, if user requested abort or if all opportunities to choose a name were exhausted without selection
 ------------Function_Usage_Note-------------------------------
-_RUN_TEST_SET_=${__NO}
+_RUN_TEST_SET_=${__YES}
 if [[ ${_RUN_TEST_SET_} -eq ${__YES} || ${_FORCE_RUNNING_ALL_TESTS_} ]]
 then
 
-  declare lProjectDirectory="$(pwd)"
+  declare lProjectDirectory="/mnt/d/gitserver/gitclient/_commonUtils"
   declare lProjectName=""
-  fn__GetProjectDirectory "lProjectDirectory" || { echo "Error from fn__GetProjectDirectory at ${0}:${LINENO}"; exit; }
+
+  # fn__GetProjectDirectory "lProjectDirectory" || { echo "Error from fn__GetProjectDirectory at ${0}:${LINENO}"; exit; }
+  fn__GetProjectDirectory "lProjectDirectory" && STS=$? || STS=$?
+  if [[ ${STS} -eq ${__SUCCESS} ]]
+  then
+    # echo "lProjectDirectory: ${lProjectDirectory}"
+    echo "all is well" >/dev/null
+  else
+    # echo "lProjectDirectory: ${lProjectDirectory}"
+    echo "Error from fn__GetProjectDirectory at ${0}:${LINENO}"
+    exit ${__FAILED}
+  fi
+
+
   lProjectName="${lProjectDirectory}"
   fn__GetProjectName "lProjectName" || { echo "Error from fn__GetProjectName at ${0}:${LINENO}"; exit; }
 
@@ -902,16 +1003,17 @@ then
     expectedStringResult=${__INSUFFICIENT_ARGS}
     expectedStatusResult=${__FAILED}
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetClientContainerName_test_001
   
@@ -924,16 +1026,17 @@ then
     expectedStringResult="2nd Argument value, '', is invalid"
     expectedStatusResult=${__FAILED}
     actualStringResult=$( ${functionName} "${lDebminHome_in}" "" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetClientContainerName_test_002
   
@@ -947,16 +1050,17 @@ then
     expectedStringResult="${__GIT_CLIENT_CONTAINER_NAME}"
     expectedStatusResult=${__SUCCESS}
     echo -e "Y\nY" | ${functionName} "lProjectDirectory" "inoutValidValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${inoutValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${inoutValidValue}" 
-    inoutValidValue=${inoutValidValue:0:${#expectedStringResult}}
-    [[ "${inoutValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${inoutValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${inoutValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${inoutValidValue} ]] && echo "____ ${LINENO}: ${functionName}: ${inoutValidValue}" 
+
+    actualStringResult="${inoutValidValue}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetClientContainerName_test_003
   
@@ -970,16 +1074,18 @@ then
     expectedStringResult="${__GIT_CLIENT_CONTAINER_NAME}"
     expectedStatusResult=${__SUCCESS}
     echo -e "N\nY\nY\nY" | ${functionName} "lProjectDirectory" "inoutValidValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${inoutValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${inoutValidValue}" 
-    # inoutValidValue=${inoutValidValue:0:${#expectedStringResult}}
-    [[ "${inoutValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${inoutValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${inoutValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${inoutValidValue} ]] && echo "____ ${LINENO}: ${functionName}: ${inoutValidValue}" 
+
+    actualStringResult="${inoutValidValue}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetClientContainerName_test_004
   
@@ -993,16 +1099,18 @@ then
     expectedStringResult="${__GIT_CLIENT_CONTAINER_NAME}"
     expectedStatusResult=${__SUCCESS}
     echo -e "N\nN\n${__GIT_CLIENT_CONTAINER_NAME}\nY\nY" | ${functionName} "lProjectDirectory" "inoutValidValue" >/dev/null && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${inoutValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${inoutValidValue}" 
-    # inoutValidValue=${inoutValidValue:0:${#expectedStringResult}}
-    [[ "${inoutValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${inoutValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${inoutValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${inoutValidValue} ]] && echo "____ ${LINENO}: ${functionName}: ${inoutValidValue}" 
+
+    actualStringResult="${inoutValidValue}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetClientContainerName_test_005
   
@@ -1016,23 +1124,25 @@ then
     expectedStringResult="${__GIT_CLIENT_CONTAINER_NAME}"
     expectedStatusResult=${__FAILED}
     echo -e "N\nN\n${__GIT_CLIENT_CONTAINER_NAME}\n" | ${functionName} "lProjectDirectory" "inoutValidValue" >/dev/null && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${inoutValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${inoutValidValue}" 
-    # inoutValidValue=${inoutValidValue:0:${#expectedStringResult}}
-    [[ "${inoutValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${inoutValidValue} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${inoutValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${inoutValidValue} ]] && echo "____ ${LINENO}: ${functionName}: ${inoutValidValue}" 
+
+    actualStringResult="${inoutValidValue}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetClientContainerName_test_006
   
 
 
 else 
-  echo "Not running test for ${functionName}"
+  echo "   . Not running test for ${functionName}"
 fi
 
 
@@ -1060,16 +1170,16 @@ then
     expectedStringResult=${__INSUFFICIENT_ARGS}
     expectedStatusResult=${__FAILED}
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetRemoteGitRepoName_test_001
   
@@ -1082,16 +1192,16 @@ then
     expectedStringResult="2nd Argument value, '', is invalid"
     expectedStatusResult=${__FAILED}
     actualStringResult=$( ${functionName} "${lDefaultGitRepoName}" "" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
-    actualStringResult=${actualStringResult:0:${#expectedStringResult}}
-    [[ "${actualStringResult}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        # echo "PASS ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} == ${actualStringResult} (${actualStatusResult} -eq ${expectedStatusResult})" 
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${actualStringResult} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
+
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetRemoteGitRepoName_test_002
   
@@ -1105,15 +1215,18 @@ then
     expectedStatusResult=${__YES}
 
     ${functionName} "${lDefaultGitRepoName}" "outValidValue" <<<"Y\nY\n" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
-    outValidValue=${outValidValue:0:${#expectedStringResult}}
-    [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    # [[ ${outValidValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValidValue}" 
+
+    actualStringResult="${outValidValue}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
+
   }
   fn__GetRemoteGitRepoName_test_003
   
@@ -1121,59 +1234,38 @@ then
   testIntent="${functionName} function will return __SUCCESS status and will not accept default repository name"
   function fn__GetRemoteGitRepoName_test_004 {
     local -r lDefaultGitRepoName="${__GIT_CLIENT_REMOTE_REPO_NAME}AAA"
-    local outValidValue=""
+    local outValidValueBack=""
 
     expectedStringResult=""
     expectedStatusResult=${__NO}
 
-    ${functionName} "${lDefaultGitRepoName}" "outValidValue" <<<"N\n\nN\n" >/dev/null && actualStatusResult=$? || actualStatusResult=$?
-    [[ ${outValidValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValidValue}" 
-    # outValidValue=${outValidValue:0:${#expectedStringResult}}
-    [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-        echo "PASS ${LINENO}: ${testIntent}" 
-        ((iSuccessResults++)); true
-      } || {
-        echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-        ((iFailureResults++)); true
-      }
+    ${functionName} "${lDefaultGitRepoName}" "outValidValueBack" <<<"N\n\nN\n" >/dev/null && actualStatusResult=$? || actualStatusResult=$?
+    # [[ ${outValidValueBack} ]] && echo "____ ${LINENO}: ${functionName}: ${outValidValueBack}" 
+
+    actualStringResult="${outValidValueBack}"
+    assessReturnStatusAndStdOut \
+      "${functionName}" \
+      ${LINENO} \
+      "${testIntent}" \
+      "${expectedStringResult}" \
+      ${expectedStatusResult} \
+      "${actualStringResult}" \
+      ${actualStatusResult} && { ((iSuccessResults++)); true ; } || { ((iFailureResults++)); true ; }
   }
   fn__GetRemoteGitRepoName_test_004
-  
-  ## there is an issue with return value - it is unexpected and intermittent _ I am giving up on this test
-  # testIntent="${functionName} function will return __SUCCESS status and will accept entered repository name"
-  # function fn__GetRemoteGitRepoName_test_005 {
-  #   local -r lDefaultGitRepoName=""
-  #   local outValidValue=""
 
-  #   expectedStringResult="AAABBBCCC"
-  #   expectedStatusResult=${__SUCCESS}
-  #   echo -e "N\nAAABBBCCC\nY\nY\n" | ${functionName} "${lDefaultGitRepoName}" "outValidValue" && actualStatusResult=$? || actualStatusResult=$?
-  #   [[ ${outValidValue} ]] && echo "___XX_ ${LINENO}: ${functionName}: ${outValidValue}" 
-  #   # outValidValue=${outValidValue:0:${#expectedStringResult}}
-  #   [[ "${outValidValue}" == "${expectedStringResult}" && ${actualStatusResult} -eq ${expectedStatusResult} ]] && {
-  #       echo "PASS ${LINENO}: ${testIntent}" 
-  #       ((iSuccessResults++)); true
-  #     } || {
-  #       echo "FAIL ${LINENO}: ${functionName}: ${functionInputs} => ${expectedStringResult} != ${outValidValue} (${actualStatusResult} -ne ${expectedStatusResult})" 
-  #       ((iFailureResults++)); true
-  #     }
-  # }
-  # fn__GetRemoteGitRepoName_test_005
-  
+
 else 
-  echo "Not running test for ${functionName}"
+  echo "   . Not running test for ${functionName}"
 fi
-
-
-
 
 
 # clean up
 # rm -rfv ${_TEMP_DIR_PREFIX}[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
 rm -Rf ${_TEMP_DIR_}
 
-echo "______ Executed $((iSuccessResults+iFailureResults)) tests"
-echo "______ ${iSuccessResults} tests were successful"
-echo "______ ${iFailureResults} tests failed"
+echo "____ Executed $((iSuccessResults+iFailureResults)) tests"
+echo "____ ${iSuccessResults} tests were successful"
+echo "____ ${iFailureResults} tests failed"
 
 exit ${iFailureResults}

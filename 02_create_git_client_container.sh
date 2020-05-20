@@ -61,16 +61,81 @@ fn__GetProjectName \
     exit ${__FAILED}
   }
 
+# fn__SetEnvironmentVariables \
+#   "${__DEBMIN_HOME}" \
+#   "${__GIT_CLIENT_USERNAME}" \
+#   "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
+# echo "____ Set local environment variables"; 
+
+:<<-'COMMENT--fn__SetEnvironmentVariables-----------------------------------------'
+  Usage:
+    fn__SetEnvironmentVariables
+      "${__DEBMIN_HOME}" \
+      "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
+      "__DEBMIN_HOME" \
+      "__DEBMIN_HOME_WSD" \
+      "__DEBMIN_HOME_DOS" \
+      "__DOCKER_COMPOSE_FILE_WLS" \
+      "__DOCKER_COMPOSE_FILE_DOS" \
+      "__CONTAINER_SOURCE_IMAGE_NAME" \
+      "__GIT_CLIENT_CONTAINER_NAME" \
+      "__GIT_CLIENT_HOST_NAME" \
+      "__GIT_CLIENT_REMOTE_REPO_NAME" \
+  Returns:
+    ${__SUCCESS}
+    ${__INSUFFICIENT_ARGS_STS}
+    ${__EMPTY_ARGUMENT_NOT_ALLOWED}
+    ${__INVALID_VALUE}
+    ${__FAILED}   # presumed container name is not a valid identifier
+    ${__NO_SUCH_DIRECTORY}
+Rework fn__SetEnvironmentVariables tests and main 02 use thereof
+COMMENT--fn__SetEnvironmentVariables-----------------------------------------
+
 fn__SetEnvironmentVariables \
   "${__DEBMIN_HOME}" \
-  "${__GIT_CLIENT_USERNAME}" \
-  "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}" ## && STS=${__SUCCESS} || STS=${__FAILED} # let it fail 
-echo "______ Set local environment variables"; 
+  "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"  \
+  "__DEBMIN_HOME" \
+  "__DEBMIN_HOME_WSD" \
+  "__DEBMIN_HOME_DOS" \
+  "__DOCKER_COMPOSE_FILE_WLS" \
+  "__DOCKER_COMPOSE_FILE_DOS" \
+  "__CONTAINER_SOURCE_IMAGE_NAME" \
+  "__GIT_CLIENT_CONTAINER_NAME" \
+  "__GIT_CLIENT_HOST_NAME" \
+  "__GIT_CLIENT_REMOTE_REPO_NAME" && STS=$? || STS=$?
+
+case ${STS} in
+  ${__SUCCESS})
+    ;;
+  ${__INSUFFICIENT_ARGS_STS})
+    echo "${__INSUFFICIENT_ARGS}"
+    echo "______ ${LINENO}: Aborting ..."
+    exit ${STS}
+    ;;
+  ${__EMPTY_ARGUMENT_NOT_ALLOWED})
+    echo "_error Empty arguments not allowed"
+    echo "______ ${LINENO}: Aborting ..."
+    exit ${STS}
+    ;;
+  ${__INVALID_VALUE})
+    echo "_error Argument has invalid value"
+    echo "______ ${LINENO}: Aborting ..."
+    exit ${STS}
+    ;;
+  ${__NO_SUCH_DIRECTORY})
+    echo "_error script not running from '${__SCRIPTS_DIRECTORY_NAME}'"
+    echo "______ ${LINENO}: Aborting ..."
+    exit ${STS}
+    ;;
+esac
+echo "______ Set environment variables"; 
+
 
 fn__ConfirmYN "Project Directory is ${__DEBMIN_HOME}, Project Name is '${lProjectName}' - Is this correct?" && true || {
-  echo -e "______ Aborting ...\n"
+  echo -e "____ Aborting ...\n"
   exit ${__FAILED}
 }
+
 
 cd ${__DEBMIN_HOME}
 
@@ -82,11 +147,11 @@ fn__GetClientContainerName  \
   "__GIT_CLIENT_CONTAINER_NAME" && STS=$? || STS=$?
 if [[ ${STS} -ne ${__SUCCESS} ]]
 then
-  echo "______ Failed to choose container name."
-  echo "______ Aborting ..."
+  echo "____ Failed to choose container name."
+  echo "____ Aborting ..."
   exit ${__FAILED}
 fi
-echo "______ Using '${__GIT_CLIENT_CONTAINER_NAME}' as Container Name and Host Name"
+echo "____ Using '${__GIT_CLIENT_CONTAINER_NAME}' as Container Name and Host Name"
 
 __GIT_CLIENT_HOST_NAME=${__GIT_CLIENT_CONTAINER_NAME}
 
@@ -104,16 +169,16 @@ then
     "__GIT_CLIENT_REMOTE_REPO_NAME" && STS=$? || STS=$?
   if [[ ${STS} -eq ${__SUCCESS} ]]
   then
-    echo "______ Will use '${__GIT_CLIENT_REMOTE_REPO_NAME}' as the name of the remote git repository which to create"
+    echo "____ Will use '${__GIT_CLIENT_REMOTE_REPO_NAME}' as the name of the remote git repository which to create"
   else
     _CREATE_REMOTE_GIT_REPO_=${__NO}
-    echo "______ Will not create remote git repository"
+    echo "____ Will not create remote git repository"
   fi
 fi
 
 
 fn__ConfirmYN "Create Windows Shortcuts?" && _CREATE_WINDOWS_SHORTCUTS_=${__YES} || _CREATE_WINDOWS_SHORTCUTS_=${__NO}
-echo "______ Will $([[ ${_CREATE_WINDOWS_SHORTCUTS_} == ${__NO} ]] && echo "NOT ")create windows shortcuts"
+echo "____ Will $([[ ${_CREATE_WINDOWS_SHORTCUTS_} == ${__NO} ]] && echo "NOT ")create windows shortcuts"
 
 
 fn__CreateDockerComposeFile \
@@ -123,22 +188,22 @@ fn__CreateDockerComposeFile \
   "${__DEBMIN_SOURCE_IMAGE_NAME}"  \
   "${__DEBMIN_HOME_WSD}/${__GIT_CLIENT_CONTAINER_NAME}/backups:${__GIT_CLIENT_GUEST_HOME}/backups" \
   "${__DOCKER_COMPOSE_FILE_WLS}"
-echo "______ Created ${__DOCKER_COMPOSE_FILE_WLS}"; 
+echo "____ Created ${__DOCKER_COMPOSE_FILE_WLS}"; 
 
 
 fn__ImageExists \
   "${__DEBMIN_SOURCE_IMAGE_NAME}" \
-  && echo "______ Image ${__DEBMIN_SOURCE_IMAGE_NAME} exist" \
+  && echo "____ Image ${__DEBMIN_SOURCE_IMAGE_NAME} exist" \
   || {
     echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
     fn__PullImageFromRemoteRepository   \
       ${__DOCKER_REPOSITORY_HOST}  \
       ${__GIT_CLIENT_IMAGE_NAME} \
       ${__GIT_CLIENT_IMAGE_VERSION} \
-        && echo "______ Image ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} pulled from remote docker repository" \
+        && echo "____ Image ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} pulled from remote docker repository" \
         || {
-          echo "______ Cannot find image ${__DEBMIN_SOURCE_IMAGE_NAME} [${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}]" 
-          echo "______ Aborting script execution ..." 
+          echo "____ Cannot find image ${__DEBMIN_SOURCE_IMAGE_NAME} [${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}]" 
+          echo "____ Aborting script execution ..." 
           exit ${__FAILED}
         }
   }
@@ -153,16 +218,16 @@ if [[ $STS -eq ${__YES} ]]; then
 
   fn__ContainerIsRunning ${__GIT_CLIENT_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
   if [[ $STS -eq ${__YES} ]]; then
-    echo "______ Container '${__GIT_CLIENT_CONTAINER_NAME}' exist and is running - nothing needs doing - exiting"; 
+    echo "____ Container '${__GIT_CLIENT_CONTAINER_NAME}' exist and is running - nothing needs doing - exiting"; 
     exit ${__SUCCESS}
 
   else
 
     fn__StartContainer ${__GIT_CLIENT_CONTAINER_NAME} && STS=${__YES} || STS=${__NO}
     if [[ $STS -eq ${__DONE} ]]; then
-        echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} started"; 
+        echo "____ Container ${__GIT_CLIENT_CONTAINER_NAME} started"; 
     else
-        echo "______ Failed to start container ${__GIT_CLIENT_CONTAINER_NAME} - investigate..."; 
+        echo "____ Failed to start container ${__GIT_CLIENT_CONTAINER_NAME} - investigate..."; 
         exit ${__FAILED}
     fi
   fi
@@ -171,9 +236,9 @@ else
   
   fn_DockerComposeUpDetached "${__DOCKER_COMPOSE_FILE_DOS}" "${__GIT_CLIENT_CONTAINER_NAME}" && STS=${__DONE} || STS=${__FAILED}
   if [[ $STS -eq ${__DONE} ]]; then
-    echo "______ Container ${__GIT_CLIENT_CONTAINER_NAME} started"; 
+    echo "____ Container ${__GIT_CLIENT_CONTAINER_NAME} started"; 
   else
-    echo "______ Failed to start container ${__GIT_CLIENT_CONTAINER_NAME} - investigate"; 
+    echo "____ Failed to start container ${__GIT_CLIENT_CONTAINER_NAME} - investigate"; 
     exit ${__FAILED}
   fi
 fi
@@ -187,7 +252,7 @@ fn__GenerateSSHKeyPairInClientContainer \
   "__GIT_CLIENT_ID_RSA_PUB_" \
     && STS=${__DONE} \
     || STS=${__FAILED}
-echo "______ Generated ${__GIT_CLIENT_GUEST_HOME}'s ssh keypair"; 
+echo "____ Generated ${__GIT_CLIENT_GUEST_HOME}'s ssh keypair"; 
 
 
 fn__IntroduceRemoteClientToServerWithPublicKey \
@@ -199,7 +264,7 @@ fn__IntroduceRemoteClientToServerWithPublicKey \
   ${__GITSERVER_SHELL} \
     && STS=${__DONE} \
     || STS=${__FAILED}
-echo "______ Added '${__GIT_CLIENT_GUEST_HOME}' public key to '${__GITSERVER_HOST_NAME}' ~/.ssh/authorised_keys"; 
+echo "____ Added '${__GIT_CLIENT_GUEST_HOME}' public key to '${__GITSERVER_HOST_NAME}' ~/.ssh/authorised_keys"; 
 
 
 fn__AddGITServerToLocalKnown_hostsAndTestSshAccess \
@@ -208,7 +273,7 @@ fn__AddGITServerToLocalKnown_hostsAndTestSshAccess \
   ${__GIT_CLIENT_SHELL} \
     && STS=${__DONE} \
     || STS=${__FAILED}
-echo "______ Added '${__GITSERVER_HOST_NAME}' to '${__GIT_CLIENT_GUEST_HOME}' \${HOME}/.ssh/known_hosts"; 
+echo "____ Added '${__GITSERVER_HOST_NAME}' to '${__GIT_CLIENT_GUEST_HOME}' \${HOME}/.ssh/known_hosts"; 
 
 
 # client's public key must be in git server's authorised_keys file
@@ -220,7 +285,7 @@ fn__AddClientPublicKeyToServerAuthorisedKeysStore \
   ${__GITSERVER_SHELL} \
     && STS=${__DONE} \
     || STS=${__FAILED}
-echo "______ Added '${__GIT_CLIENT_CONTAINER_NAME}' to '${__GIT_CLIENT_GUEST_HOME}' \${HOME}/.ssh/known_hosts"; 
+echo "____ Added '${__GIT_CLIENT_CONTAINER_NAME}' to '${__GIT_CLIENT_GUEST_HOME}' \${HOME}/.ssh/known_hosts"; 
 
 
 # if repo already exists we can't create a new one with the same name
@@ -233,10 +298,10 @@ fn__DoesRepoAlreadyExist \
 
   if [[ ${STS} -eq ${__YES} ]]
   then
-    echo "______ Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - will skip creation steps"
+    echo "____ Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - will skip creation steps"
   elif [[ ${STS} -eq ${__EXECUTION_ERROR} ]]
   then
-    echo "______ Failed to determine whether Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - will skip creation steps"
+    echo "____ Failed to determine whether Git Repository ${__GIT_CLIENT_REMOTE_REPO_NAME} already exists - will skip creation steps"
   else
     fn__CreateNewClientGitRepositoryOnRemote \
       ${__GIT_CLIENT_REMOTE_REPO_NAME}  \
@@ -255,12 +320,12 @@ fn__DoesRepoAlreadyExist \
 
       if [[ ${STS} -eq ${__YES} ]]
       then
-        echo "______ Created remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
+        echo "____ Created remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
       else
-        echo "______ Failed to create remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME} - investigate"
+        echo "____ Failed to create remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME} - investigate"
       fi
     else
-      echo "______ Failed to create remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
+      echo "____ Failed to create remote repository ${__GIT_CLIENT_REMOTE_REPO_NAME}"
     fi
   fi
 
@@ -273,8 +338,8 @@ fn__DoesRepoAlreadyExist \
 #   ${__GIT_USERNAME} \
 #   ${__GITSERVER_REPOS_ROOT} \
 #   ${__GIT_CLIENT_REMOTE_REPO_NAME} \
-#     && echo "______ Local and Remote Git repository test completed" \
-#     || echo "______ Local and Remote Git repository test failed - investigate!!!"
+#     && echo "____ Local and Remote Git repository test completed" \
+#     || echo "____ Local and Remote Git repository test failed - investigate!!!"
 
 
 [[ ${_CREATE_WINDOWS_SHORTCUTS_} -eq ${__YES} ]] && {
@@ -283,8 +348,8 @@ fn__DoesRepoAlreadyExist \
     "${__DEBMIN_HOME_DOS}" \
     "${__GIT_CLIENT_SHELL}" \
     "${__DOCKER_COMPOSE_FILE_DOS}" && STS=${__DONE} || STS=${__FAILED}
-  echo "______ Created Windows Shortcuts"; 
+  echo "____ Created Windows Shortcuts"; 
 }
 
 
-echo "______ ${0} Done"
+echo "____ ${0} Done"

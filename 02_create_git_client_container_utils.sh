@@ -189,10 +189,10 @@ function fn__GetClientContainerName() {
 
   if [[ ${STS} -eq ${__FAILED} ]]
   then
-    echo "______ Provided input did not result in a valid identifier - identifier based on input was '${outValidValue}'"
+    echo "____ Provided input did not result in a valid identifier - identifier based on input was '${outValidValue}'"
     return ${__FAILED}
   fi
-  echo "______ Sanitized container name will be '${outValidValue}'"
+  echo "____ Sanitized container name will be '${outValidValue}'"
 
   fn__ConfirmYN "Confirm '${outValidValue}' as container name? " && STS=$? || STS=$?
   if [[ ${STS} -eq ${__NO} ]]
@@ -267,10 +267,10 @@ function fn__GetRemoteGitRepoName() {
 
   if [[ ${STS} -eq ${__FAILED} ]]
   then
-    echo "______ Provided input did not result in a valid identifier - identifier based on input was '${outValidValue}'"
+    echo "____ Provided input did not result in a valid identifier - identifier based on input was '${outValidValue}'"
     return ${__FAILED}
   fi
-  echo "______ Sanitized Git Repository name will be '${outValidValue}'"
+  echo "____ Sanitized Git Repository name will be '${outValidValue}'"
 
   fn__ConfirmYN "Confirm '${outValidValue}' as Git Repository name? " && STS=$? || STS=$?
   if [[ ${STS} -eq ${__NO} ]]
@@ -278,8 +278,9 @@ function fn__GetRemoteGitRepoName() {
     out__GIT_CLIENT_REMOTE_REPO_NAME=""
     return ${__NO}
   fi
-
+echo ${outValidValue}
   out__GIT_CLIENT_REMOTE_REPO_NAME="${outValidValue}"
+echo ${out__GIT_CLIENT_REMOTE_REPO_NAME}
   return ${__YES}
 }
 
@@ -348,7 +349,7 @@ EOF
         || STS=${__DIFFERENT}
 
       if [[ ${STS} -eq ${__DIFFERENT} ]]; then
-        echo "______ docker-compose.yml_${pContainerName} changed - container may need updating"
+        echo "____ docker-compose.yml_${pContainerName} changed - container may need updating"
       else
         rm -f ${pHostWSLPathToComposeFile}_${TS}
       fi
@@ -390,46 +391,123 @@ function fn__DeriveContainerName() {
 }
 
 
+:<<-'COMMENT--fn__SetEnvironmentVariables-----------------------------------------'
+  Usage:
+    fn__SetEnvironmentVariables   \
+      "${__DEBMIN_HOME}" \
+      "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"  \
+      "__DEBMIN_HOME" \
+      "__DEBMIN_HOME_WSD" \
+      "__DEBMIN_HOME_DOS" \
+      "__DOCKER_COMPOSE_FILE_WLS" \
+      "__DOCKER_COMPOSE_FILE_DOS" \
+      "__CONTAINER_SOURCE_IMAGE_NAME" \
+      "__GIT_CLIENT_CONTAINER_NAME" \
+      "__GIT_CLIENT_HOST_NAME" \
+      "__GIT_CLIENT_REMOTE_REPO_NAME" \
+  Returns:
+    ${__SUCCESS}
+    ${__INSUFFICIENT_ARGS_STS}
+    ${__EMPTY_ARGUMENT_NOT_ALLOWED}
+    ${__INVALID_VALUE}
+    ${__FAILED}   # presumed container name is not a valid identifier
+Rework fn__SetEnvironmentVariables tests and main 02 use thereof
+COMMENT--fn__SetEnvironmentVariables-----------------------------------------
+
 function fn__SetEnvironmentVariables() {
 
   ## expect directory structure like
   ## /mnt/x/dir1/dir2/..dirN/projectDir/_commonUtils/02_create_node13131_container
   ## and working directory /mnt/x/dir1/dir2/..dirN/projectDir/_commonUtils
 
-  local -r lUsage='
-  Usage:
-    fn__SetEnvironmentVariables \
-      "${__DEBMIN_HOME}" \
-      "${__GIT_CLIENT_USERNAME}" \
-      "${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
-  '
-  [[ $# -lt  3 || "${0^^}" == "HELP" ]] && {
-    echo -e "${__INSUFFICIENT_ARGS}\n${lUsage}"
-    return ${__FAILED}
-  }
+  [[ $# -lt 11  ]] && return ${__INSUFFICIENT_ARGS_STS}
 
-  local -r pDebminHome=${1?"${lUsage}"}
-  local -r pGitclientUsername=${2?"${lUsage}"}
-  local -r pDebminSourceImageName=${3?"${lUsage}"}
+  function _fnMissingOrEmpty() { [[ -z "${1}" ]] ; }
+  function _fnPresentAndValued() { [[ -n "${1}" ]] ; }
+
+  _fnMissingOrEmpty  ${1} 2>/dev/null && return ${__EMPTY_ARGUMENT_NOT_ALLOWED}
+  _fnMissingOrEmpty  ${2} 2>/dev/null && return ${__EMPTY_ARGUMENT_NOT_ALLOWED}
+
+  # name variables
+  #
+  local -r lrDebminHomeIn=${1}
+  local -r lrGitserverImageNameAndVersion=${2}
+  local -r lrDebminHomeOut=${3}
+  local -r lrDebminHomeOutWSD=${4} 
+  local -r lrDebminHomeOutDOS=${5}
+  local -r lrDockerComposeFileWSL=${6}
+  local -r lrDockerComposeFileDOS=${7}
+  local -r lrContainerSourceImage=${8}
+  local -r lrGitClientContainerName=${9}
+  local -r lrGitClientHostName=${10}
+  local -r lrGitClientRemoteRepoName=${11}
+
+  _fnMissingOrEmpty ${lrDebminHomeIn} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrGitserverImageNameAndVersion} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrDebminHomeOut} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrDebminHomeOutWSD} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrDebminHomeOutDOS} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrDockerComposeFileWSL} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrDockerComposeFileDOS} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrContainerSourceImage} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrGitClientContainerName} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrGitClientHostName} && return ${__INVALID_VALUE}
+  _fnMissingOrEmpty ${lrGitClientRemoteRepoName} && return ${__INVALID_VALUE}
+
+  # _fnPresentAndValued ${2} && echo present and valued || echo not present or not valued
+
+  local -n lrefDebminHomeOut=${3}
+  local -n lrefDebminHomeOutWSD=${4} 
+  local -n lrefDebminHomeOutDOS=${5}
+  local -n lrefDockerComposeFileWSL=${6}
+  local -n lrefDockerComposeFileDOS=${7}
+  local -n lrefContainerSourceImage=${8}
+  local -n lrefGitClientContainerName=${9}
+  local -n lrefGitClientHostName=${10}
+  local -n lrefGitClientRemoteRepoName=${11}
 
   # set environment
   #
-  __DEBMIN_HOME=${pDebminHome%%'/_commonUtils'} # strip _commonUtils
+  # mkdir -pv ${lrDebminHomeIn}
 
-  local lContainerName=$(fn__DeriveContainerName ${__DEBMIN_HOME})
+  test -d ${lrDebminHomeIn} || return ${__NO_SUCH_DIRECTORY}
 
-  __GIT_CLIENT_CONTAINER_NAME=${lContainerName}
-  __GIT_CLIENT_REMOTE_REPO_NAME=${__GIT_CLIENT_CONTAINER_NAME}
-  __GIT_CLIENT_HOST_NAME=${__GIT_CLIENT_CONTAINER_NAME}
+  lrefDebminHomeOut=${lrDebminHomeIn%%/${__SCRIPTS_DIRECTORY_NAME}} # strip _commonUtils
+  test -d ${lrefDebminHomeOut} || return ${__NO_SUCH_DIRECTORY}
 
-  __DEBMIN_SOURCE_IMAGE_NAME="${pDebminSourceImageName}"
+  cd ${lrefDebminHomeOut}|| return ${__NO_SUCH_DIRECTORY}
 
-  __DEBMIN_HOME_WSD=$(fn__WSLPathToWSDPath ${__DEBMIN_HOME})
-  __DEBMIN_HOME_DOS=$(fn__WSLPathToRealDosPath ${__DEBMIN_HOME})
+  local lContainerName=${lrefDebminHomeOut##*/} # strip directory hierarchy before parent of _commonUtils
+  lContainerName=$(fn__SanitizeInputIdentifier ${lContainerName} ) || return ${__FAILED}
 
-  __DOCKER_COMPOSE_FILE_WLS="${__DEBMIN_HOME}/docker-compose.yml_${__GIT_CLIENT_CONTAINER_NAME}"
-  __DOCKER_COMPOSE_FILE_DOS="${__DEBMIN_HOME_DOS}\\docker-compose.yml_${__GIT_CLIENT_CONTAINER_NAME}"
+  # reduce project name to no more than __MaxNameLen__ characters
+  local -ri nameLen=${#lContainerName}
+  local startPos=$((${nameLen}-${__MAX_CONTAIMER_NAME_LENGTH})) 
+  startPos=${startPos//-*/0} 
+  local -r lContainerName=${lContainerName:${startPos}}
+  lrefGitClientContainerName=${lContainerName}
+  lrefGitClientHostName=${lContainerName}
+  lrefGitClientRemoteRepoName=${lContainerName}
 
+  lrefDebminHomeOutWSD=$(fn__WSLPathToWSDPath ${lrefDebminHomeOut})
+  lrefDebminHomeOutDOS=$(fn__WSLPathToRealDosPath ${lrefDebminHomeOut})
+
+  lrefDockerComposeFileWSL="${lrefDebminHomeOut}/docker-compose.yml_${lContainerName}"
+  lrefDockerComposeFileDOS="${lrefDebminHomeOutDOS}\\docker-compose.yml_${lContainerName}"
+
+  lrefContainerSourceImage="${lrGitserverImageNameAndVersion}"
+
+# echo "lrefDebminHomeOut: ${lrefDebminHomeOut}"
+# echo "lrefDebminHomeOutWSD: ${lrefDebminHomeOutWSD} "
+# echo "lrefDebminHomeOutDOS: ${lrefDebminHomeOutDOS}"
+# echo "lrefDockerComposeFileWSL: ${lrefDockerComposeFileWSL}"
+# echo "lrefDockerComposeFileDOS: ${lrefDockerComposeFileDOS}"
+# echo "lrefContainerSourceImage: ${lrefContainerSourceImage}"
+# echo "lrefGitClientContainerName: ${lrefGitClientContainerName}"
+# echo "lrefGitClientHostName: ${lrefGitClientHostName0}"
+# echo "lrefGitClientRemoteRepoName: ${lrefGitClientRemoteRepoName1}"
+
+  return ${__SUCCESS}
 }
 
 

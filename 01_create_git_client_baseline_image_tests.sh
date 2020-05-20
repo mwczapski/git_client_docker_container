@@ -5,6 +5,11 @@
 # Copyright © 2020 Michael Czapski
 # #############################################
 
+
+declare -u _01_create_git_client_baseline_image_tests="SOURCED"
+echo "INFO 01_create_git_client_baseline_image_tests"
+
+
 [[ ${bash_test_utils} ]] || source ./bash_test_utils/bash_test_utils.sh
 
 [[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
@@ -369,11 +374,11 @@ then
   testIntent="${functionName} will return __FAILED and '______ Insufficient number of arguments'"
   function fn__SetEnvironmentVariables_test_001 {
 
-    expectedStringResult="______ Insufficient number of arguments"
+    expectedStringResult="____ Insufficient number of arguments"
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} "" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -398,7 +403,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} "" "" "" "" "" "" "" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -423,7 +428,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} "${lrScriptDirectoryName}" "" "" "" "" "" "" "" "") && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -448,7 +453,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} "${lrScriptDirectoryName}" "${lrGitserverImageName}" "" "" "" "" "" "" "" "" "" "" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -489,7 +494,7 @@ then
                               "lDockerfilePath" \
                               "lRemoveContainerOnStop" \
                               "lNeedsRebuilding" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -530,7 +535,7 @@ then
                               "lDockerfilePath" \
                               "lRemoveContainerOnStop" \
                               "lNeedsRebuilding" ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -570,7 +575,7 @@ then
         "lDockerfilePath" \
         "lRemoveContainerOnStop" \
         "lNeedsRebuilding" && actualStatusResult=$? || actualStatusResult=$?
-      # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+      # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
       assessReturnStatusAndStdOut \
         "${functionName}" \
@@ -641,7 +646,7 @@ then
         "lDockerfilePath" \
         "lRemoveContainerOnStop" \
         "lNeedsRebuilding" ) && actualStatusResult=$? || actualStatusResult=$?
-      # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+      # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
       assessReturnStatusAndStdOut \
         "${functionName}" \
@@ -683,7 +688,7 @@ then
         "lDockerfilePath" \
         "lRemoveContainerOnStop" \
         "lNeedsRebuilding" && actualStatusResult=$? || actualStatusResult=$?
-      # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+      # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
       actualStringResult=""
 
       assessReturnStatusAndStdOut \
@@ -737,8 +742,8 @@ fi
 # clean up
 # rm -Rf ${_TEMP_DIR_}
 
-echo "______ Executed $((iSuccessResults+iFailureResults)) tests"
-echo "______ ${iSuccessResults} tests were successful"
-echo "______ ${iFailureResults} tests failed"
+echo "____ Executed $((iSuccessResults+iFailureResults)) tests"
+echo "____ ${iSuccessResults} tests were successful"
+echo "____ ${iFailureResults} tests failed"
 
 exit ${iFailureResults}

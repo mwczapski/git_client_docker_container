@@ -133,5 +133,5 @@ then
   assessReturnStatusAndStdOut_test_001
 
 else 
-  echo "     . Not running test for ${functionName}"
+  echo "     . Not running test for ${functionName}" >/dev/null
 fi

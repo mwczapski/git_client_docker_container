@@ -4,6 +4,9 @@
 # Copyright © 2020 Michael Czapski
 # #############################################
 
+declare -ur fn__SSHInContainerUtils_tests="SOURCED"
+echo "INFO fn__SSHInContainerUtils_tests"
+
 [[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 [[ ${fn__UtilityGeneric} ]] || source ./utils/fn__UtilityGeneric.sh
 [[ ${fn__DockerGeneric} ]] || source ./utils/fn__DockerGeneric.sh
@@ -74,7 +77,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -99,7 +102,7 @@ then
     expectedStatusResult=${__SUCCESS}
 
     ${functionName} "${pClientContainerName}" "${pClientUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     outValue="${outValue%% *} ${outValue##* }"
 
@@ -126,7 +129,7 @@ then
     expectedStatusResult=${__FAILED}
 
     ${functionName} "${pClientContainerName}" "${pClientUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -174,7 +177,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -199,7 +202,7 @@ then
     expectedStatusResult=${__SUCCESS}
 
     ${functionName} "${pClientContainerName}" "${pClientUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     outValue="${outValue%% *} ${outValue##* }"
 
@@ -226,7 +229,7 @@ then
     expectedStatusResult=${__FAILED}
 
     ${functionName} "${pClientContainerName}" "${pClientUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -297,7 +300,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -332,7 +335,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -429,7 +432,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -463,7 +466,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -497,7 +500,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -531,7 +534,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -565,7 +568,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -616,7 +619,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -641,7 +644,7 @@ then
     expectedStatusResult=${__SUCCESS}
 
     ${functionName} "${pGitserverName}" "${pGitUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     outValue="${outValue%% *} ${outValue##* }"
 
@@ -668,7 +671,7 @@ then
     expectedStatusResult=${__FAILED}
 
     ${functionName} "${pGitserverName}" "${pGitUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -712,7 +715,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -734,7 +737,7 @@ then
     expectedStatusResult=${__SUCCESS}
 
     ${functionName} "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     outValue="${outValue%% *} ${outValue##* }"
 
@@ -763,7 +766,7 @@ then
     # expectedStatusResult=${__SUCCESS}
 
     # ${functionName} "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     # outValue="${outValue%% *} ${outValue##* }"
 
@@ -808,7 +811,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -830,7 +833,7 @@ then
     expectedStatusResult=${__SUCCESS}
 
     ${functionName} "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     outValue="${outValue%% *} ${outValue##* }"
 
@@ -857,7 +860,7 @@ then
     expectedStatusResult=${__FAILED}
 
     ${functionName} "${pClientContainerName}" "${pClientUsername}" "${pShellInContainer}" "outValue" && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${outValue} ]] && echo "______ ${LINENO}: ${functionName}: ${outValue}" 
+    # [[ ${outValue} ]] && echo "____ ${LINENO}: ${functionName}: ${outValue}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -919,7 +922,7 @@ then
     expectedStatusResult=${__FAILED}
 
     actualStringResult=$( ${functionName} ) && actualStatusResult=$? || actualStatusResult=$?
-    # [[ ${actualStringResult} ]] && echo "______ ${LINENO}: ${functionName}: ${actualStringResult}" 
+    # [[ ${actualStringResult} ]] && echo "____ ${LINENO}: ${functionName}: ${actualStringResult}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -952,7 +955,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -1063,7 +1066,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -1093,7 +1096,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -1123,7 +1126,7 @@ then
         "${pGitServerGitUsername}" \
         "${pShellInServerContainer}" ) && actualStatusResult=$? || actualStatusResult=$?
 
-    # [[ ${actualResultString} ]] && echo "______ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
+    # [[ ${actualResultString} ]] && echo "____ ${LINENO}: ${functionName}: (${actualStatusResult}) ${actualResultString}" 
 
     assessReturnStatusAndStdOut \
       "${functionName}" \
@@ -1148,8 +1151,8 @@ fi
 # rm -rfv ${_TEMP_DIR_PREFIX}[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
 rm -Rf ${_TEMP_DIR_}
 
-echo "______ Executed $((iSuccessResults+iFailureResults)) tests"
-echo "______ ${iSuccessResults} tests were successful"
-echo "______ ${iFailureResults} tests failed"
+echo "____ Executed $((iSuccessResults+iFailureResults)) tests"
+echo "____ ${iSuccessResults} tests were successful"
+echo "____ ${iFailureResults} tests failed"
 
 exit ${iFailureResults}

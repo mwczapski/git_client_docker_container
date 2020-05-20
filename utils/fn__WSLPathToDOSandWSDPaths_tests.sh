@@ -1,10 +1,13 @@
 # #############################################
 # The MIT License (MIT)
 #
-# Copyright Â© 2020 Michael Czapski
+# Copyright © 2020 Michael Czapski
 # #############################################
 
 declare -u fn__WSLPathToDOSandWSDPaths_tests="SOURCED"
+echo "INFO fn__WSLPathToDOSandWSDPaths_tests"
+
+
 
 [[ ${__env_GlobalConstants} ]] || source ./utils/__env_GlobalConstants.sh
 [[ ${fn__WSLPathToDOSandWSDPaths} ]] || source ./utils/fn__WSLPathToDOSandWSDPaths.sh
@@ -255,8 +258,8 @@ else
 fi
 
 
-echo "______ Executed $((iSuccessResults+iFailureResults)) tests"
-echo "______ ${iSuccessResults} tests were successful"
-echo "______ ${iFailureResults} tests failed"
+echo "____ Executed $((iSuccessResults+iFailureResults)) tests"
+echo "____ ${iSuccessResults} tests were successful"
+echo "____ ${iFailureResults} tests failed"
 
 exit ${iFailureResults}
