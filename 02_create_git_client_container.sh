@@ -109,26 +109,26 @@ case ${STS} in
     ;;
   ${__INSUFFICIENT_ARGS_STS})
     echo "${__INSUFFICIENT_ARGS}"
-    echo "______ ${LINENO}: Aborting ..."
+    echo "____ ${LINENO}: Aborting ..."
     exit ${STS}
     ;;
   ${__EMPTY_ARGUMENT_NOT_ALLOWED})
     echo "_error Empty arguments not allowed"
-    echo "______ ${LINENO}: Aborting ..."
+    echo "____ ${LINENO}: Aborting ..."
     exit ${STS}
     ;;
   ${__INVALID_VALUE})
     echo "_error Argument has invalid value"
-    echo "______ ${LINENO}: Aborting ..."
+    echo "____ ${LINENO}: Aborting ..."
     exit ${STS}
     ;;
   ${__NO_SUCH_DIRECTORY})
     echo "_error script not running from '${__SCRIPTS_DIRECTORY_NAME}'"
-    echo "______ ${LINENO}: Aborting ..."
+    echo "____ ${LINENO}: Aborting ..."
     exit ${STS}
     ;;
 esac
-echo "______ Set environment variables"; 
+echo "____ Set environment variables"; 
 
 
 fn__ConfirmYN "Project Directory is ${__DEBMIN_HOME}, Project Name is '${lProjectName}' - Is this correct?" && true || {
