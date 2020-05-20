@@ -1147,7 +1147,7 @@ fi
 
 
 # clean up
-rm -rfv ${_TEMP_DIR_PREFIX}[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
+# rm -rfv ${_TEMP_DIR_PREFIX}[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
 rm -Rf ${_TEMP_DIR_}
 
 echo "____ Executed $((iSuccessResults+iFailureResults)) tests"

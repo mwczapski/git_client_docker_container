@@ -335,10 +335,10 @@ function fn__IsSSHToRemoteServerAuthorised() {
 }
 
 
-function fnUpdateOwnershipOfNonRootUserResources() {
+function fn__UpdateOwnershipOfNonRootUserResources() {
   local lUsage='
       Usage: 
-        fnUpdateOwnershipOfNonRootUserResources  \
+        fn__UpdateOwnershipOfNonRootUserResources  \
           ${__GIT_CLIENT_CONTAINER_NAME} \
           ${__GIT_USERNAME} \
           ${DEBMIN_GUEST_HOME}  \
