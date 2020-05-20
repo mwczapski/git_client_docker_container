@@ -282,8 +282,7 @@ then
   if [[ ${STS} -eq ${__FAILED} ]]
   then
     echo "!!!! ${0}:${LINENO}: fn__GetSSHIdRsaPubKeyFromClientContainer returned error '${__GIT_CLIENT_ID_RSA_PUB_}'"
-    echo "!!!! ${0}:${LINENO}: Aborting test run"
-    exit ${__FAILED}
+    echo "!!!! ${0}:${LINENO}: Most tests will fail"
   fi
 
 
@@ -1148,7 +1147,7 @@ fi
 
 
 # clean up
-# rm -rfv ${_TEMP_DIR_PREFIX}[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
+rm -rfv ${_TEMP_DIR_PREFIX}[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
 rm -Rf ${_TEMP_DIR_}
 
 echo "____ Executed $((iSuccessResults+iFailureResults)) tests"
