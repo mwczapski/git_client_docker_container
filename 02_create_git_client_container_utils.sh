@@ -292,7 +292,7 @@ function fn__CreateDockerComposeFile() {
       "${__GIT_CLIENT_CONTAINER_NAME}"  \
       "${__GIT_CLIENT_HOST_NAME}"  \
       "${__DEVCICD_NET_DC_INTERNAL}"  \
-      "${__DEBMIN_SOURCE_IMAGE_NAME}"  \
+      "${__CONTAINER_SOURCE_IMAGE_NAME}"  \
       "${__DEBMIN_HOME_DOS}:${__GIT_CLIENT_GUEST_HOME}" \
       "${__DOCKER_COMPOSE_FILE_WLS}"
     '

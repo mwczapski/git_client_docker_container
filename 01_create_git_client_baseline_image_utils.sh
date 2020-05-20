@@ -146,7 +146,6 @@ set -e
 exec ${pGuestShell} \$@
 EOF
   chmod +x ${pTargetDirectory}/docker-entrypoint.sh
-aa=1  
 }
 
 
@@ -211,14 +210,15 @@ ENV DEBMIN_USERNAME=${pClientUsernane} \\
 COPY ./docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # install necessary / usefull extra packages
-# the following are needed to download, builld and install git from sources
-# wget, unzip, build-essential, libssl-dev, libcurl4-openssl-dev, libexpat1-dev, gettex
+# https://askubuntu.com/questions/258219/how-do-i-make-apt-get-install-less-noisy
+# -o=Dpkg::Use-Pty=0 
 #
-RUN export DEBIAN_FRONTEND=noninteractive && \\
-  apt-get update && \\
-  apt-get upgrade -y && \\
-  apt-get -y install apt-utils && \\
-  apt-get -y install \\
+RUN \\
+  export DEBIAN_FRONTEND=noninteractive && \\
+  apt-get -qq -o=Dpkg::Use-Pty=0 update && \\
+  apt-get -qq -o=Dpkg::Use-Pty=0 upgrade -y && \\
+  apt-get -qq -o=Dpkg::Use-Pty=0 -y install --no-install-recommends apt-utils && \\
+  apt-get -qq -o=Dpkg::Use-Pty=0 install \\
     tzdata \\
     net-tools \\
     iputils-ping \\
@@ -229,7 +229,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \\
 \\
     git --version && \\
 \\
-# set timezone - I live in Sydney - change as you see fit in the env variables above
+# set timezone - I live in Sydney - change as you see fit in the env variables above, 
+# or in __env_GlobalConstants.sh before running 01_create_git_client_baseline_image.sh
+# which produces this Dockerfile
+#
     cp -v /usr/share/zoneinfo/\${TZ_PATH} /etc/localtime && \\
     echo "\${TZ_NAME}" > /etc/timezone && \\
     echo \$(date) && \\

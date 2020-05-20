@@ -185,15 +185,15 @@ fn__CreateDockerComposeFile \
   "${__GIT_CLIENT_CONTAINER_NAME}"  \
   "${__GIT_CLIENT_HOST_NAME}"  \
   "${__DEVCICD_NET}"  \
-  "${__DEBMIN_SOURCE_IMAGE_NAME}"  \
+  "${__CONTAINER_SOURCE_IMAGE_NAME}"  \
   "${__DEBMIN_HOME_WSD}/${__GIT_CLIENT_CONTAINER_NAME}/backups:${__GIT_CLIENT_GUEST_HOME}/backups" \
   "${__DOCKER_COMPOSE_FILE_WLS}"
 echo "____ Created ${__DOCKER_COMPOSE_FILE_WLS}"; 
 
 
 fn__ImageExists \
-  "${__DEBMIN_SOURCE_IMAGE_NAME}" \
-  && echo "____ Image ${__DEBMIN_SOURCE_IMAGE_NAME} exist" \
+  "${__CONTAINER_SOURCE_IMAGE_NAME}" \
+  && echo "____ Image ${__CONTAINER_SOURCE_IMAGE_NAME} exist" \
   || {
     echo "repo: ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}"
     fn__PullImageFromRemoteRepository   \
@@ -202,7 +202,7 @@ fn__ImageExists \
       ${__GIT_CLIENT_IMAGE_VERSION} \
         && echo "____ Image ${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION} pulled from remote docker repository" \
         || {
-          echo "____ Cannot find image ${__DEBMIN_SOURCE_IMAGE_NAME} [${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}]" 
+          echo "____ Cannot find image ${__CONTAINER_SOURCE_IMAGE_NAME} [${__DOCKER_REPOSITORY_HOST}/${__GIT_CLIENT_IMAGE_NAME}:${__GIT_CLIENT_IMAGE_VERSION}]" 
           echo "____ Aborting script execution ..." 
           exit ${__FAILED}
         }
